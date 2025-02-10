@@ -38,7 +38,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="profile" // Corresponde a app/(tabs)/explore.tsx
+          name="perfil"
           options={{
             title: "Perfil",
             tabBarIcon: ({ color }) => (

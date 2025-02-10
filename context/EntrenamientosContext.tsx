@@ -21,11 +21,9 @@ interface EntrenamientosContextValue {
   setSelectedEntrenamiento: (e: IEntrenamiento | null) => void;
 }
 
-export const EntrenamientosContext = createContext<EntrenamientosContextValue>({
-  entrenamientos: [],
-  selectedEntrenamiento: null,
-  setSelectedEntrenamiento: () => {},
-});
+const EntrenamientosContext = createContext<
+  EntrenamientosContextValue | undefined
+>(undefined);
 
 export function EntrenamientosProvider({
   children,

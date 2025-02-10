@@ -9,13 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.ledfit-front"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.ledfit_front"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +38,7 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "scheme":"leftit_front"
   }
 }

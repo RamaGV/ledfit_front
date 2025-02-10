@@ -14,6 +14,7 @@ import {
 } from "@react-navigation/native";
 
 import { EntrenamientosProvider } from "@/context/EntrenamientosContext";
+import { ImagesMapProvider } from "@/context/ImagesMapContext";
 import { EjerciciosProvider } from "@/context/EjerciciosContext";
 
 SplashScreen.preventAutoHideAsync();
@@ -36,20 +37,25 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <EjerciciosProvider>
-        <EntrenamientosProvider>
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="/(dashboard)"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen name="(entrenar)" options={{ headerShown: false }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </EntrenamientosProvider>
-      </EjerciciosProvider>
+      <ImagesMapProvider>
+        <EjerciciosProvider>
+          <EntrenamientosProvider>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="(dashboard)"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="(entrenar)"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen name="(usuario)" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </EntrenamientosProvider>
+        </EjerciciosProvider>
+      </ImagesMapProvider>
     </ThemeProvider>
   );
 }

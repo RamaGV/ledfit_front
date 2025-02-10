@@ -3,7 +3,7 @@
 import React from "react";
 import { Pressable, Text } from "react-native";
 
-export type CustomButtonProps = {
+type CustomButtonProps = {
   label: string; // Texto dentro del botón
   onPress?: () => void;
   size?: "large" | "medium" | "small";
@@ -11,9 +11,6 @@ export type CustomButtonProps = {
   disabled?: boolean; // Para desactivar el botón
 };
 
-/**
- * Un botón tailwind configurable.
- */
 export function CustomButton({
   label,
   onPress,

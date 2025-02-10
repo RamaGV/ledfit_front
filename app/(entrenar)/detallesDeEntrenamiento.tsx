@@ -13,23 +13,32 @@ import { Image } from "expo-image";
 import React from "react";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
 
-import ChipInfo from "@/components/entrenar/ChipInfo";
 import EjercicioCard from "@/components/entrenar/EjercicioCard";
+import ChipInfo from "@/components/entrenar/ChipInfo";
 
 export default function DetallesDeEntrenamiento() {
-  const { selectedEntrenamiento } = useEntrenamientos();
   const router = useRouter();
 
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { imagesMap } = useImagesMap();
+
   const handleStart = () => {
+    router.push("/(entrenar)");
     console.log("Se envió 'Hola Mundo' a esp32/test");
   };
+
+  const mainImage =
+    (selectedEntrenamiento?.imagen &&
+      imagesMap[selectedEntrenamiento.imagen]) ||
+    require("@/assets/defaultWorkout.png");
 
   return (
     <View className="flex-1 bg-[#121212]">
       <View className="relative">
         <Image
-          source={require("@/assets/defaultWorkout.png")}
+          source={mainImage}
           className="w-full h-[300px]"
           contentFit="cover"
         />
@@ -64,7 +73,7 @@ export default function DetallesDeEntrenamiento() {
         <View className="flex-row items-center justify-between border-t border-gray-700 py-3 px-1">
           <Text className="text-white text-lg font-semibold">Ejercicios</Text>
           <TouchableOpacity
-            onPress={() => router.push("/(entrenar)/ejercicios")}
+            onPress={() => router.push("/(entrenar)/detallesDeEjercicios")}
           >
             <Text className="text-[#7B61FF] text-sm">Ver más</Text>
           </TouchableOpacity>
@@ -77,7 +86,7 @@ export default function DetallesDeEntrenamiento() {
           {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
             <EjercicioCard
               key={idx}
-              imagen={"@/assets/exercises/defaultExercise.png"}
+              imagen={imagesMap[ejercicio.imagen]}
               label={ejercicio.nombre}
               tiempoTotal={ejercicio.tiempo}
             />

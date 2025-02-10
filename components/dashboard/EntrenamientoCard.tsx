@@ -1,35 +1,32 @@
 // components/EntrenamientoCard.tsx
 
-import { Text, View, Image, Pressable } from "react-native";
+import { Text, View, Image, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 
+import { useImagesMap } from "@/context/ImagesMapContext";
+
 import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
-export type EntrenamientoCardProps = {
+import { calcularTiempo } from "@/utils/utilsEntrenamientos";
+
+type EntrenamientoCardProps = {
   tipo: "Card Chica" | "Card Grande" | "Card Grid";
   entrenamiento: IEntrenamiento;
 };
-
-function calcularTiempo(tiempoTotal: number) {
-  const m = Math.floor(tiempoTotal / 60);
-  const s = tiempoTotal % 60;
-  return `${m}:${s < 10 ? `0${s}` : s} min.`;
-}
 
 export default function EntrenamientoCard({
   entrenamiento: unEntrenamiento,
   tipo,
 }: EntrenamientoCardProps) {
+  const { imagesMap } = useImagesMap();
+
   let cardContainer = "overflow-hidden rounded-3xl";
-  let tiempo = calcularTiempo(unEntrenamiento.tiempoTotal);
-  console.log("tiempo", unEntrenamiento.tiempoTotal);
+
   if (tipo === "Card Chica") {
-    cardContainer += " w-[300px] h-[110px]";
+    cardContainer += " w-[350px] h-[110px]";
   } else if (tipo === "Card Grande") {
     cardContainer += " w-[240px] h-[240px]";
-  } else if (tipo === "Card Grid") {
-    cardContainer += " w-[150px] h-[150px]";
   }
 
   let nombreStyle = "text-white font-bold";
@@ -45,7 +42,7 @@ export default function EntrenamientoCard({
       <Image
         className="overflow-hidden rounded-3xl"
         style={{ position: "absolute", width: "100%", height: "100%" }}
-        source={require("@/assets/defaultWorkout.png")}
+        source={imagesMap[unEntrenamiento.imagen]}
         // source={unEntrenamiento.imagen}
         resizeMode="cover"
       />
@@ -63,7 +60,7 @@ export default function EntrenamientoCard({
           "rgba(32, 32, 32, 0.9)",
         ]}
       />
-      <View className="flex-1 flex-col gap-1 absolute bottom-0 w-full px-[8%] pb-4">
+      <View className="flex-1 flex-col gap-1 absolute bottom-0 w-full px-4 pb-4">
         <Text
           className={nombreStyle}
           style={{ fontWeight: "bold", color: "white" }}
@@ -72,21 +69,24 @@ export default function EntrenamientoCard({
           {unEntrenamiento.nombre}
         </Text>
         <View className="flex-row gap-1 items-center w-full">
-          {unEntrenamiento.tiempoTotal && (
-            <Text className="flex-1 text-white text-[13px]">{tiempo}</Text>
-          )}
-          {unEntrenamiento.nivel && (
-            <Text className="flex-1 flex-start text-white text-[13px]">
+          <View className="flex-row gap-1 justify-around w-1/3">
+            <Text className=" text-white text-[13px]">
+              {calcularTiempo(unEntrenamiento.tiempoTotal)} min.
+            </Text>
+            <View className="border-r border-gray-400" />
+            <Text className=" text-white text-[13px]">
               {unEntrenamiento.nivel}
             </Text>
-          )}
-          <Pressable>
-            <Image
-              className="flex-1 flex-end w-6 h-6 ml-auto"
-              source={require("@/assets/iconlyboldbookmark.png")}
-              resizeMode="contain"
-            />
-          </Pressable>
+          </View>
+          <View className="flex-1 1/3">
+            <TouchableOpacity>
+              <Image
+                className="flex-1 flex-end w-6 h-6 ml-auto"
+                source={require("@/assets/iconlyboldbookmark.png")}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 
+import Test from "./test";
+
 export default function RootIndex() {
   const router = useRouter();
 
@@ -24,7 +26,8 @@ export default function RootIndex() {
         backgroundColor: "#121212",
       }}
     >
-      <ActivityIndicator color="#7B61FF" size="large" />
+      <Test />
+      {/* <ActivityIndicator color="#7B61FF" size="large" /> */}
     </View>
   );
 }

@@ -1,0 +1,2102 @@
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/_layout.tsx ---
+// app/_layout.tsx
+
+import { Stack } from "expo-router";
+import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
+import "react-native-reanimated";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+
+import { EntrenamientosProvider } from "@/context/EntrenamientosContext";
+import { ImagesMapProvider } from "@/context/ImagesMapContext";
+import { EjerciciosProvider } from "@/context/EjerciciosContext";
+
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const [loaded] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ImagesMapProvider>
+        <EjerciciosProvider>
+          <EntrenamientosProvider>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="(dashboard)"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="(entrenar)"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen name="(usuario)" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </EntrenamientosProvider>
+        </EjerciciosProvider>
+      </ImagesMapProvider>
+    </ThemeProvider>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/test.tsx ---
+import React, { useState } from "react";
+import { View, Text, Button } from "react-native";
+import CirculasProgress from "react-native-circular-progress-indicator";
+
+export default function Test() {
+  const [valor, setValor] = useState(0);
+
+  return (
+    <View className="flex-1 items-center justify-center">
+      <CirculasProgress
+        radius={100}
+        value={valor}
+        duration={1000}
+        valueSuffix="%"
+        inActiveStrokeColor="#2ecc71"
+        inActiveStrokeOpacity={0.2}
+        inActiveStrokeWidth={6}
+      />
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/index.tsx ---
+// app/index.tsx
+
+import { useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
+
+import Test from "./test";
+
+export default function RootIndex() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = true;
+    // Esperar un frame antes de navegar
+    requestAnimationFrame(() => {
+      router.replace("/(dashboard)");
+    });
+  }, [router]);
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#121212",
+      }}
+    >
+      <Test />
+      {/* <ActivityIndicator color="#7B61FF" size="large" /> */}
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/_layout.tsx ---
+// app/(entrenar)/_layout.tsx
+
+import { Stack } from "expo-router";
+
+export default function EntrenarLayout() {
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="detallesDeEntrenamiento"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen name="ejercicios" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="mis-entrenamientos"
+        options={{ headerShown: false }}
+      />
+    </Stack>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/detallesDeEntrenamiento.tsx ---
+// app/(entrenar)/detallesDeEntrenamiento.tsx
+
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+import React from "react";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+import EjercicioCard from "@/components/entrenar/EjercicioCard";
+import ChipInfo from "@/components/entrenar/ChipInfo";
+
+export default function DetallesDeEntrenamiento() {
+  const router = useRouter();
+
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { imagesMap } = useImagesMap();
+
+  const handleStart = () => {
+    router.push("/(entrenar)");
+    console.log("Se envió 'Hola Mundo' a esp32/test");
+  };
+
+  const mainImage =
+    (selectedEntrenamiento?.imagen &&
+      imagesMap[selectedEntrenamiento.imagen]) ||
+    require("@/assets/defaultWorkout.png");
+
+  return (
+    <View className="flex-1 bg-[#121212]">
+      <View className="relative">
+        <Image
+          source={mainImage}
+          className="w-full h-[300px]"
+          contentFit="cover"
+        />
+        <Pressable
+          onPress={() => router.back()}
+          className="absolute top-10 left-4 p-2"
+        >
+          <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
+        </Pressable>
+      </View>
+
+      <View className="px-4 flex-1">
+        {/* Título */}
+        <Text className="text-white text-2xl font-semibold py-4">
+          {selectedEntrenamiento?.nombre}
+        </Text>
+
+        {/* Chips de info */}
+        <View className="flex-row justify-around pb-3">
+          <ChipInfo label={selectedEntrenamiento?.nivel} icon="None" />
+          <ChipInfo
+            totalTime={selectedEntrenamiento?.tiempoTotal}
+            icon="Time"
+          />
+          <ChipInfo
+            label={selectedEntrenamiento?.ejercicios.length}
+            icon="Play"
+          />
+        </View>
+
+        {/* Sección de ejercicios (Ver más) */}
+        <View className="flex-row items-center justify-between border-t border-gray-700 py-3 px-1">
+          <Text className="text-white text-lg font-semibold">Ejercicios</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/(entrenar)/detallesDeEjercicios")}
+          >
+            <Text className="text-[#7B61FF] text-sm">Ver más</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          className="flex-1 px-4"
+          showsVerticalScrollIndicator={false}
+        >
+          {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
+            <EjercicioCard
+              key={idx}
+              imagen={imagesMap[ejercicio.imagen]}
+              label={ejercicio.nombre}
+              tiempoTotal={ejercicio.tiempo}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      <View className="px-3 py-2 border-t border-gray-700">
+        <TouchableOpacity
+          className="bg-[#7B61FF] rounded-full py-4 mx-5 my-2"
+          onPress={handleStart}
+        >
+          <Text className="text-white text-center text-base font-semibold">
+            INICIAR
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/CambiarentrenamientosPorNivel.tsx ---
+// app/(dashboard)/entrenamientosPorNivel.tsx
+
+import React, { useState, useContext } from "react";
+import { View, ScrollView, TouchableOpacity } from "react-native";
+
+import { EntrenamientosContext } from "@/context/EntrenamientosContext";
+
+import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
+import NivelButton from "@/components/dashboard/NivelButton";
+import TopNavbar from "@/components/TopNavbar";
+
+export default function EntrenamientosPorNivel() {
+  const { entrenamientos } = useContext(EntrenamientosContext);
+
+  const [filtroPorNivel, setFiltroPorNivel] = useState("principiante");
+
+  const niveles = ["Principiante", "Intermedio", "Avanzado"];
+
+  return (
+    <View className="flex-1 bg-[#121212]">
+      <TopNavbar iconBack={true} titulo="Entrenamientos por nivel" />
+      <View className="px-3 flex-1">
+        <View className="flex-row items-center justify-around py-3">
+          {niveles.map((nivel) => {
+            const isActive = nivel === filtroPorNivel;
+
+            return (
+              <NivelButton
+                key={nivel}
+                label={nivel}
+                onPress={() => setFiltroPorNivel(nivel)}
+                isActive={isActive}
+              />
+            );
+          })}
+        </View>
+        <View className="flex-1 flex-col items-center justify-center">
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {entrenamientos
+              .filter(
+                (entrenamientoFiltrado) =>
+                  entrenamientoFiltrado.nivel === filtroPorNivel,
+              )
+              .map((item, idx) => (
+                <TouchableOpacity
+                  key={item._id || idx}
+                  className="py-2"
+                  onPress={() => {}}
+                >
+                  <EntrenamientoCard
+                    key={item._id || idx}
+                    tipo="Card Chica"
+                    entrenamiento={item}
+                  />
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/detallesDeEjercicios.tsx ---
+// app/(entrenar)/detallesDeEjercicios.tsx
+
+import { View, ScrollView } from "react-native";
+import React from "react";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+import EjercicioCard from "@/components/entrenar/EjercicioCard";
+
+import TopNavbar from "@/components/TopNavbar";
+
+export default function DetallesDeEjercicios() {
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { imagesMap } = useImagesMap();
+
+  return (
+    <View className="flex-1 bg-[#121212] pt-2 px-6">
+      <TopNavbar iconBack={true} titulo="Ejercicios" />
+
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 pt-4">
+        {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
+          <EjercicioCard
+            key={idx}
+            imagen={imagesMap[ejercicio.imagen]}
+            label={ejercicio.nombre}
+            tiempoTotal={ejercicio.tiempo}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/screens/FinScreen.tsx ---
+// app/(entrenar)/screens/FinScreen.tsx
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import { useRouter } from "expo-router";
+import React from "react";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useEjercicios } from "@/context/EjerciciosContext";
+import { calcularTiempo } from "@/utils/utilsEntrenamientos";
+
+export default function FinScreen() {
+  const router = useRouter();
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { ejercicioActual } = useEjercicios();
+
+  if (!ejercicioActual || !selectedEntrenamiento) {
+    return null;
+  }
+
+  return (
+    <View className="flex-col justify-around p-6 bg-[#121212]">
+      <View className="items-center mt-20 mb-8">
+        <Image
+          source={require("@/assets/ejercicios/trofeo.png")}
+          style={{ width: 300, height: 300 }}
+          resizeMode="contain"
+        />
+      </View>
+
+      <View className="items-center">
+        <Text className="text-[#FFD700] text-3xl font-bold mb-2">
+          ¡Felicidades!
+        </Text>
+        <Text className="text-white text-base mb-8">
+          ¡Has completado el entrenamiento!
+        </Text>
+      </View>
+
+      <View className="w-full border-b border-gray-700 mb-6" />
+
+      <View className="flex-row w-full justify-around mb-6">
+        <View className="items-center ">
+          <Text className="text-white text-xl font-bold">
+            {selectedEntrenamiento.ejercicios.length}
+          </Text>
+          <Text className="text-gray-400 text-sm">Ejercicios</Text>
+        </View>
+        <View className="border-r border-gray-700" />
+        <View className="items-center">
+          <Text className="text-white text-xl font-bold">
+            {ejercicioActual.calorias}
+          </Text>
+          <Text className="text-gray-400 text-sm">Cal</Text>
+        </View>
+        <View className="border-r border-gray-700" />
+        <View className="items-center">
+          <Text className="text-white text-xl font-bold">
+            {calcularTiempo(selectedEntrenamiento.tiempoTotal)}
+          </Text>
+          <Text className="text-gray-400 text-sm">Minutos</Text>
+        </View>
+      </View>
+
+      <View className=" mt-12">
+        <TouchableOpacity
+          onPress={() => router.push("/(dashboard)")}
+          className="bg-[#7B61FF] w-full py-4 rounded-full mb-3"
+        >
+          <Text className="text-white text-center font-semibold">
+            Iniciar otro entrenamiento
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push("/(dashboard)")}
+          className="bg-[#1E1E1E] w-full py-4 rounded-full"
+        >
+          <Text className="text-white text-center font-semibold">
+            Volver al Inicio
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/screens/EjercicioScreen.tsx ---
+// app/(entrenar)/screens/EjercicioScreen.tsx
+
+import CirculasProgress from "react-native-circular-progress-indicator";
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import React from "react";
+
+import { useEjercicios } from "@/context/EjerciciosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+type EjercicioScreenProps = {
+  tiempoTranscurrido: number;
+  onPause: () => void;
+};
+
+export default function EjercicioScreen({
+  tiempoTranscurrido,
+  onPause,
+}: EjercicioScreenProps) {
+  const { ejercicioActual } = useEjercicios();
+  const { imagesMap } = useImagesMap();
+
+  if (!ejercicioActual) {
+    return null;
+  }
+
+  return (
+    <View className="flex-1 items-center justify-between bg-[#121212]">
+      <Image
+        source={imagesMap[ejercicioActual.imagen]}
+        className="w-full h-1/2 mb-4"
+        resizeMode="cover"
+      />
+      <View className="flex-col items-center justify-around h-1/2">
+        <Text className="text-white text-2xl font-bold">
+          {ejercicioActual.nombre}
+        </Text>
+
+        <CirculasProgress
+          radius={75}
+          value={tiempoTranscurrido}
+          maxValue={ejercicioActual.tiempo}
+          inActiveStrokeColor="#2ecc71"
+          inActiveStrokeOpacity={0.2}
+          inActiveStrokeWidth={6}
+        />
+
+        <TouchableOpacity
+          onPress={onPause}
+          activeOpacity={0.7}
+          className="bg-[#7B61FF] py-2 px-6 rounded-full mt-4"
+        >
+          <Text className="text-white text-lg font-semibold">Pausar</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/screens/InicioScreen.tsx ---
+// app/(entrenar)/screens/InicioScreen.tsx
+
+import { View, Text, TouchableOpacity } from "react-native";
+import React from "react";
+
+interface ReadyProps {
+  tiempoRestante: number;
+  onReset: () => void;
+}
+
+function ReadyScreen({ tiempoRestante, onReset }: ReadyProps) {
+  return (
+    <View className="flex-1 items-center justify-center">
+      <Text className="text-white text-4xl font-bold mb-4">¡Prepárate!</Text>
+      <Text className="text-white text-6xl">{tiempoRestante}</Text>
+      <TouchableOpacity
+        onPress={onReset}
+        className="bg-[#7B61FF] py-2 px-4 rounded-full"
+      >
+        <Text className="text-white">Reiniciar</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export default ReadyScreen;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/screens/DescansoScreen.tsx ---
+// app/(entrenar)/screens/DescansoScreen.tsx
+
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import React from "react";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useEjercicios } from "@/context/EjerciciosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+interface DescansoScreenProps {
+  tiempoTranscurrido: number;
+  indiceDeEjercicio: number;
+}
+
+export default function DescansoScreen({
+  tiempoTranscurrido,
+  indiceDeEjercicio,
+}: DescansoScreenProps) {
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { ejercicioActual } = useEjercicios();
+  const { imagesMap } = useImagesMap();
+
+  const siguienteEjercicio =
+    selectedEntrenamiento?.ejercicios[indiceDeEjercicio + 1];
+
+  if (!ejercicioActual || !siguienteEjercicio) {
+    return (
+      <View className="flex-1 bg-[#121212] items-center justify-center">
+        <Text className="text-white">
+          No hay datos de entrenamiento o ejercicio.
+        </Text>
+      </View>
+    );
+  }
+
+  const handleSkipRest = () => {
+    tiempoTranscurrido = 0;
+  };
+
+  return (
+    <View className="flex-1 bg-[#121212] p-4 items-center justify-center">
+      <Text className="text-[#7B61FF] text-xl font-semibold mb-2">
+        TAKE A REST
+      </Text>
+
+      {/* Temporizador estilo mm:ss, aquí "00:XX" */}
+      <Text className="text-white text-5xl font-extrabold mb-8">
+        00:{tiempoTranscurrido}
+      </Text>
+
+      <>
+        <Text className="text-white text-base mb-1">Siguiente ejercicio</Text>
+        <Text className="text-white text-xl font-semibold mb-6">
+          {siguienteEjercicio.nombre}
+        </Text>
+        <Image
+          source={imagesMap[siguienteEjercicio.imagen]}
+          style={{ width: 200, height: 200, marginBottom: 30 }}
+          resizeMode="contain"
+        />
+      </>
+
+      <TouchableOpacity
+        onPress={handleSkipRest}
+        className="bg-[#7B61FF] py-4 px-8 rounded-full mt-auto w-full"
+        style={{ maxWidth: 340 }}
+      >
+        <Text className="text-white text-center font-semibold">Skip Rest</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(dashboard)/_layout.tsx ---
+// app/(dashboard)/_layout.tsx
+
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import React from "react";
+
+export default function TabLayout() {
+  return (
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: "#121212",
+            borderTopColor: "#1E1E1E",
+          },
+          tabBarActiveTintColor: "#7B61FF",
+          tabBarInactiveTintColor: "#888",
+          tabBarBackground: undefined,
+        }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Home",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="home" size={24} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="entrenar"
+          options={{
+            title: "Entrenar",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="play-circle" size={24} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="perfil"
+          options={{
+            title: "Perfil",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="person-circle" size={24} color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(dashboard)/perfil.tsx ---
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(dashboard)/entrenar.tsx ---
+// app/(entrenar)/index.tsx
+import React, { useState, useEffect } from "react";
+import { View } from "react-native";
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useEjercicios } from "@/context/EjerciciosContext";
+
+import { useTimer } from "@/utils/utilsEntrenamientos";
+
+import EjercicioScreen from "../(entrenar)/screens/EjercicioScreen";
+import InicioScreen from "../(entrenar)/screens/InicioScreen";
+import FinScreen from "../(entrenar)/screens/FinScreen";
+import DescansoScreen from "../(entrenar)/screens/DescansoScreen";
+
+type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
+
+export default function Entrenamiento() {
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { setEjercicioActual } = useEjercicios();
+
+  // Estados
+  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(-1);
+  const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
+  const [pausa, setPausa] = useState<boolean>(false);
+  const [tiempo, setTiempo] = useState<number>(10);
+
+  // Cuando cambia el índice, actualizamos el ejercicio actual y el tiempo
+  useEffect(() => {
+    if (selectedEntrenamiento && indiceEjercicio >= 0) {
+      const ejercicio = selectedEntrenamiento.ejercicios[indiceEjercicio];
+      setEjercicioActual(ejercicio);
+      setTiempo(ejercicio.tiempo);
+      resetTimer();
+    }
+  }, [indiceEjercicio]);
+
+  const onTiempoAgotado = () => {
+    if (etapaActual === "INICIO") {
+      setIndiceEjercicio(0);
+      setEtapaActual("ACTIVO");
+    } else if (etapaActual === "ACTIVO") {
+      if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
+        setEtapaActual("FIN");
+      } else {
+        setEtapaActual("DESCANSO");
+        setTiempo(10);
+      }
+    } else if (etapaActual === "DESCANSO") {
+      if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
+        const sigIndice = indiceEjercicio + 1;
+        setIndiceEjercicio(sigIndice);
+        setEtapaActual("ACTIVO");
+      }
+    }
+  };
+
+  const { tiempoTranscurrido, resetTimer } = useTimer(
+    tiempo,
+    pausa,
+    onTiempoAgotado,
+  );
+
+  return (
+    <View className="flex-1 bg-[#121212]">
+      {etapaActual === "INICIO" ? (
+        <InicioScreen
+          tiempoRestante={tiempo - tiempoTranscurrido}
+          onReset={resetTimer}
+        />
+      ) : etapaActual === "ACTIVO" ? (
+        <EjercicioScreen
+          tiempoTranscurrido={tiempoTranscurrido}
+          onPause={() => setPausa((prev) => !prev)}
+        />
+      ) : etapaActual === "DESCANSO" ? (
+        <DescansoScreen
+          tiempoTranscurrido={tiempoTranscurrido}
+          indiceDeEjercicio={indiceEjercicio}
+        />
+      ) : etapaActual === "FIN" ? (
+        <FinScreen />
+      ) : null}
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(dashboard)/index.tsx ---
+// app/(dashboard)/index.tsx
+
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
+import { router } from "expo-router";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+
+import type { IEntrenamiento } from "@/context/EntrenamientosContext";
+
+import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
+import NivelButton from "@/components/dashboard/NivelButton";
+import TopNavbar from "@/components/TopNavbar";
+
+export default function HomeScreen() {
+  const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
+
+  const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
+
+  const niveles = ["Principiante", "Intermedio", "Avanzado"];
+
+  const entrenamientoSeleccionado = (entrenamiento: IEntrenamiento) => {
+    setSelectedEntrenamiento(entrenamiento);
+    router.push("/(entrenar)/detallesDeEntrenamiento");
+  };
+
+  return (
+    <View className="flex-1 bg-[#121212] p-3">
+      <TopNavbar logo={true} iconNotif={true} iconFav={true} />
+      <Text className="text-white text-2xl font-semibold p-2">
+        Hola, Rama 👋
+      </Text>
+
+      <View className="flex-row items-center justify-between pt-2 px-2">
+        <Text className="text-white text-lg">Mis entrenamientos</Text>
+        <TouchableOpacity
+          onPress={() => {
+            // router.push(`/(entrenar)/mis-entrenamientos`);
+          }}
+        >
+          <Text className="text-[#7B61FF] text-sm">Ver más</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {entrenamientos.map((unEntrenamiento, idx) => (
+            <TouchableOpacity
+              key={unEntrenamiento._id || idx}
+              className="m-3"
+              onPress={() => entrenamientoSeleccionado(unEntrenamiento)}
+            >
+              <EntrenamientoCard
+                key={unEntrenamiento._id || idx}
+                tipo="Card Grande"
+                entrenamiento={unEntrenamiento}
+              />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-white text-lg font-semibold">Niveles</Text>
+        <Pressable
+          onPress={() => {
+            router.push(`/entrenamientosPorNivel`);
+          }}
+        >
+          <Text className="text-[#7B61FF] text-sm">Ver más</Text>
+        </Pressable>
+      </View>
+      <View className="flex-row items-center justify-around py-2">
+        {niveles.map((nivel) => {
+          const isActive = nivel === filtroPorNivel;
+
+          return (
+            <NivelButton
+              key={nivel}
+              label={nivel}
+              onPress={() => setFiltroPorNivel(nivel)}
+              isActive={isActive}
+            />
+          );
+        })}
+      </View>
+
+      <View className="flex-1 flex-col items-center justify-center">
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {entrenamientos
+            .filter(
+              (entrenamientoFiltrado) =>
+                entrenamientoFiltrado.nivel === filtroPorNivel,
+            )
+            .map((unEntrenamiento, idx) => (
+              <TouchableOpacity
+                key={unEntrenamiento._id || idx}
+                className="py-2"
+                onPress={() => entrenamientoSeleccionado(unEntrenamiento)}
+              >
+                <EntrenamientoCard
+                  key={unEntrenamiento._id || idx}
+                  tipo="Card Chica"
+                  entrenamiento={unEntrenamiento}
+                />
+              </TouchableOpacity>
+            ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/login.tsx ---
+// app/(usuario)/login.tsx
+import { View, Text, TouchableOpacity } from "react-native";
+import { Image } from "expo-image";
+import React from "react";
+
+export default function LoginScreen() {
+  return (
+    <View className="flex-col justify-around bg-[#121212] px-5 h-full">
+      <Text className="text-white text-3xl font-semibold text-center">
+        ¡Hora de entrenar!
+      </Text>
+
+      <View className="flex-col justify-around">
+        <TouchableOpacity
+          activeOpacity={0.7}
+          className="flex-row items-center justify-center py-4 px-5 rounded-xl mb-4 
+          bg-[#1E1E1E] border border-gray-600"
+          onPress={() => {
+            console.log("Continuar con Facebook");
+          }}
+        >
+          <Image
+            className="w-7 h-7 mr-3"
+            source={require("@/assets/defaultWorkout.png")}
+          />
+          <Text className="text-white text-center text-base">
+            Continuar con Facebook
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          className="flex-row items-center justify-center py-4 px-5 rounded-xl 
+          bg-[#1E1E1E] border border-gray-600"
+          onPress={() => {
+            console.log("Continuar con Google");
+          }}
+        >
+          <Image
+            className="w-7 h-7 mr-3"
+            source={require("@/assets/defaultWorkout.png")}
+          />
+          <Text className="text-white text-center text-base">
+            Continuar con Google
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity
+        activeOpacity={0.7}
+        className="bg-[#7B61FF] py-4 rounded-xl mb-5"
+      >
+        <Text className="text-white text-center text-base font-semibold">
+          Ingresar
+        </Text>
+      </TouchableOpacity>
+
+      <View className="flex-row justify-center">
+        <Text className="text-white text-sm">¿No tienes una cuenta? </Text>
+        <Text className="text-[#7B61FF] text-sm">Registrarme</Text>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/_layout.tsx ---
+// app/(usuario)/_layout.tsx
+
+import { Stack } from "expo-router";
+
+export default function UsuarioLayout() {
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="notificaciones" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="register" options={{ headerShown: false }} />
+    </Stack>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/notificaciones.tsx ---
+// app/notifications.tsx
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { ImagesMapContext } from "@/context/ImagesMapContext";
+import { useRouter } from "expo-router";
+import React, { useContext, useEffect, useState } from "react";
+import { UsersContext } from "@/context/UsersContext";
+
+export default function NotificationsScreen() {
+  const { user, loadUser: userLoading, errorUser } = useContext(UsersContext);
+  const { imagesMap } = useContext(ImagesMapContext);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!userLoading && user) {
+      const fetchNotifications = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(
+            `http://192.168.1.3:5000/api/users/${user._id}/notifications`,
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch notifications");
+          }
+          const data = await response.json();
+          setNotifications(data);
+        } catch (err) {
+          console.error("Error fetching notifications:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchNotifications();
+    }
+  }, [user, userLoading]);
+
+  if (userLoading || loading) {
+    return (
+      <View className="flex-1 bg-[#121212] justify-center items-center">
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </View>
+    );
+  }
+
+  if (errorUser || !user) {
+    return (
+      <View className="flex-1 bg-[#121212] justify-center items-center">
+        <Text className="text-white text-center">
+          {errorUser || "User not authenticated"}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-[#121212] pt-10 px-4">
+      {/* Header */}
+      <View className="flex-row items-center justify-between mb-5">
+        <Pressable onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={26} color="#FFFFFF" />
+        </Pressable>
+        <View className="flex-1 items-center">
+          <Text className="text-white text-xl font-semibold">
+            Notificaciones
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {notifications.map((section, idx) => (
+          <View key={idx}>
+            <Text className="text-white text-base font-semibold mb-3">
+              {section.date}
+            </Text>
+            {section.items.map((notif: any, nIdx: number) => (
+              <View
+                key={nIdx}
+                className="flex-row items-center bg-[#1E1E1E] rounded-2xl p-4 mb-4"
+              >
+                <View
+                  className={`w-10 h-10 rounded-full justify-center items-center ${notif.iconBg} mr-3`}
+                >
+                  <Image
+                    source={imagesMap[notif.icon]}
+                    style={{ width: 55, height: 55 }}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white font-semibold text-base">
+                    {notif.title}
+                  </Text>
+                  <Text className="text-[#CCCCCC] text-sm">
+                    {notif.subtitle}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/loginGoogle.tsx ---
+// import * as React from "react";
+// import { StatusBar } from "expo-status-bar";
+// import { StyleSheet, Text, View } from "react-native";
+// import * as WebBrower from "expo-web-browser";
+// import * as Google from "expo-auth-session/providers/google";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// WebBrowser.maybeCompleteAuthSession();
+
+// export default function LoginGoogle() {
+//     const [userInfo, setUserInfo] = React.useState<any>(null);
+//     const[response, request, promptAsync] = Google.useAuthRequest({
+//         androidClientId:"549244597082-r2g88tr26v7v1sujt5pl42n5p2qpt647.apps.googleusercontent.com",
+//     });
+
+//     const getLocalUser = async () => {
+//         const data = await AsyncStorage.getItem("@user");
+//         if (!data) return null;
+//         return JSON.parse(data);
+//     };
+
+//     const storeLocalUser = async (user: any) => {
+//         await AsyncStorage.setItem("@user", JSON.stringify(user));
+//     };
+
+//     React.useEffect(() => {
+//         if (response?.type === "success") {
+//             setUserInfo(response.authentication);
+//         }
+//     }, [response]);
+
+//     React.useEffect(() => {
+//         (async () => {
+//             const user = await getLocalUser();
+//             if (user) {
+//                 setUserInfo(user);
+//             }
+//         })();
+//     }, []);
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/EntrenamientosContext.tsx ---
+// app/context/WorkoutsContext.tsx
+
+import React, { createContext, useState, useEffect, useCallback } from "react";
+
+import type { IEjercicio } from "./EjerciciosContext";
+
+export interface IEntrenamiento {
+  _id: string;
+  nombre: string;
+  nivel: string;
+  ejercicios: IEjercicio[];
+  imagen: string;
+  tiempoTotal: number;
+  grupo: string;
+  descripcion: string;
+}
+
+interface EntrenamientosContextValue {
+  entrenamientos: IEntrenamiento[];
+  selectedEntrenamiento: IEntrenamiento | null;
+  setSelectedEntrenamiento: (e: IEntrenamiento | null) => void;
+}
+
+const EntrenamientosContext = createContext<
+  EntrenamientosContextValue | undefined
+>(undefined);
+
+export function EntrenamientosProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [entrenamientos, setEntrenamientos] = useState<IEntrenamiento[]>([]);
+  const [selectedEntrenamiento, setSelectedEntrenamiento] =
+    useState<IEntrenamiento | null>(null);
+
+  // Obtener lista de ejercicios
+  const fetchEntrenamientos = useCallback(async () => {
+    try {
+      const response = await fetch(
+        "http://192.168.1.5:5000/api/entrenamientos",
+      );
+      if (!response.ok) {
+        throw new Error("ErrorWorkouts fetching workouts");
+      }
+      const data = await response.json();
+      setEntrenamientos(data);
+    } catch (err: any) {
+      console.error("ErrorWorkouts fetching workouts:", err);
+    }
+  }, []);
+
+  // Obtener un entrenamiento por su ID
+  const fetchEntrenamientoById = useCallback(
+    async (entrenamientoId: string) => {
+      try {
+        const response = await fetch(
+          `http://192.168.1.5:5000/api/entrenamientos/${entrenamientoId}`,
+        );
+        if (!response.ok) {
+          throw new Error("Error fetching entrenamientos");
+        }
+        const data = await response.json();
+        return data;
+      } catch (err: any) {
+        console.error("Error fetching entrenamientos:", err);
+        return null;
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    fetchEntrenamientos();
+  }, []);
+
+  return (
+    <EntrenamientosContext.Provider
+      value={
+        {
+          entrenamientos: entrenamientos,
+          setEntrenamientos: setEntrenamientos,
+          selectedEntrenamiento: selectedEntrenamiento,
+          setSelectedEntrenamiento: setSelectedEntrenamiento,
+          fetchEntrenamientoById: fetchEntrenamientoById,
+        } as any
+      }
+    >
+      {children}
+    </EntrenamientosContext.Provider>
+  );
+}
+
+export const useEntrenamientos = () => {
+  const context = React.useContext(EntrenamientosContext);
+  if (context === undefined) {
+    throw new Error(
+      "useEntrenamientos must be used within a EntrenamientosProvider",
+    );
+  }
+  return context;
+};
+
+export default EntrenamientosProvider;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/UsersContext.tsx ---
+// app/context/UsersContext.tsx
+import React, { createContext, useState, useEffect, useCallback } from "react";
+
+interface User {
+  _id: string;
+  email: string;
+  name: string;
+  tag?: string;
+  passwordHash?: string;
+  deviceIds: Device[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Device {
+  deviceId: string;
+  platform: string;
+  lastLogin: string;
+}
+
+interface UsersContextValue {
+  user: User | null;
+  loadUser: boolean;
+  errorUser: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  reloadUser: () => Promise<void>;
+}
+
+export const UsersContext = createContext<UsersContextValue>({
+  user: null,
+  loadUser: true,
+  errorUser: null,
+  login: async () => {},
+  logout: () => {},
+  reloadUser: async () => {},
+});
+
+export function UsersProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loadUser, setLoadUser] = useState(true);
+  const [errorUser, setErrorUser] = useState<string | null>(null);
+
+  const fetchUser = useCallback(async () => {
+    try {
+      setLoadUser(true);
+      const response = await fetch("http://192.168.1.3:5000/api/users/me", {
+        // For session-based authentication credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("ErrorUser fetching user");
+      }
+      const data = await response.json();
+      setUser(data);
+      setErrorUser(null);
+    } catch (err: any) {
+      console.error("ErrorUser fetching user:", err);
+      setErrorUser("Failed to load user");
+      setUser(null);
+    } finally {
+      setLoadUser(false);
+    }
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      setLoadUser(true);
+      const response = await fetch("http://192.168.1.3:5000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        throw new Error("Invalid login credentials");
+      }
+      const data = await response.json();
+      setUser(data);
+      setErrorUser(null);
+    } catch (err: any) {
+      console.error("Login errorUser:", err);
+      setErrorUser("Login failed");
+      setUser(null);
+    } finally {
+      setLoadUser(false);
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    fetch("http://192.168.1.3:5000/api/users/logout", {
+      method: "POST",
+      //credentials: "include",
+    }).catch((err) => console.error("Logout errorUser:", err));
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  return (
+    <UsersContext.Provider
+      value={{
+        user,
+        loadUser,
+        errorUser,
+        login,
+        logout,
+        reloadUser: fetchUser,
+      }}
+    >
+      {children}
+    </UsersContext.Provider>
+  );
+}
+
+export default UsersProvider;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/MqttContext.tsx ---
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { Client, Message } from "paho-mqtt";
+
+interface MqttContextValue {
+  client: Client | null;
+  publishMessage: (topic: string, message: string) => void;
+  connected: boolean;
+}
+
+export const MqttContext = createContext<MqttContextValue>({
+  client: null,
+  publishMessage: () => {},
+  connected: false,
+});
+
+export function MqttProvider({ children }: { children: React.ReactNode }) {
+  const [connected, setConnected] = useState(false);
+  const clientRef = useRef<Client | null>(null);
+
+  // Datos del broker y configuración
+  const host = "broker.mqtt-dashboard.com";
+  const port = 8000; // WebSocket sin SSL
+  const path = "/mqtt";
+  const clientId = "myClientId_" + new Date().getTime(); // Generar un ID único
+
+  // Función para inicializar el cliente Paho
+  const initializeMqttClient = useCallback(() => {
+    // Crea el cliente MQTT sobre WebSocket
+    const c = new Client(host, port, path, clientId);
+
+    c.onConnectionLost = (responseObject) => {
+      setConnected(false);
+    };
+
+    c.onMessageArrived = (message: Message) => {
+      console.log(
+        "Mensaje recibido:",
+        message.destinationName,
+        message.payloadString,
+      );
+      // Aquí podrías manejar los mensajes entrantes si lo necesitas
+    };
+
+    // Conectar al broker
+    c.connect({
+      useSSL: false,
+      onSuccess: () => {
+        setConnected(true);
+        // Ejemplo: suscribirse a un tópico si se requiere:
+        // c.subscribe("test/topic", { qos: 0 });
+      },
+      onFailure: (error) => {
+        console.error("Error al conectar MQTT:", error.errorMessage);
+      },
+    });
+
+    clientRef.current = c;
+  }, [host, port, path, clientId]);
+
+  useEffect(() => {
+    initializeMqttClient();
+
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.disconnect();
+      }
+    };
+  }, [initializeMqttClient]);
+
+  const publishMessage = useCallback(
+    (pubTopic: string, message: string) => {
+      const { current: c } = clientRef;
+      if (c && connected) {
+        const msg = new Message(message);
+        msg.destinationName = pubTopic;
+        c.send(msg);
+        console.log("Mensaje publicado en", pubTopic, ":", message);
+      } else {
+        console.warn("No conectado a MQTT, no se puede publicar.");
+      }
+    },
+    [connected],
+  );
+
+  return (
+    <MqttContext.Provider
+      value={{
+        client: clientRef.current,
+        publishMessage,
+        connected,
+      }}
+    >
+      {children}
+    </MqttContext.Provider>
+  );
+}
+
+export default MqttProvider;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/ImagesMapContext.tsx ---
+import React, { createContext, useState, useEffect } from "react";
+
+interface ImagesMap {
+  [key: string]: any;
+}
+
+interface ImagesMapContextValue {
+  imagesMap: ImagesMap;
+}
+
+export const ImagesMapContext = createContext<ImagesMapContextValue>({
+  imagesMap: {},
+});
+
+export function ImagesMapProvider({ children }: { children: React.ReactNode }) {
+  const [imagesMap, setImagesMap] = useState<ImagesMap>({});
+  useEffect(() => {
+    const imagesMap: { [key: string]: any } = {
+      // Entrenamientos
+      yogaIntermedioImage: require("@/assets/entrenamientos/yogaIntermedioImage.webp"),
+      flexibilidadPrincipianteImage: require("@/assets/entrenamientos/flexibilidadPrincipianteImage.webp"),
+      hiitParaPrincipiantesImage: require("@/assets/entrenamientos/hiitParaPrincipiantesImage.webp"),
+      fuerzaTotalIntermedioImage: require("@/assets/entrenamientos/fuerzaTotalIntermedioImage.webp"),
+      crossfitAvanzadoImage: require("@/assets/entrenamientos/crossfitAvanzadoImage.webp"),
+
+      // Ejercicios
+      perroBocaAbajoImage: require("@/assets/ejercicios/perroBocaAbajoImage.webp"),
+      deadliftImage: require("@/assets/ejercicios/deadliftImage.webp"),
+      pressBancaImage: require("@/assets/ejercicios/pressBancaImage.webp"),
+      dominadasImage: require("@/assets/ejercicios/dominadasImage.webp"),
+      highKneesImage: require("@/assets/ejercicios/highKneesImage.webp"),
+      burpeesImage: require("@/assets/ejercicios/burpeesImage.webp"),
+      warrior1Image: require("@/assets/ejercicios/warrior1Image.webp"),
+      pesoMuertoImage: require("@/assets/ejercicios/pesoMuertoImage.webp"),
+      posturaDelGatoImage: require("@/assets/ejercicios/posturaDelGatoImage.webp"),
+      kettlebellSwingImage: require("@/assets/ejercicios/kettlebellSwingImage.webp"),
+      fondosTricepsImage: require("@/assets/ejercicios/fondosTricepsImage.webp"),
+      squatJumpImage: require("@/assets/ejercicios/squatJumpImage.webp"),
+      boxJumpImage: require("@/assets/ejercicios/boxJumpImage.webp"),
+      zancadaConRotacionImage: require("@/assets/ejercicios/zancadaConRotacionImage.webp"),
+      mountainClimbersImage: require("@/assets/ejercicios/mountainClimbersImage.webp"),
+      pressMilitarImage: require("@/assets/ejercicios/pressMilitarImage.webp"),
+      estiramientoAductoresImage: require("@/assets/ejercicios/estiramientoAductoresImage.webp"),
+      remoBarraBajaImage: require("@/assets/ejercicios/remoBarraBajaImage.webp"),
+      sidePlankImage: require("@/assets/ejercicios/sidePlankImage.webp"),
+      sentadillaProfundaImage: require("@/assets/ejercicios/sentadillaProfundaImage.webp"),
+      curlBicepsBarraImage: require("@/assets/ejercicios/curlBicepsBarraImage.webp"),
+      trianglePoseImage: require("@/assets/ejercicios/trianglePoseImage.webp"),
+      wallBallShotImage: require("@/assets/ejercicios/wallBallShotImage.webp"),
+      jumpingJacksImage: require("@/assets/ejercicios/jumpingJacksImage.webp"),
+      plankToPushUpImage: require("@/assets/ejercicios/plankToPushUpImage.webp"),
+
+      // Iconos de notificaciones
+      notificationTick: require("@/assets/icons/notificationTick.png"),
+      notificationPlus: require("@/assets/icons/notificationPlus.png"),
+      notificationTime: require("@/assets/icons/notificationTime.png"),
+    };
+    setImagesMap(imagesMap);
+  }, []);
+
+  return (
+    <ImagesMapContext.Provider value={{ imagesMap }}>
+      {children}
+    </ImagesMapContext.Provider>
+  );
+}
+
+export const useImagesMap = () => {
+  const context = React.useContext(ImagesMapContext);
+  if (!context) {
+    throw new Error("useImagesMap must be used within a ImagesMapProvider");
+  }
+  return context;
+};
+
+export default ImagesMapContext;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/EjerciciosContext.tsx ---
+// app/context/ExercisesContext.tsx
+
+import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
+
+export interface IEjercicio {
+  _id: string;
+  imagen: string;
+  nombre: string;
+  tiempo: number;
+  calorias: number;
+  grupo: string;
+  descripcion: string;
+}
+
+interface EjerciciosContextProps {
+  ejercicios: IEjercicio[];
+  setEjercicios: (e: IEjercicio[]) => void;
+  ejercicioActual: IEjercicio | null;
+  setEjercicioActual: (e: IEjercicio | null) => void;
+  fetchEjercicioById: (ejercicioId: string) => Promise<IEjercicio | null>;
+}
+
+const EjerciciosContext = createContext<EjerciciosContextProps | undefined>(
+  undefined,
+);
+
+// Proveedor
+export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [ejercicios, setEjercicios] = useState<IEjercicio[]>([]);
+  const [ejercicioActual, setEjercicioActual] = useState<IEjercicio | null>(
+    null,
+  );
+
+  // Obtener la lista de ejercicios
+  const fetchEjercicios = async () => {
+    try {
+      const response = await axios.get(
+        "http://192.168.1.5:5000/api/ejercicios",
+      );
+      setEjercicios(response.data);
+    } catch (err: any) {
+      console.error("Error fetching exercises:", err);
+    }
+  };
+
+  // Obtener un ejercicio por su ID
+  const fetchEjercicioById = async (ejercicioId: string) => {
+    try {
+      const response = await axios.get(
+        `http://192.168.1.5:5000/api/ejercicios/${ejercicioId}`,
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error("Error fetching exercise:", err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchEjercicios();
+  }, []);
+
+  return (
+    <EjerciciosContext.Provider
+      value={{
+        ejercicios,
+        setEjercicios,
+        ejercicioActual,
+        setEjercicioActual,
+        fetchEjercicioById,
+      }}
+    >
+      {children}
+    </EjerciciosContext.Provider>
+  );
+};
+
+export const useEjercicios = () => {
+  const context = React.useContext(EjerciciosContext);
+  if (!context) {
+    throw new Error("useEjercicios must be used within a EjerciciosProvider");
+  }
+  return context;
+};
+
+export default EjerciciosContext;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/TopNavbar.tsx ---
+import { Color } from "@/GlobalStyles";
+import { useRouter } from "expo-router";
+import React from "react";
+import Logo from "@/components/Logo";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ImageSourcePropType,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+
+type TopNavbarType = {
+  titulo?: string;
+  iconBuscar?: ImageSourcePropType;
+  iconNotif?: boolean;
+  iconBack?: boolean;
+  iconFav?: boolean;
+  logo?: boolean;
+};
+
+const TopNavbar = ({
+  titulo: titulo = "Ledfit",
+  iconBuscar: iconBuscar,
+  iconNotif: iconNotif,
+  iconBack: iconBack,
+  iconFav: iconFav,
+  logo: logo,
+}: TopNavbarType) => {
+  const router = useRouter();
+
+  return (
+    <View className="flex-row items-center justify-between p-2 mt-5">
+      <View className="flex-row items-center">
+        {iconBack && (
+          <TouchableOpacity className="" onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
+        {logo && <Logo />}
+        <Text className="text-2xl font-bold text-gray-200 pl-4">{titulo}</Text>
+      </View>
+      <View className="flex-row items-center gap-4">
+        {iconNotif && (
+          <TouchableOpacity
+            onPress={() => router.push("/(usuario)/notificaciones")}
+          >
+            <Image
+              className="w-8 h-8"
+              source={require("@/assets/iconlycurvednotification.png")}
+              style={styles.color}
+            />
+          </TouchableOpacity>
+        )}
+        {iconFav && (
+          <TouchableOpacity
+          // onPress={() => {
+          //   router.push("/(entrenar)/mis-entrenamientos");
+          // }}
+          >
+            <Image
+              style={styles.color}
+              source={require("@/assets/iconlycurvedbookmark.png")}
+            />
+          </TouchableOpacity>
+        )}
+        {iconBuscar && (
+          <TouchableOpacity>
+            <Image
+              className="w-8 h-8"
+              style={styles.color}
+              source={iconBuscar}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+};
+
+// <View className="relative">
+//   <Image
+//     source={mainImage}
+//     className="w-full h-[300px]"
+//     contentFit="cover"
+//   />
+//   <Pressable
+//     onPress={() => router.back()}
+//     className="absolute top-10 left-4 p-2"
+//   >
+//     <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
+//   </Pressable>
+// </View>
+
+export default TopNavbar;
+
+// Color de icono //
+const styles = StyleSheet.create({
+  color: {
+    tintColor: Color.greyscale300,
+  },
+});
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/Button.tsx ---
+// app/components/Button.tsx
+
+import React from "react";
+import { Text, TouchableOpacity } from "react-native";
+
+interface ButtonProps {
+  title: string;
+  onPress: () => void;
+  color: string;
+}
+
+export default function Button({ title, onPress, color }: ButtonProps) {
+  let colorButton = "bg-[#7B61FF]";
+
+  return (
+    <TouchableOpacity onPress={onPress} style={{ backgroundColor: color }}>
+      <Text>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/Logo.tsx ---
+import * as React from "react";
+import { View, Image, StyleSheet } from "react-native";
+import { Border, Color } from "@/GlobalStyles";
+
+export default function Logo() {
+  return (
+    <View style={styles.logoContainer}>
+      <View style={styles.rectangle} />
+      <Image
+        source={require("@/assets/vector.png")}
+        style={styles.vectorIcon}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  rectangle: {
+    height: "100%",
+    width: "100%",
+    top: "0%",
+    right: "0%",
+    bottom: "0%",
+    left: "0%",
+    borderRadius: Border.br_xs,
+    backgroundColor: Color.primary500,
+    position: "absolute",
+  },
+  vectorIcon: {
+    height: "33.44%",
+    width: "66.56%",
+    top: "33.44%",
+    right: "16.88%",
+    bottom: "33.13%",
+    left: "16.56%",
+    maxWidth: "100%",
+    overflow: "hidden",
+    maxHeight: "100%",
+    position: "absolute",
+    tintColor: Color.greyscale300,
+  },
+  logoContainer: {
+    borderRadius: Border.br_341xl,
+    width: 32,
+    height: 32,
+  },
+});
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/CustomButton.tsx ---
+// app/components/CustomButton.tsx
+
+import React from "react";
+import { Pressable, Text } from "react-native";
+
+type CustomButtonProps = {
+  label: string; // Texto dentro del botón
+  onPress?: () => void;
+  size?: "large" | "medium" | "small";
+  isActive?: boolean; // Para cambiar el color de fondo o estilo
+  disabled?: boolean; // Para desactivar el botón
+};
+
+export function CustomButton({
+  label,
+  onPress,
+  size = "medium",
+  isActive = false,
+  disabled = false,
+}: CustomButtonProps) {
+  // Podemos definir clases tailwind según el tamaño
+  let sizeClasses = "py-2 px-6"; // por defecto "medium"
+  if (size === "large") {
+    sizeClasses = "py-3 px-8";
+  } else if (size === "small") {
+    sizeClasses = "py-2 px-4";
+  }
+
+  // Fondo según si está activo o no
+  // (ej. "activo" => fill color #7B61FF, "inactivo" => border)
+  let backgroundClasses = isActive
+    ? "bg-[#7B61FF]"
+    : "bg-[#1E1E1E] border border-[#7B61FF]";
+
+  // Si está disabled, podemos bajarle la opacidad
+  let opacityClass = disabled ? "opacity-50" : "opacity-100";
+
+  return (
+    <Pressable
+      onPress={disabled ? undefined : onPress}
+      className={`rounded-full items-center justify-center ${sizeClasses} ${backgroundClasses} ${opacityClass}`}
+    >
+      <Text className="text-white text-sm">{label}</Text>
+    </Pressable>
+  );
+}
+
+export default CustomButton;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/entrenar/EjercicioCard.tsx ---
+// components/EjercicioCard.tsx
+
+import { Text, View, Image } from "react-native";
+import React from "react";
+
+type EjercicioCardProps = {
+  key: number;
+  imagen: any;
+  label: string;
+  tiempoTotal: number;
+};
+
+const EjercicioCard = ({
+  imagen: imagen,
+  label: label,
+  tiempoTotal: tiempoTotal,
+}: EjercicioCardProps) => {
+  return (
+    <View className="flex-row items-center bg-[#1E1E1E] rounded-xl mb-3 overflow-hidden">
+      <Image source={imagen} className="w-24 h-24" resizeMode="cover" />
+      <View className="flex-col ml-4">
+        <Text className="text-white font-extrabold text-lg pb-1">{label}</Text>
+        <Text className="text-white text-xs">{tiempoTotal} segundos</Text>
+      </View>
+    </View>
+  );
+};
+
+export default EjercicioCard;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/entrenar/ChipInfo.tsx ---
+// app/components/ChipInfo.tsx
+
+import React from "react";
+import { View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+
+export type ChipProps = {
+  label?: string | number;
+  icon?: "None" | "Time" | "Play";
+  totalTime?: number;
+};
+
+function formatTime(totalTime: number) {
+  const m = Math.floor(totalTime / 60);
+  const s = totalTime % 60;
+  return `${m}:${s < 10 ? `0${s}` : s} min`;
+}
+
+const Chip = ({ label, icon, totalTime }: ChipProps) => {
+  if (icon === "Time") {
+    label = formatTime(totalTime ?? 0);
+  } else if (icon === "Play") {
+    label = label + " rondas";
+  }
+
+  return (
+    <View className="flex-row items-center justify-center bg-[#1E1E1E] px-3 py-1 rounded-full border border-[#7B61FF]">
+      {icon === "None" ? null : (
+        <Ionicons
+          name={icon === "Time" ? "time-outline" : "play"}
+          size={15}
+          color="#7B61FF"
+        />
+      )}
+      <Text className="text-[#7B61FF] text-sm text-center ml-1">{label}</Text>
+    </View>
+  );
+};
+
+export default Chip;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/entrenar/MyCircularProgress.tsx ---
+// Ejemplo: app/components/MyCircularProgress.tsx
+import React from "react";
+import { View, Text } from "react-native";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
+
+type MyCircularProgressProps = {
+  progress: number; // Progreso en porcentaje (0 a 100)
+  totalTime: number; // Tiempo total del ejercicio en segundos
+};
+
+const MyCircularProgress: React.FC<MyCircularProgressProps> = ({
+  progress,
+  totalTime,
+}) => {
+  const segundosRestantes =
+    totalTime - Math.round((totalTime * progress) / 100);
+
+  return (
+    <View>
+      <AnimatedCircularProgress
+        size={150}
+        width={10}
+        fill={progress}
+        tintColor="#2ecc71"
+        backgroundColor="#3d5875"
+      >
+        {(fill: number) => (
+          <Text style={{ fontSize: 20, color: "white" }}>
+            {segundosRestantes}s
+          </Text>
+        )}
+      </AnimatedCircularProgress>
+    </View>
+  );
+};
+
+export default MyCircularProgress;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/dashboard/NivelButton.tsx ---
+// components/NivelButton.tsx
+
+import React from "react";
+import { Pressable, Text } from "react-native";
+
+export type NivelButtonProps = {
+  label: string;
+  isActive?: boolean;
+  onPress?: () => void;
+};
+
+export function NivelButton({
+  label,
+  onPress,
+  isActive = false,
+}: NivelButtonProps) {
+  let sizeClasses = "py-2 px-6";
+
+  let backgroundClasses = isActive
+    ? "bg-[#7B61FF]"
+    : "bg-[#1E1E1E] border border-[#7B61FF]";
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`rounded-full items-center justify-center ${sizeClasses} ${backgroundClasses}`}
+    >
+      <Text className="text-white text-sm">{label}</Text>
+    </Pressable>
+  );
+}
+
+export default NivelButton;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/dashboard/EntrenamientoCard.tsx ---
+// components/EntrenamientoCard.tsx
+
+import { Text, View, Image, TouchableOpacity } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+import type { IEntrenamiento } from "@/context/EntrenamientosContext";
+
+import { calcularTiempo } from "@/utils/utilsEntrenamientos";
+
+type EntrenamientoCardProps = {
+  tipo: "Card Chica" | "Card Grande" | "Card Grid";
+  entrenamiento: IEntrenamiento;
+};
+
+export default function EntrenamientoCard({
+  entrenamiento: unEntrenamiento,
+  tipo,
+}: EntrenamientoCardProps) {
+  const { imagesMap } = useImagesMap();
+
+  let cardContainer = "overflow-hidden rounded-3xl";
+
+  if (tipo === "Card Chica") {
+    cardContainer += " w-[350px] h-[110px]";
+  } else if (tipo === "Card Grande") {
+    cardContainer += " w-[240px] h-[240px]";
+  }
+
+  let nombreStyle = "text-white font-bold";
+
+  if (tipo === "Card Chica") {
+    nombreStyle = "text-[16px]";
+  } else if (tipo === "Card Grande") {
+    nombreStyle = "text-[20px]";
+  }
+
+  return (
+    <View className={cardContainer}>
+      <Image
+        className="overflow-hidden rounded-3xl"
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+        source={imagesMap[unEntrenamiento.imagen]}
+        // source={unEntrenamiento.imagen}
+        resizeMode="cover"
+      />
+      <LinearGradient
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+        locations={[0, 0.17, 0.27, 0.42, 0.53, 0.66, 0.8, 1]}
+        colors={[
+          "rgba(75, 75, 75, 0)",
+          "rgba(68, 68, 68, 0.1)",
+          "rgba(64, 64, 64, 0.2)",
+          "rgba(58, 58, 58, 0.3)",
+          "rgba(54, 54, 54, 0.4)",
+          "rgba(47, 47, 47, 0.5)",
+          "rgba(41, 41, 41, 0.6)",
+          "rgba(32, 32, 32, 0.9)",
+        ]}
+      />
+      <View className="flex-1 flex-col gap-1 absolute bottom-0 w-full px-4 pb-4">
+        <Text
+          className={nombreStyle}
+          style={{ fontWeight: "bold", color: "white" }}
+          numberOfLines={1}
+        >
+          {unEntrenamiento.nombre}
+        </Text>
+        <View className="flex-row gap-1 items-center w-full">
+          <View className="flex-row gap-1 justify-around w-1/3">
+            <Text className=" text-white text-[13px]">
+              {calcularTiempo(unEntrenamiento.tiempoTotal)} min.
+            </Text>
+            <View className="border-r border-gray-400" />
+            <Text className=" text-white text-[13px]">
+              {unEntrenamiento.nivel}
+            </Text>
+          </View>
+          <View className="flex-1 1/3">
+            <TouchableOpacity>
+              <Image
+                className="flex-1 flex-end w-6 h-6 ml-auto"
+                source={require("@/assets/iconlyboldbookmark.png")}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+

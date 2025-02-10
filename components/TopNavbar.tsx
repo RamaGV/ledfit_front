@@ -44,7 +44,9 @@ const TopNavbar = ({
       </View>
       <View className="flex-row items-center gap-4">
         {iconNotif && (
-          <TouchableOpacity onPress={() => router.push("/notifications")}>
+          <TouchableOpacity
+            onPress={() => router.push("/(usuario)/notificaciones")}
+          >
             <Image
               className="w-8 h-8"
               source={require("@/assets/iconlycurvednotification.png")}
@@ -54,9 +56,9 @@ const TopNavbar = ({
         )}
         {iconFav && (
           <TouchableOpacity
-            onPress={() => {
-              router.push("/(entrenar)/mis-entrenamientos");
-            }}
+          // onPress={() => {
+          //   router.push("/(entrenar)/mis-entrenamientos");
+          // }}
           >
             <Image
               style={styles.color}
