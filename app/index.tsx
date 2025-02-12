@@ -13,7 +13,7 @@ export default function RootIndex() {
     const user = true;
     // Esperar un frame antes de navegar
     requestAnimationFrame(() => {
-      router.replace("/(dashboard)");
+      router.replace("/(usuario)/login");
     });
   }, [router]);
 

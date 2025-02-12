@@ -6,7 +6,7 @@ import { Text, TouchableOpacity } from "react-native";
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  color: string;
+  color?: string;
 }
 
 export default function Button({ title, onPress, color }: ButtonProps) {
