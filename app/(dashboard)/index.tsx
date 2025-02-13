@@ -41,7 +41,7 @@ export default function HomeScreen() {
         <Text className="text-white text-lg">Mis entrenamientos</Text>
         <TouchableOpacity
           onPress={() => {
-            // router.push(`/(entrenar)/mis-entrenamientos`);
+            router.push(`/(entrenar)/entrenamientosFav`);
           }}
         >
           <Text className="text-[#7B61FF] text-sm">Ver más</Text>
@@ -65,6 +65,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
       </View>
+
       <View className="flex-row items-center justify-between">
         <Text className="text-white text-lg font-semibold">Niveles</Text>
         <Pressable

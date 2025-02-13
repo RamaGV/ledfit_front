@@ -25,7 +25,7 @@ export default function DetallesDeEntrenamiento() {
   const { imagesMap } = useImagesMap();
 
   const handleStart = () => {
-    router.push("/(entrenar)");
+    router.push("/(dashboard)/entrenar");
     console.log("Se envió 'Hola Mundo' a esp32/test");
   };
 

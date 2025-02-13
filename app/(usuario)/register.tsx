@@ -1,85 +1,138 @@
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { View, Text, Alert } from "react-native";
-import axios from "axios";
 import { useRouter } from "expo-router";
 
-import InputField from "@/components/InputField";
-import Button from "@/components/Button";
-
-import { useUser } from "@/context/UsersContext";
-
-export default function RegisterScreen() {
+const RegisterScreen = () => {
   const router = useRouter();
 
-  // Estados para los campos de registro
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [recordar, setRecordar] = useState(false);
   const [password, setPassword] = useState("");
-
-  // Si quieres iniciar sesión automáticamente:
-  const { setUser } = useUser();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post(
+      console.log(name, email, password);
+      const response = await fetch(
         "http://192.168.1.5:5000/api/auth/register",
         {
-          name,
-          email,
-          password,
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
         },
       );
-      // Backend debe retornar { token, user: { id, name, email } }
-      const { token, user } = response.data;
-
-      Alert.alert("¡Registro exitoso!", "Tu cuenta ha sido creada");
-
-      // OPCIÓN A: Guardar token y user en tu contexto => usuario se registra y loguea de inmediato
-      // Ejemplo:
-      // setUser({ ...user, token });
-      // router.push("/(dashboard)");
-
-      // OPCIÓN B: Solo notificar y redirigir al login
-      // Ejemplo:
-      router.push("/(usuario)/login");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.message);
-        console.error("Detalles del error:", error.response?.data);
-        Alert.alert(
-          "Error de registro",
-          error.response?.data?.message ||
-            "Revisa los campos e inténtalo de nuevo",
-        );
-      } else {
-        console.error("Error desconocido:", error);
-        Alert.alert("Error", "Algo salió mal. Inténtalo de nuevo.");
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.message || "Error en el registro");
+        return;
       }
+      const data = await response.json();
+      await AsyncStorage.setItem("@token", data.token);
+      await AsyncStorage.setItem("@user", JSON.stringify(data.user));
+      router.push("/(dashboard)");
+    } catch (e) {
+      console.error(e);
+      setError("Error en la conexión");
     }
   };
 
   return (
-    <View className="flex-1 w-full bg-gray-100 justify-center items-center">
-      <Text className="text-2xl font-bold text-green-700 mb-6">
-        Crear Cuenta
+    <View className="flex-col w-full h-full justify-around bg-gray-900 px-8">
+      <Text className="text-4xl text-white font-bold mt-12 mb-4">
+        Crea tu cuenta
       </Text>
 
-      <View className="w-4/5">
-        <InputField placeholder="Nombre" value={name} onChangeText={setName} />
-        <InputField
-          placeholder="E-mail"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <InputField
-          placeholder="Contraseña"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+      <View className="flex-col space-y-6">
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Nombre"
+            placeholderTextColor="#888"
+            value={name}
+            onChangeText={setName}
+          />
+        </View>
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="email" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Correo electrónico"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
+
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4 ">
+          <MaterialIcons name="lock" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Contraseña"
+            placeholderTextColor="#888"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <MaterialIcons
+            name="visibility-off"
+            size={20}
+            color="#888"
+            className="ml-2"
+          />
+        </View>
+
+        <TouchableOpacity
+          className="flex-row items-center justify-center"
+          onPress={() => setRecordar(!recordar)}
+        >
+          <View
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#7B61FF]" : ""}`}
+          />
+          <Text className="text-white">Recordarme</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="bg-[#7B61FF] rounded-lg items-center py-4"
+          onPress={handleRegister}
+        >
+          <Text className="text-white text-lg font-bold">Registrarse</Text>
+        </TouchableOpacity>
       </View>
 
-      <Button title="REGISTRARSE" onPress={handleRegister} />
+      <View className="flex-row items-center justify-around">
+        <View className="w-1/4 border-b border-gray-700" />
+        <Text className="text-gray-400 text-center ">o continúa con</Text>
+        <View className="w-1/4 border-b border-gray-700" />
+      </View>
+
+      <View className="flex-row items-center justify-around px-12">
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="apple" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row items-center justify-center">
+        <Text className="text-gray-400 text-center">
+          ¿Ya tienes una cuenta?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/(usuario)/login")}
+        >
+          <Text className="ml-2 text-[#7B61FF] font-bold">Inicia sesión</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
-}
+};
+
+export default RegisterScreen;

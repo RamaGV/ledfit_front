@@ -10,8 +10,6 @@ export default function RootIndex() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = true;
-    // Esperar un frame antes de navegar
     requestAnimationFrame(() => {
       router.replace("/(usuario)/login");
     });

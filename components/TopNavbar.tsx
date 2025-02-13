@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+import { useUser } from "@/context/UsersContext";
+
 type TopNavbarType = {
   titulo?: string;
   iconBuscar?: ImageSourcePropType;
@@ -56,9 +58,9 @@ const TopNavbar = ({
         )}
         {iconFav && (
           <TouchableOpacity
-          // onPress={() => {
-          //   router.push("/(entrenar)/mis-entrenamientos");
-          // }}
+            onPress={() => {
+              router.push("/(entrenar)/entrenamientosFav");
+            }}
           >
             <Image
               style={styles.color}
@@ -79,20 +81,6 @@ const TopNavbar = ({
     </View>
   );
 };
-
-// <View className="relative">
-//   <Image
-//     source={mainImage}
-//     className="w-full h-[300px]"
-//     contentFit="cover"
-//   />
-//   <Pressable
-//     onPress={() => router.back()}
-//     className="absolute top-10 left-4 p-2"
-//   >
-//     <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
-//   </Pressable>
-// </View>
 
 export default TopNavbar;
 

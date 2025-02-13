@@ -1,71 +1,119 @@
-// app/(usuario)/login.tsx
-
-import { View, Text, Alert } from "react-native";
-import { useUser } from "@/context/UsersContext";
-import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
-import axios from "axios";
+import { useRouter } from "expo-router";
 
-import InputField from "@/components/InputField";
-import Button from "@/components/Button";
+import { useUser } from "@/context/UsersContext";
 
 export default function LoginScreen() {
+  const router = useRouter();
+
+  const { login } = useUser();
+
+  const [recordar, setRecordar] = useState(false);
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const { setUser } = useUser();
-  const router = useRouter();
+  const [error, setError] = useState("");
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
-        "http://192.168.1.5:5000/api/auth/login",
-        {
-          email,
-          password,
-        },
-      );
-      const { user } = response.data;
-      Alert.alert("Éxito", "Inicio de sesión exitoso");
-      setUser(user);
+      await login(email, password);
       router.push("/(dashboard)");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.message);
-        console.error("Detalles del error:", error.response?.data);
-      } else {
-        console.error("Error desconocido:", error);
-        Alert.alert("Error", "Algo salió mal. Inténtalo de nuevo.");
-      }
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || "Error en la conexión");
     }
   };
 
   return (
-    <View className="flex-1 w-full bg-gray-100 justify-center items-center">
-      {/* Título */}
-      <Text className="text-2xl font-bold text-green-700 mb-6">Ingresar</Text>
+    <View className="flex-col w-full h-full justify-around bg-gray-900 px-8">
+      <Text className="text-4xl text-white font-bold mt-12">
+        Ingresa con tu cuenta
+      </Text>
 
-      {/* Campos de Entrada */}
-      <View className="w-4/5">
-        <InputField
-          placeholder="E-mail"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <InputField
-          placeholder="Contraseña"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+      <View className="flex-col space-y-6">
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="email" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Correo electrónico"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
+
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4 ">
+          <MaterialIcons name="lock" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Contraseña"
+            placeholderTextColor="#888"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <MaterialIcons
+            name="visibility-off"
+            size={20}
+            color="#888"
+            className="ml-2"
+          />
+        </View>
+
+        <TouchableOpacity
+          className="flex-row items-center justify-center"
+          onPress={() => setRecordar(!recordar)}
+        >
+          <View
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#7B61FF]" : ""}`}
+          />
+          <Text className="text-white">Recordarme</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="bg-[#7B61FF] rounded-lg items-center py-4"
+          onPress={handleLogin}
+        >
+          <Text className="text-white text-lg font-bold">Iniciar sesión</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.7}>
+          <Text className="text-[#7B61FF] text-center ">
+            ¿Olvidaste tu contraseña?
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Botón de Login */}
-      <Button title="INGRESAR" onPress={handleLogin} />
-      <View className="flex-1 items justify-center mt-12">
-        <Button
-          title="REGISTRAR"
+      <View className="flex-row items-center justify-around">
+        <View className="w-1/4 border-b border-gray-700" />
+        <Text className="text-gray-400 text-center ">o continúa con</Text>
+        <View className="w-1/4 border-b border-gray-700" />
+      </View>
+
+      <View className="flex-row items-center justify-around px-12">
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="apple" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row items-center justify-center">
+        <Text className="text-gray-400 text-center">
+          ¿No tienes una cuenta?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
           onPress={() => router.push("/(usuario)/register")}
-        />
+        >
+          <Text className="ml-2 text-[#7B61FF] font-bold">Regístrate</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

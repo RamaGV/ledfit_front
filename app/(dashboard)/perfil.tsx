@@ -1,15 +1,12 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  Switch,
-  ScrollView,
-} from "react-native";
+// app/(dashboard)/perfil.tsx
+
+import { View, Text, TouchableOpacity, Switch, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import TopNavbar from "@/components/TopNavbar";
+import React, { useState } from "react";
 import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+
+import TopNavbar from "@/components/TopNavbar";
 
 function Item({
   contenido,
@@ -23,12 +20,15 @@ function Item({
   onPress?: () => void;
 }) {
   if (!color) {
-    color = "#FFF";
+    color = "#FFFFFF";
   }
+
   return (
     <TouchableOpacity className="flex-row items-center py-3" onPress={onPress}>
       <Ionicons name={icono as any} size={20} color={color} />
-      <Text className={`text-[${color}] ml-3`}>{contenido}</Text>
+      <Text style={{ color: color }} className="ml-3">
+        {contenido}
+      </Text>
     </TouchableOpacity>
   );
 }

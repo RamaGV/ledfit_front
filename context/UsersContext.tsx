@@ -1,29 +1,108 @@
 // app/context/UserContext.tsx
 
 import React, { createContext, useContext, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
   id: string;
   name: string;
   email: string;
   token?: string;
+  favs: string[];
 }
 
 interface UserContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  login: (email: string, password: string) => Promise<void>;
+  addFav: (entrenamientoId: string) => Promise<void>;
+  removeFav: (entrenamientoId: string) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Proveedor del contexto
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch("http://192.168.1.5:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error en el login");
+      }
+      const data = await response.json();
+      // Guarda el token y la información del usuario en AsyncStorage
+      await AsyncStorage.setItem("@token", data.token);
+      await AsyncStorage.setItem("@user", JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  const addFav = async (entrenamientoId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+      const response = await fetch(
+        `http://192.168.1.5:5000/api/auth/favs/agregar/${entrenamientoId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const data = await response.json();
+      if (user) {
+        setUser({ ...user, favs: data.favs.map((id: any) => id.toString()) });
+      }
+    } catch (e) {
+      console.error("Error en addFav:", e);
+      throw e;
+    }
+  };
+
+  const removeFav = async (entrenamientoId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+      const response = await fetch(
+        `http://192.168.1.5:5000/api/auth/favs/eliminar/${entrenamientoId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error al eliminar de favoritos");
+      }
+      const data = await response.json();
+      // Actualizamos la propiedad favs del usuario
+      if (user) {
+        setUser({ ...user, favs: data.favs.map((id: any) => id.toString()) });
+      }
+    } catch (error) {
+      console.error("Error en removeFav:", error);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, login, addFav, removeFav }}>
       {children}
     </UserContext.Provider>
   );

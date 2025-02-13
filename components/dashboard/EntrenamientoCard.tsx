@@ -1,13 +1,13 @@
-// components/EntrenamientoCard.tsx
+// components/dashboard/EntrenamientoCard.tsx
 
 import { Text, View, Image, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-
-import { useImagesMap } from "@/context/ImagesMapContext";
+import React, { useState, useEffect } from "react";
 
 import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
+import { useImagesMap } from "@/context/ImagesMapContext";
+import { useUser } from "@/context/UsersContext";
 import { calcularTiempo } from "@/utils/utilsEntrenamientos";
 
 type EntrenamientoCardProps = {
@@ -20,21 +20,56 @@ export default function EntrenamientoCard({
   tipo,
 }: EntrenamientoCardProps) {
   const { imagesMap } = useImagesMap();
+  const { user, addFav, removeFav } = useUser();
+
+  // Estado local para el ícono de favorito
+  const [favIcon, setFavIcon] = useState(
+    require("@/assets/icons/iconFavFalse.png"),
+  );
+
+  // Actualiza el ícono según los favoritos del usuario
+  useEffect(() => {
+    if (user?.favs.includes(unEntrenamiento._id)) {
+      console.log("Favorito: Sí");
+      setFavIcon(require("@/assets/icons/iconFavTrue.png"));
+    } else {
+      console.log("Favorito: No");
+      setFavIcon(require("@/assets/icons/iconFavFalse.png"));
+    }
+  }, [user?.favs, unEntrenamiento._id]);
+
+  function handleFav() {
+    if (
+      user &&
+      user.favs &&
+      user.favs
+        .map((fav) => fav.toString())
+        .includes(unEntrenamiento._id.toString())
+    ) {
+      console.log("Llamando a removeFav");
+      removeFav(unEntrenamiento._id);
+    } else {
+      console.log("Llamando a addFav");
+      addFav(unEntrenamiento._id);
+    }
+  }
 
   let cardContainer = "overflow-hidden rounded-3xl";
-
   if (tipo === "Card Chica") {
     cardContainer += " w-[350px] h-[110px]";
   } else if (tipo === "Card Grande") {
     cardContainer += " w-[240px] h-[240px]";
+  } else if (tipo === "Card Grid") {
+    cardContainer += " w-[180px] h-[180px]";
   }
 
   let nombreStyle = "text-white font-bold";
-
   if (tipo === "Card Chica") {
     nombreStyle = "text-[16px]";
   } else if (tipo === "Card Grande") {
     nombreStyle = "text-[20px]";
+  } else if (tipo === "Card Grid") {
+    nombreStyle = "text-[13px]";
   }
 
   return (
@@ -43,7 +78,6 @@ export default function EntrenamientoCard({
         className="overflow-hidden rounded-3xl"
         style={{ position: "absolute", width: "100%", height: "100%" }}
         source={imagesMap[unEntrenamiento.imagen]}
-        // source={unEntrenamiento.imagen}
         resizeMode="cover"
       />
       <LinearGradient
@@ -70,19 +104,19 @@ export default function EntrenamientoCard({
         </Text>
         <View className="flex-row gap-1 items-center w-full">
           <View className="flex-row gap-1 justify-around w-1/3">
-            <Text className=" text-white text-[13px]">
+            <Text className="text-white text-[12px]">
               {calcularTiempo(unEntrenamiento.tiempoTotal)} min.
             </Text>
             <View className="border-r border-gray-400" />
-            <Text className=" text-white text-[13px]">
+            <Text className="text-white text-[12px]">
               {unEntrenamiento.nivel}
             </Text>
           </View>
-          <View className="flex-1 1/3">
-            <TouchableOpacity>
+          <View className="flex-1">
+            <TouchableOpacity onPress={handleFav}>
               <Image
-                className="flex-1 flex-end w-6 h-6 ml-auto"
-                source={require("@/assets/iconlyboldbookmark.png")}
+                className="w-6 h-6 ml-auto"
+                source={favIcon}
                 resizeMode="contain"
               />
             </TouchableOpacity>
