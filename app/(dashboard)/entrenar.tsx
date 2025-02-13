@@ -1,84 +1,99 @@
-// app/(entrenar)/index.tsx
+// app/(dashboard)/entrenar.tsx
+
+import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import React, { useState, useEffect } from "react";
-import { View } from "react-native";
+import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useEjercicios } from "@/context/EjerciciosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
 
-import { useTimer } from "@/utils/utilsEntrenamientos";
+export default function TrainingSelector() {
+  const router = useRouter();
 
-import EjercicioScreen from "../(entrenar)/screens/EjercicioScreen";
-import InicioScreen from "../(entrenar)/screens/InicioScreen";
-import FinScreen from "../(entrenar)/screens/FinScreen";
-import DescansoScreen from "../(entrenar)/screens/DescansoScreen";
+  const { entrenamientos } = useEntrenamientos();
+  const { imagesMap } = useImagesMap();
 
-type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
+  const [index, setIndex] = useState(0);
 
-export default function Entrenamiento() {
-  const { selectedEntrenamiento } = useEntrenamientos();
-  const { setEjercicioActual } = useEjercicios();
-
-  // Estados
-  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(-1);
-  const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
-  const [pausa, setPausa] = useState<boolean>(false);
-  const [tiempo, setTiempo] = useState<number>(10);
-
-  // Cuando cambia el índice, actualizamos el ejercicio actual y el tiempo
+  // Si hay entrenamientos, selecciona uno aleatorio al iniciar
   useEffect(() => {
-    if (selectedEntrenamiento && indiceEjercicio >= 0) {
-      const ejercicio = selectedEntrenamiento.ejercicios[indiceEjercicio];
-      setEjercicioActual(ejercicio);
-      setTiempo(ejercicio.tiempo);
-      resetTimer();
+    if (entrenamientos.length > 0) {
+      const randomIndex = Math.floor(Math.random() * entrenamientos.length);
+      setIndex(randomIndex);
     }
-  }, [indiceEjercicio]);
+  }, [entrenamientos]);
 
-  const onTiempoAgotado = () => {
-    if (etapaActual === "INICIO") {
-      setIndiceEjercicio(0);
-      setEtapaActual("ACTIVO");
-    } else if (etapaActual === "ACTIVO") {
-      if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
-        setEtapaActual("FIN");
-      } else {
-        setEtapaActual("DESCANSO");
-        setTiempo(10);
-      }
-    } else if (etapaActual === "DESCANSO") {
-      if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
-        const sigIndice = indiceEjercicio + 1;
-        setIndiceEjercicio(sigIndice);
-        setEtapaActual("ACTIVO");
-      }
-    }
+  const sigEntrenamiento = () => {
+    setIndex((prev) => (prev + 1) % entrenamientos.length);
   };
 
-  const { tiempoTranscurrido, resetTimer } = useTimer(
-    tiempo,
-    pausa,
-    onTiempoAgotado,
-  );
+  const antEntrenamiento = () => {
+    setIndex((prev) => (prev === 0 ? entrenamientos.length - 1 : prev - 1));
+  };
+
+  const handleSelect = () => {
+    router.push("/(entrenar)/detallesDeEntrenamiento");
+  };
+
+  const minutos = Math.floor(entrenamientos[index].tiempoTotal / 60);
+  const segundos = (entrenamientos[index].tiempoTotal % 60)
+    .toString()
+    .padStart(2, "0");
 
   return (
-    <View className="flex-1 bg-[#121212]">
-      {etapaActual === "INICIO" ? (
-        <InicioScreen
-          tiempoRestante={tiempo - tiempoTranscurrido}
-          onReset={resetTimer}
+    <View className="flex-col h-full items-center justify-around bg-[#121212] p-4 py-8">
+      <Text className="text-[#7B61FF] text-4xl font-semibold">
+        Elije un entrenamiento
+      </Text>
+
+      <View className="flex-row w-full items-center justify-around">
+        <TouchableOpacity onPress={antEntrenamiento}>
+          <ChevronLeft size={50} color="#7B61FF" />
+        </TouchableOpacity>
+        <Image
+          className="w-60 h-60 rounded-2xl"
+          source={imagesMap[entrenamientos[index].imagen]}
         />
-      ) : etapaActual === "ACTIVO" ? (
-        <EjercicioScreen
-          tiempoTranscurrido={tiempoTranscurrido}
-          onPause={() => setPausa((prev) => !prev)}
-        />
-      ) : etapaActual === "DESCANSO" ? (
-        <DescansoScreen
-          tiempoTranscurrido={tiempoTranscurrido}
-          indiceDeEjercicio={indiceEjercicio}
-        />
-      ) : etapaActual === "FIN" ? (
-        <FinScreen />
-      ) : null}
+        <TouchableOpacity onPress={sigEntrenamiento}>
+          <ChevronRight size={50} color="#7B61FF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="w-full px-2">
+        <Text className="text-white text-2xl font-bold mb-2">
+          {entrenamientos[index].nombre}
+        </Text>
+        <View className="border-b border-gray-700 m-2" />
+        <View className="flex-row items-center justify-between ">
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            Nivel: {entrenamientos[index].nivel}
+          </Text>
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            {entrenamientos[index].ejercicios.length} ejercicios
+          </Text>
+        </View>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            Grupo: {entrenamientos[index].grupo}
+          </Text>
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            {minutos}:{segundos} min
+          </Text>
+        </View>
+        <Text className="text-gray-400 text-sm px-6">
+          {entrenamientos[index].descripcion}
+        </Text>
+        <View className="border-b border-gray-700 m-2" />
+      </View>
+
+      <TouchableOpacity
+        onPress={handleSelect}
+        className="bg-[#7B61FF] py-3 px-6 rounded-2xl"
+      >
+        <Text className="text-white text-lg font-bold">Entrenar</Text>
+      </TouchableOpacity>
     </View>
   );
 }

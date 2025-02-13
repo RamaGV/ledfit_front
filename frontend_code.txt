@@ -15,8 +15,9 @@ import {
 } from "@react-navigation/native";
 
 import { EntrenamientosProvider } from "@/context/EntrenamientosContext";
-import { ImagesMapProvider } from "@/context/ImagesMapContext";
 import { EjerciciosProvider } from "@/context/EjerciciosContext";
+import { ImagesMapProvider } from "@/context/ImagesMapContext";
+import { UserProvider } from "@/context/UsersContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,25 +39,30 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <ImagesMapProvider>
-        <EjerciciosProvider>
-          <EntrenamientosProvider>
-            <Stack>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="(dashboard)"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="(entrenar)"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen name="(usuario)" options={{ headerShown: false }} />
-            </Stack>
-            <StatusBar style="auto" />
-          </EntrenamientosProvider>
-        </EjerciciosProvider>
-      </ImagesMapProvider>
+      <UserProvider>
+        <ImagesMapProvider>
+          <EjerciciosProvider>
+            <EntrenamientosProvider>
+              <Stack>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="(dashboard)"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="(entrenar)"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="(usuario)"
+                  options={{ headerShown: false }}
+                />
+              </Stack>
+              <StatusBar style="auto" />
+            </EntrenamientosProvider>
+          </EjerciciosProvider>
+        </ImagesMapProvider>
+      </UserProvider>
     </ThemeProvider>
   );
 }
@@ -99,10 +105,8 @@ export default function RootIndex() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = true;
-    // Esperar un frame antes de navegar
     requestAnimationFrame(() => {
-      router.replace("/(dashboard)");
+      router.replace("/(usuario)/login");
     });
   }, [router]);
 
@@ -122,6 +126,43 @@ export default function RootIndex() {
 }
 
 
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/entrenamientosFav.tsx ---
+// app/(entrenar)/entrenamientosFav.tsx
+
+import { View, ScrollView } from "react-native";
+import React from "react";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useUser } from "@/context/UsersContext";
+
+import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
+import TopNavbar from "@/components/TopNavbar";
+
+export default function EntrenamientosFav() {
+  const { entrenamientos } = useEntrenamientos();
+  const { user } = useUser();
+
+  const entrenamientosFav = entrenamientos.filter((entrenamiento) =>
+    user?.favs.includes(entrenamiento._id),
+  );
+
+  return (
+    <View className="flex-col h-full bg-[#121212] p-3">
+      <TopNavbar iconBack={true} titulo="Entrenamientos favoritos" />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View className="flex-row flex-wrap items-center justify-start pt-4">
+          {entrenamientosFav.map((item, idx) => (
+            <View key={idx} className="w-1/2 p-2">
+              <EntrenamientoCard tipo="Card Grid" entrenamiento={item} />
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/_layout.tsx ---
 // app/(entrenar)/_layout.tsx
 
@@ -136,10 +177,7 @@ export default function EntrenarLayout() {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="ejercicios" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="mis-entrenamientos"
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="entrenamientosFav" options={{ headerShown: false }} />
     </Stack>
   );
 }
@@ -173,7 +211,7 @@ export default function DetallesDeEntrenamiento() {
   const { imagesMap } = useImagesMap();
 
   const handleStart = () => {
-    router.push("/(entrenar)");
+    router.push("/(dashboard)/entrenar");
     console.log("Se envió 'Hola Mundo' a esp32/test");
   };
 
@@ -353,6 +391,93 @@ export default function DetallesDeEjercicios() {
           />
         ))}
       </ScrollView>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(entrenar)/entrenar.tsx ---
+// app/(entrenar)/index.tsx
+import React, { useState, useEffect } from "react";
+import { View } from "react-native";
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useEjercicios } from "@/context/EjerciciosContext";
+
+import { useTimer } from "@/utils/utilsEntrenamientos";
+
+import EjercicioScreen from "./screens/EjercicioScreen";
+import InicioScreen from "./screens/InicioScreen";
+import FinScreen from "./screens/FinScreen";
+import DescansoScreen from "./screens/DescansoScreen";
+
+type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
+
+export default function Entrenamiento() {
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { setEjercicioActual } = useEjercicios();
+
+  // Estados
+  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(-1);
+  const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
+  const [pausa, setPausa] = useState<boolean>(false);
+  const [tiempo, setTiempo] = useState<number>(10);
+
+  // Cuando cambia el índice, actualizamos el ejercicio actual y el tiempo
+  useEffect(() => {
+    if (selectedEntrenamiento && indiceEjercicio >= 0) {
+      const ejercicio = selectedEntrenamiento.ejercicios[indiceEjercicio];
+      setEjercicioActual(ejercicio);
+      setTiempo(ejercicio.tiempo);
+      resetTimer();
+    }
+  }, [indiceEjercicio]);
+
+  const onTiempoAgotado = () => {
+    if (etapaActual === "INICIO") {
+      setIndiceEjercicio(0);
+      setEtapaActual("ACTIVO");
+    } else if (etapaActual === "ACTIVO") {
+      if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
+        setEtapaActual("FIN");
+      } else {
+        setEtapaActual("DESCANSO");
+        setTiempo(10);
+      }
+    } else if (etapaActual === "DESCANSO") {
+      if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
+        const sigIndice = indiceEjercicio + 1;
+        setIndiceEjercicio(sigIndice);
+        setEtapaActual("ACTIVO");
+      }
+    }
+  };
+
+  const { tiempoTranscurrido, resetTimer } = useTimer(
+    tiempo,
+    pausa,
+    onTiempoAgotado,
+  );
+
+  return (
+    <View className="flex-1 bg-[#121212]">
+      {etapaActual === "INICIO" ? (
+        <InicioScreen
+          tiempoRestante={tiempo - tiempoTranscurrido}
+          onReset={resetTimer}
+        />
+      ) : etapaActual === "ACTIVO" ? (
+        <EjercicioScreen
+          tiempoTranscurrido={tiempoTranscurrido}
+          onPause={() => setPausa((prev) => !prev)}
+        />
+      ) : etapaActual === "DESCANSO" ? (
+        <DescansoScreen
+          tiempoTranscurrido={tiempoTranscurrido}
+          indiceDeEjercicio={indiceEjercicio}
+        />
+      ) : etapaActual === "FIN" ? (
+        <FinScreen />
+      ) : null}
     </View>
   );
 }
@@ -665,90 +790,224 @@ export default function TabLayout() {
 
 
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(dashboard)/perfil.tsx ---
+// app/(dashboard)/perfil.tsx
 
+import { View, Text, TouchableOpacity, Switch, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import { Image } from "expo-image";
 
-// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(dashboard)/entrenar.tsx ---
-// app/(entrenar)/index.tsx
-import React, { useState, useEffect } from "react";
-import { View } from "react-native";
-import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useEjercicios } from "@/context/EjerciciosContext";
+import TopNavbar from "@/components/TopNavbar";
 
-import { useTimer } from "@/utils/utilsEntrenamientos";
+function Item({
+  contenido,
+  icono,
+  color,
+  onPress,
+}: {
+  contenido: string;
+  icono: string;
+  color?: string;
+  onPress?: () => void;
+}) {
+  if (!color) {
+    color = "#FFFFFF";
+  }
 
-import EjercicioScreen from "../(entrenar)/screens/EjercicioScreen";
-import InicioScreen from "../(entrenar)/screens/InicioScreen";
-import FinScreen from "../(entrenar)/screens/FinScreen";
-import DescansoScreen from "../(entrenar)/screens/DescansoScreen";
+  return (
+    <TouchableOpacity className="flex-row items-center py-3" onPress={onPress}>
+      <Ionicons name={icono as any} size={20} color={color} />
+      <Text style={{ color: color }} className="ml-3">
+        {contenido}
+      </Text>
+    </TouchableOpacity>
+  );
+}
 
-type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
+export default function PerfilScreen() {
+  const router = useRouter();
 
-export default function Entrenamiento() {
-  const { selectedEntrenamiento } = useEntrenamientos();
-  const { setEjercicioActual } = useEjercicios();
+  // Ejemplo de control para el toggle “Dark Theme”
+  const [darkMode, setDarkMode] = useState(false);
+  const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
 
-  // Estados
-  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(-1);
-  const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
-  const [pausa, setPausa] = useState<boolean>(false);
-  const [tiempo, setTiempo] = useState<number>(10);
-
-  // Cuando cambia el índice, actualizamos el ejercicio actual y el tiempo
-  useEffect(() => {
-    if (selectedEntrenamiento && indiceEjercicio >= 0) {
-      const ejercicio = selectedEntrenamiento.ejercicios[indiceEjercicio];
-      setEjercicioActual(ejercicio);
-      setTiempo(ejercicio.tiempo);
-      resetTimer();
-    }
-  }, [indiceEjercicio]);
-
-  const onTiempoAgotado = () => {
-    if (etapaActual === "INICIO") {
-      setIndiceEjercicio(0);
-      setEtapaActual("ACTIVO");
-    } else if (etapaActual === "ACTIVO") {
-      if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
-        setEtapaActual("FIN");
-      } else {
-        setEtapaActual("DESCANSO");
-        setTiempo(10);
-      }
-    } else if (etapaActual === "DESCANSO") {
-      if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
-        const sigIndice = indiceEjercicio + 1;
-        setIndiceEjercicio(sigIndice);
-        setEtapaActual("ACTIVO");
-      }
-    }
+  const handleNotificaciones = () => {
+    router.push("/(usuario)/notificaciones");
   };
 
-  const { tiempoTranscurrido, resetTimer } = useTimer(
-    tiempo,
-    pausa,
-    onTiempoAgotado,
-  );
+  const handleSalir = () => {
+    router.push("/(usuario)/login");
+  };
 
   return (
     <View className="flex-1 bg-[#121212]">
-      {etapaActual === "INICIO" ? (
-        <InicioScreen
-          tiempoRestante={tiempo - tiempoTranscurrido}
-          onReset={resetTimer}
+      {/* Navbar superior */}
+      <TopNavbar titulo="Perfil" />
+
+      {/* Contenido principal */}
+      <ScrollView className="flex-1 px-4">
+        {/* Foto y datos de usuario */}
+        <View className="items-center mt-6">
+          <View className="relative">
+            <Image
+              source={{
+                uri: "https://randomuser.me/api/portraits/women/32.jpg",
+              }}
+              className="w-24 h-24 rounded-full"
+            />
+            {/* Botón de edición en la foto */}
+            {/* <TouchableOpacity className="absolute right-0 bottom-0 bg-[#7B61FF] p-1 rounded-full">
+              <Ionicons name="camera" size={16} color="#FFF" />
+            </TouchableOpacity> */}
+          </View>
+
+          <Text className="text-white text-xl font-semibold mt-3">
+            Christina Ainsley
+          </Text>
+          <Text className="text-gray-300 text-sm">
+            christina_ainsley@gmail.com
+          </Text>
+        </View>
+
+        {/* Sección de items (Editar perfil, Notificaciones, etc.) */}
+        <View className="p-2 mt-6  border-t border-gray-700">
+          <Item icono="person-outline" contenido="Editar perfil" />
+          <Item
+            icono="notifications-outline"
+            contenido="Notificaciones"
+            onPress={handleNotificaciones}
+          />
+          <Item icono="settings-outline" contenido="Configuracion" />
+          <Item icono="help-circle-outline" contenido="Informacion" />
+
+          {/* Dark Theme */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <Ionicons name="moon-outline" size={20} color="#FFF" />
+              <Text className="text-white ml-3">Dark Theme</Text>
+            </View>
+            <Switch
+              value={darkMode}
+              onValueChange={handleToggleDarkMode}
+              trackColor={{ false: "#767577", true: "#7B61FF" }}
+              thumbColor={darkMode ? "#FFF" : "#f4f3f4"}
+            />
+          </View>
+        </View>
+
+        {/* Salir */}
+        <View className="w-full border-t border-gray-700 p-2">
+          <Item
+            icono="log-out-outline"
+            contenido="Salir"
+            color="#FF4444"
+            onPress={handleSalir}
+          />
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(dashboard)/entrenar.tsx ---
+// app/(dashboard)/entrenar.tsx
+
+import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import { Image } from "expo-image";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+export default function TrainingSelector() {
+  const router = useRouter();
+
+  const { entrenamientos } = useEntrenamientos();
+  const { imagesMap } = useImagesMap();
+
+  const [index, setIndex] = useState(0);
+
+  // Si hay entrenamientos, selecciona uno aleatorio al iniciar
+  useEffect(() => {
+    if (entrenamientos.length > 0) {
+      const randomIndex = Math.floor(Math.random() * entrenamientos.length);
+      setIndex(randomIndex);
+    }
+  }, [entrenamientos]);
+
+  const sigEntrenamiento = () => {
+    setIndex((prev) => (prev + 1) % entrenamientos.length);
+  };
+
+  const antEntrenamiento = () => {
+    setIndex((prev) => (prev === 0 ? entrenamientos.length - 1 : prev - 1));
+  };
+
+  const handleSelect = () => {
+    router.push("/(entrenar)/detallesDeEntrenamiento");
+  };
+
+  const minutos = Math.floor(entrenamientos[index].tiempoTotal / 60);
+  const segundos = (entrenamientos[index].tiempoTotal % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return (
+    <View className="flex-col h-full items-center justify-around bg-[#121212] p-4 py-8">
+      <Text className="text-[#7B61FF] text-4xl font-semibold">
+        Elije un entrenamiento
+      </Text>
+
+      <View className="flex-row w-full items-center justify-around">
+        <TouchableOpacity onPress={antEntrenamiento}>
+          <ChevronLeft size={50} color="#7B61FF" />
+        </TouchableOpacity>
+        <Image
+          className="w-60 h-60 rounded-2xl"
+          source={imagesMap[entrenamientos[index].imagen]}
         />
-      ) : etapaActual === "ACTIVO" ? (
-        <EjercicioScreen
-          tiempoTranscurrido={tiempoTranscurrido}
-          onPause={() => setPausa((prev) => !prev)}
-        />
-      ) : etapaActual === "DESCANSO" ? (
-        <DescansoScreen
-          tiempoTranscurrido={tiempoTranscurrido}
-          indiceDeEjercicio={indiceEjercicio}
-        />
-      ) : etapaActual === "FIN" ? (
-        <FinScreen />
-      ) : null}
+        <TouchableOpacity onPress={sigEntrenamiento}>
+          <ChevronRight size={50} color="#7B61FF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="w-full px-2">
+        <Text className="text-white text-2xl font-bold mb-2">
+          {entrenamientos[index].nombre}
+        </Text>
+        <View className="border-b border-gray-700 m-2" />
+        <View className="flex-row items-center justify-between ">
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            Nivel: {entrenamientos[index].nivel}
+          </Text>
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            {entrenamientos[index].ejercicios.length} ejercicios
+          </Text>
+        </View>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            Grupo: {entrenamientos[index].grupo}
+          </Text>
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            {minutos}:{segundos} min
+          </Text>
+        </View>
+        <Text className="text-gray-400 text-sm px-6">
+          {entrenamientos[index].descripcion}
+        </Text>
+        <View className="border-b border-gray-700 m-2" />
+      </View>
+
+      <TouchableOpacity
+        onPress={handleSelect}
+        className="bg-[#7B61FF] py-3 px-6 rounded-2xl"
+      >
+        <Text className="text-white text-lg font-bold">Entrenar</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -798,7 +1057,7 @@ export default function HomeScreen() {
         <Text className="text-white text-lg">Mis entrenamientos</Text>
         <TouchableOpacity
           onPress={() => {
-            // router.push(`/(entrenar)/mis-entrenamientos`);
+            router.push(`/(entrenar)/entrenamientosFav`);
           }}
         >
           <Text className="text-[#7B61FF] text-sm">Ver más</Text>
@@ -822,11 +1081,12 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
       </View>
+
       <View className="flex-row items-center justify-between">
         <Text className="text-white text-lg font-semibold">Niveles</Text>
         <Pressable
           onPress={() => {
-            router.push(`/entrenamientosPorNivel`);
+            // router.push(`/entrenamientosPorNivel`);
           }}
         >
           <Text className="text-[#7B61FF] text-sm">Ver más</Text>
@@ -875,66 +1135,122 @@ export default function HomeScreen() {
 
 
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/login.tsx ---
-// app/(usuario)/login.tsx
-import { View, Text, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { useRouter } from "expo-router";
+
+import { useUser } from "@/context/UsersContext";
 
 export default function LoginScreen() {
+  const router = useRouter();
+
+  const { login } = useUser();
+
+  const [recordar, setRecordar] = useState(false);
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      await login(email, password);
+      router.push("/(dashboard)");
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || "Error en la conexión");
+    }
+  };
+
   return (
-    <View className="flex-col justify-around bg-[#121212] px-5 h-full">
-      <Text className="text-white text-3xl font-semibold text-center">
-        ¡Hora de entrenar!
+    <View className="flex-col w-full h-full justify-around bg-gray-900 px-8">
+      <Text className="text-4xl text-white font-bold mt-12">
+        Ingresa con tu cuenta
       </Text>
 
-      <View className="flex-col justify-around">
-        <TouchableOpacity
-          activeOpacity={0.7}
-          className="flex-row items-center justify-center py-4 px-5 rounded-xl mb-4 
-          bg-[#1E1E1E] border border-gray-600"
-          onPress={() => {
-            console.log("Continuar con Facebook");
-          }}
-        >
-          <Image
-            className="w-7 h-7 mr-3"
-            source={require("@/assets/defaultWorkout.png")}
+      <View className="flex-col space-y-6">
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="email" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Correo electrónico"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
           />
-          <Text className="text-white text-center text-base">
-            Continuar con Facebook
-          </Text>
+        </View>
+
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4 ">
+          <MaterialIcons name="lock" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Contraseña"
+            placeholderTextColor="#888"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <MaterialIcons
+            name="visibility-off"
+            size={20}
+            color="#888"
+            className="ml-2"
+          />
+        </View>
+
+        <TouchableOpacity
+          className="flex-row items-center justify-center"
+          onPress={() => setRecordar(!recordar)}
+        >
+          <View
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#7B61FF]" : ""}`}
+          />
+          <Text className="text-white">Recordarme</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          activeOpacity={0.7}
-          className="flex-row items-center justify-center py-4 px-5 rounded-xl 
-          bg-[#1E1E1E] border border-gray-600"
-          onPress={() => {
-            console.log("Continuar con Google");
-          }}
+          className="bg-[#7B61FF] rounded-lg items-center py-4"
+          onPress={handleLogin}
         >
-          <Image
-            className="w-7 h-7 mr-3"
-            source={require("@/assets/defaultWorkout.png")}
-          />
-          <Text className="text-white text-center text-base">
-            Continuar con Google
+          <Text className="text-white text-lg font-bold">Iniciar sesión</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.7}>
+          <Text className="text-[#7B61FF] text-center ">
+            ¿Olvidaste tu contraseña?
           </Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
-        activeOpacity={0.7}
-        className="bg-[#7B61FF] py-4 rounded-xl mb-5"
-      >
-        <Text className="text-white text-center text-base font-semibold">
-          Ingresar
-        </Text>
-      </TouchableOpacity>
+      <View className="flex-row items-center justify-around">
+        <View className="w-1/4 border-b border-gray-700" />
+        <Text className="text-gray-400 text-center ">o continúa con</Text>
+        <View className="w-1/4 border-b border-gray-700" />
+      </View>
 
-      <View className="flex-row justify-center">
-        <Text className="text-white text-sm">¿No tienes una cuenta? </Text>
-        <Text className="text-[#7B61FF] text-sm">Registrarme</Text>
+      <View className="flex-row items-center justify-around px-12">
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="apple" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row items-center justify-center">
+        <Text className="text-gray-400 text-center">
+          ¿No tienes una cuenta?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/(usuario)/register")}
+        >
+          <Text className="ml-2 text-[#7B61FF] font-bold">Regístrate</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -958,162 +1274,171 @@ export default function UsuarioLayout() {
 }
 
 
-// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/notificaciones.tsx ---
-// app/notifications.tsx
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { ImagesMapContext } from "@/context/ImagesMapContext";
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/register.tsx ---
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import React, { useState } from "react";
 import { useRouter } from "expo-router";
-import React, { useContext, useEffect, useState } from "react";
-import { UsersContext } from "@/context/UsersContext";
 
-export default function NotificationsScreen() {
-  const { user, loadUser: userLoading, errorUser } = useContext(UsersContext);
-  const { imagesMap } = useContext(ImagesMapContext);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const RegisterScreen = () => {
   const router = useRouter();
 
-  useEffect(() => {
-    if (!userLoading && user) {
-      const fetchNotifications = async () => {
-        try {
-          setLoading(true);
-          const response = await fetch(
-            `http://192.168.1.3:5000/api/users/${user._id}/notifications`,
-          );
-          if (!response.ok) {
-            throw new Error("Failed to fetch notifications");
-          }
-          const data = await response.json();
-          setNotifications(data);
-        } catch (err) {
-          console.error("Error fetching notifications:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchNotifications();
+  const [name, setName] = useState("");
+  const [recordar, setRecordar] = useState(false);
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+
+  const handleRegister = async () => {
+    try {
+      console.log(name, email, password);
+      const response = await fetch(
+        "http://192.168.1.5:5000/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        },
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.message || "Error en el registro");
+        return;
+      }
+      const data = await response.json();
+      await AsyncStorage.setItem("@token", data.token);
+      await AsyncStorage.setItem("@user", JSON.stringify(data.user));
+      router.push("/(dashboard)");
+    } catch (e) {
+      console.error(e);
+      setError("Error en la conexión");
     }
-  }, [user, userLoading]);
-
-  if (userLoading || loading) {
-    return (
-      <View className="flex-1 bg-[#121212] justify-center items-center">
-        <ActivityIndicator size="large" color="#FFFFFF" />
-      </View>
-    );
-  }
-
-  if (errorUser || !user) {
-    return (
-      <View className="flex-1 bg-[#121212] justify-center items-center">
-        <Text className="text-white text-center">
-          {errorUser || "User not authenticated"}
-        </Text>
-      </View>
-    );
-  }
+  };
 
   return (
-    <View className="flex-1 bg-[#121212] pt-10 px-4">
-      {/* Header */}
-      <View className="flex-row items-center justify-between mb-5">
-        <Pressable onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={26} color="#FFFFFF" />
-        </Pressable>
-        <View className="flex-1 items-center">
-          <Text className="text-white text-xl font-semibold">
-            Notificaciones
-          </Text>
+    <View className="flex-col w-full h-full justify-around bg-gray-900 px-8">
+      <Text className="text-4xl text-white font-bold mt-12 mb-4">
+        Crea tu cuenta
+      </Text>
+
+      <View className="flex-col space-y-6">
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Nombre"
+            placeholderTextColor="#888"
+            value={name}
+            onChangeText={setName}
+          />
         </View>
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="email" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Correo electrónico"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
+
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4 ">
+          <MaterialIcons name="lock" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Contraseña"
+            placeholderTextColor="#888"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <MaterialIcons
+            name="visibility-off"
+            size={20}
+            color="#888"
+            className="ml-2"
+          />
+        </View>
+
+        <TouchableOpacity
+          className="flex-row items-center justify-center"
+          onPress={() => setRecordar(!recordar)}
+        >
+          <View
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#7B61FF]" : ""}`}
+          />
+          <Text className="text-white">Recordarme</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="bg-[#7B61FF] rounded-lg items-center py-4"
+          onPress={handleRegister}
+        >
+          <Text className="text-white text-lg font-bold">Registrarse</Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {notifications.map((section, idx) => (
-          <View key={idx}>
-            <Text className="text-white text-base font-semibold mb-3">
-              {section.date}
-            </Text>
-            {section.items.map((notif: any, nIdx: number) => (
-              <View
-                key={nIdx}
-                className="flex-row items-center bg-[#1E1E1E] rounded-2xl p-4 mb-4"
-              >
-                <View
-                  className={`w-10 h-10 rounded-full justify-center items-center ${notif.iconBg} mr-3`}
-                >
-                  <Image
-                    source={imagesMap[notif.icon]}
-                    style={{ width: 55, height: 55 }}
-                    resizeMode="contain"
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-white font-semibold text-base">
-                    {notif.title}
-                  </Text>
-                  <Text className="text-[#CCCCCC] text-sm">
-                    {notif.subtitle}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        ))}
+      <View className="flex-row items-center justify-around">
+        <View className="w-1/4 border-b border-gray-700" />
+        <Text className="text-gray-400 text-center ">o continúa con</Text>
+        <View className="w-1/4 border-b border-gray-700" />
+      </View>
+
+      <View className="flex-row items-center justify-around px-12">
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
+          <FontAwesome name="apple" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row items-center justify-center">
+        <Text className="text-gray-400 text-center">
+          ¿Ya tienes una cuenta?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/(usuario)/login")}
+        >
+          <Text className="ml-2 text-[#7B61FF] font-bold">Inicia sesión</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+export default RegisterScreen;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/notificaciones.tsx ---
+import { View, ScrollView } from "react-native";
+import React from "react";
+
+import TopNavbar from "@/components/TopNavbar";
+import NotifItem from "@/components/usuario/NotifiItem";
+
+export default function NotificationScreen({ navigation }: any) {
+  return (
+    <View className="flex-1 bg-[#121212] pt-10 p-4 pb-4">
+      <TopNavbar titulo="Notificaciones" iconBack={true} />
+
+      {/* CONTENIDO */}
+      <ScrollView className="flex-1 mt-8" showsVerticalScrollIndicator={false}>
+        {/* Lista de notificaciones */}
+        <NotifItem
+          tipo="check"
+          titulo="Congratulations!"
+          contenido="You've been exercising for 2 hours"
+        />
       </ScrollView>
     </View>
   );
 }
-
-
-// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/app/(usuario)/loginGoogle.tsx ---
-// import * as React from "react";
-// import { StatusBar } from "expo-status-bar";
-// import { StyleSheet, Text, View } from "react-native";
-// import * as WebBrower from "expo-web-browser";
-// import * as Google from "expo-auth-session/providers/google";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// WebBrowser.maybeCompleteAuthSession();
-
-// export default function LoginGoogle() {
-//     const [userInfo, setUserInfo] = React.useState<any>(null);
-//     const[response, request, promptAsync] = Google.useAuthRequest({
-//         androidClientId:"549244597082-r2g88tr26v7v1sujt5pl42n5p2qpt647.apps.googleusercontent.com",
-//     });
-
-//     const getLocalUser = async () => {
-//         const data = await AsyncStorage.getItem("@user");
-//         if (!data) return null;
-//         return JSON.parse(data);
-//     };
-
-//     const storeLocalUser = async (user: any) => {
-//         await AsyncStorage.setItem("@user", JSON.stringify(user));
-//     };
-
-//     React.useEffect(() => {
-//         if (response?.type === "success") {
-//             setUserInfo(response.authentication);
-//         }
-//     }, [response]);
-
-//     React.useEffect(() => {
-//         (async () => {
-//             const user = await getLocalUser();
-//             if (user) {
-//                 setUserInfo(user);
-//             }
-//         })();
-//     }, []);
 
 
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/EntrenamientosContext.tsx ---
@@ -1224,122 +1549,125 @@ export default EntrenamientosProvider;
 
 
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/UsersContext.tsx ---
-// app/context/UsersContext.tsx
-import React, { createContext, useState, useEffect, useCallback } from "react";
+// app/context/UserContext.tsx
+
+import React, { createContext, useContext, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
-  _id: string;
-  email: string;
+  id: string;
   name: string;
-  tag?: string;
-  passwordHash?: string;
-  deviceIds: Device[];
-  createdAt: string;
-  updatedAt: string;
+  email: string;
+  token?: string;
+  favs: string[];
 }
 
-interface Device {
-  deviceId: string;
-  platform: string;
-  lastLogin: string;
-}
-
-interface UsersContextValue {
+interface UserContextType {
   user: User | null;
-  loadUser: boolean;
-  errorUser: string | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  reloadUser: () => Promise<void>;
+  addFav: (entrenamientoId: string) => Promise<void>;
+  removeFav: (entrenamientoId: string) => Promise<void>;
 }
 
-export const UsersContext = createContext<UsersContextValue>({
-  user: null,
-  loadUser: true,
-  errorUser: null,
-  login: async () => {},
-  logout: () => {},
-  reloadUser: async () => {},
-});
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UsersProvider({ children }: { children: React.ReactNode }) {
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loadUser, setLoadUser] = useState(true);
-  const [errorUser, setErrorUser] = useState<string | null>(null);
-
-  const fetchUser = useCallback(async () => {
-    try {
-      setLoadUser(true);
-      const response = await fetch("http://192.168.1.3:5000/api/users/me", {
-        // For session-based authentication credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error("ErrorUser fetching user");
-      }
-      const data = await response.json();
-      setUser(data);
-      setErrorUser(null);
-    } catch (err: any) {
-      console.error("ErrorUser fetching user:", err);
-      setErrorUser("Failed to load user");
-      setUser(null);
-    } finally {
-      setLoadUser(false);
-    }
-  }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      setLoadUser(true);
-      const response = await fetch("http://192.168.1.3:5000/api/users/login", {
+      const response = await fetch("http://192.168.1.5:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       if (!response.ok) {
-        throw new Error("Invalid login credentials");
+        const data = await response.json();
+        throw new Error(data.message || "Error en el login");
       }
       const data = await response.json();
-      setUser(data);
-      setErrorUser(null);
-    } catch (err: any) {
-      console.error("Login errorUser:", err);
-      setErrorUser("Login failed");
-      setUser(null);
-    } finally {
-      setLoadUser(false);
+      // Guarda el token y la información del usuario en AsyncStorage
+      await AsyncStorage.setItem("@token", data.token);
+      await AsyncStorage.setItem("@user", JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (e) {
+      throw e;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    fetch("http://192.168.1.3:5000/api/users/logout", {
-      method: "POST",
-      //credentials: "include",
-    }).catch((err) => console.error("Logout errorUser:", err));
+  const addFav = async (entrenamientoId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+      const response = await fetch(
+        `http://192.168.1.5:5000/api/auth/favs/agregar/${entrenamientoId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const data = await response.json();
+      if (user) {
+        setUser({ ...user, favs: data.favs.map((id: any) => id.toString()) });
+      }
+    } catch (e) {
+      console.error("Error en addFav:", e);
+      throw e;
+    }
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+  const removeFav = async (entrenamientoId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+      const response = await fetch(
+        `http://192.168.1.5:5000/api/auth/favs/eliminar/${entrenamientoId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error al eliminar de favoritos");
+      }
+      const data = await response.json();
+      // Actualizamos la propiedad favs del usuario
+      if (user) {
+        setUser({ ...user, favs: data.favs.map((id: any) => id.toString()) });
+      }
+    } catch (error) {
+      console.error("Error en removeFav:", error);
+    }
+  };
 
   return (
-    <UsersContext.Provider
-      value={{
-        user,
-        loadUser,
-        errorUser,
-        login,
-        logout,
-        reloadUser: fetchUser,
-      }}
-    >
+    <UserContext.Provider value={{ user, setUser, login, addFav, removeFav }}>
       {children}
-    </UsersContext.Provider>
+    </UserContext.Provider>
   );
-}
+};
 
-export default UsersProvider;
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser debe ser usado dentro de un UserProvider");
+  }
+  return context;
+};
+
+export default UserContext;
 
 
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/context/MqttContext.tsx ---
@@ -1503,9 +1831,9 @@ export function ImagesMapProvider({ children }: { children: React.ReactNode }) {
       plankToPushUpImage: require("@/assets/ejercicios/plankToPushUpImage.webp"),
 
       // Iconos de notificaciones
-      notificationTick: require("@/assets/icons/notificationTick.png"),
-      notificationPlus: require("@/assets/icons/notificationPlus.png"),
-      notificationTime: require("@/assets/icons/notificationTime.png"),
+      notifCheck: require("@/assets/icons/notifCheck.png"),
+      notifPlus: require("@/assets/icons/notifPlus.png"),
+      notifTime: require("@/assets/icons/notifTime.png"),
     };
     setImagesMap(imagesMap);
   }, []);
@@ -1636,6 +1964,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+import { useUser } from "@/context/UsersContext";
+
 type TopNavbarType = {
   titulo?: string;
   iconBuscar?: ImageSourcePropType;
@@ -1680,9 +2010,9 @@ const TopNavbar = ({
         )}
         {iconFav && (
           <TouchableOpacity
-          // onPress={() => {
-          //   router.push("/(entrenar)/mis-entrenamientos");
-          // }}
+            onPress={() => {
+              router.push("/(entrenar)/entrenamientosFav");
+            }}
           >
             <Image
               style={styles.color}
@@ -1704,20 +2034,6 @@ const TopNavbar = ({
   );
 };
 
-// <View className="relative">
-//   <Image
-//     source={mainImage}
-//     className="w-full h-[300px]"
-//     contentFit="cover"
-//   />
-//   <Pressable
-//     onPress={() => router.back()}
-//     className="absolute top-10 left-4 p-2"
-//   >
-//     <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
-//   </Pressable>
-// </View>
-
 export default TopNavbar;
 
 // Color de icono //
@@ -1737,7 +2053,7 @@ import { Text, TouchableOpacity } from "react-native";
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  color: string;
+  color?: string;
 }
 
 export default function Button({ title, onPress, color }: ButtonProps) {
@@ -1850,6 +2166,58 @@ export function CustomButton({
 }
 
 export default CustomButton;
+
+
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/InputField.tsx ---
+// app/components/InputField.tsx
+
+import React from "react";
+import { View, Text, TextInput } from "react-native";
+
+interface InputFieldProps {
+  label?: string; // Etiqueta opcional para el campo
+  placeholder: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  secureTextEntry?: boolean; // Campo para contraseñas
+  multiline?: boolean; // Para textos largos
+  numberOfLines?: number; // Líneas visibles si es multilínea
+  error?: string; // Mensaje de error opcional
+}
+
+export default function InputField({
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  secureTextEntry = false,
+  multiline = false,
+  numberOfLines = 1,
+  error,
+}: InputFieldProps) {
+  return (
+    <View className="mb-6">
+      {label && (
+        <Text className="text-gray-200 text-sm font-semibold mb-2">
+          {label}
+        </Text>
+      )}
+      <TextInput
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        multiline={multiline}
+        numberOfLines={numberOfLines}
+        placeholderTextColor="#aaaaaa"
+        className={`bg-gray-800 text-gray-200 border border-gray-700 rounded-lg px-4 py-3 ${
+          error ? "border-red-400" : "border-gray-300"
+        }`}
+      />
+      {error && <Text className="text-red-400 text-xs mt-1">{error}</Text>}
+    </View>
+  );
+}
 
 
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/entrenar/EjercicioCard.tsx ---
@@ -1967,6 +2335,42 @@ const MyCircularProgress: React.FC<MyCircularProgressProps> = ({
 export default MyCircularProgress;
 
 
+// --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/usuario/NotifiItem.tsx ---
+import { View, Text } from "react-native";
+import { Image } from "expo-image";
+import React from "react";
+
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+export default function NotifItem({
+  tipo,
+  titulo,
+  contenido,
+}: {
+  tipo: "check" | "plus" | "time";
+  titulo: string;
+  contenido: string;
+}) {
+  const { imagesMap } = useImagesMap();
+  let icono = imagesMap["notifCheck"];
+  if (tipo === "plus") {
+    icono = imagesMap["notifPlus"];
+  } else if (tipo === "time") {
+    icono = imagesMap["notifTime"];
+  }
+
+  return (
+    <View className="flex-row items-center justify-around bg-[#1E1E1E] rounded-2xl p-3 mb-4">
+      <Image source={icono} style={{ width: 55, height: 55 }} />
+      <View className="flex-col items-start ml-8">
+        <Text className="text-white font-semibold text-base">{titulo}</Text>
+        <Text className="text-[#CCCCCC] text-sm">{contenido}</Text>
+      </View>
+    </View>
+  );
+}
+
+
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/dashboard/NivelButton.tsx ---
 // components/NivelButton.tsx
 
@@ -2004,16 +2408,16 @@ export default NivelButton;
 
 
 // --- Contenido de /home/rama/Escritorio/ledfit/ledfit_front/components/dashboard/EntrenamientoCard.tsx ---
-// components/EntrenamientoCard.tsx
+// components/dashboard/EntrenamientoCard.tsx
 
 import { Text, View, Image, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-
-import { useImagesMap } from "@/context/ImagesMapContext";
+import React, { useState, useEffect } from "react";
 
 import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
+import { useImagesMap } from "@/context/ImagesMapContext";
+import { useUser } from "@/context/UsersContext";
 import { calcularTiempo } from "@/utils/utilsEntrenamientos";
 
 type EntrenamientoCardProps = {
@@ -2026,21 +2430,56 @@ export default function EntrenamientoCard({
   tipo,
 }: EntrenamientoCardProps) {
   const { imagesMap } = useImagesMap();
+  const { user, addFav, removeFav } = useUser();
+
+  // Estado local para el ícono de favorito
+  const [favIcon, setFavIcon] = useState(
+    require("@/assets/icons/iconFavFalse.png"),
+  );
+
+  // Actualiza el ícono según los favoritos del usuario
+  useEffect(() => {
+    if (user?.favs.includes(unEntrenamiento._id)) {
+      console.log("Favorito: Sí");
+      setFavIcon(require("@/assets/icons/iconFavTrue.png"));
+    } else {
+      console.log("Favorito: No");
+      setFavIcon(require("@/assets/icons/iconFavFalse.png"));
+    }
+  }, [user?.favs, unEntrenamiento._id]);
+
+  function handleFav() {
+    if (
+      user &&
+      user.favs &&
+      user.favs
+        .map((fav) => fav.toString())
+        .includes(unEntrenamiento._id.toString())
+    ) {
+      console.log("Llamando a removeFav");
+      removeFav(unEntrenamiento._id);
+    } else {
+      console.log("Llamando a addFav");
+      addFav(unEntrenamiento._id);
+    }
+  }
 
   let cardContainer = "overflow-hidden rounded-3xl";
-
   if (tipo === "Card Chica") {
     cardContainer += " w-[350px] h-[110px]";
   } else if (tipo === "Card Grande") {
     cardContainer += " w-[240px] h-[240px]";
+  } else if (tipo === "Card Grid") {
+    cardContainer += " w-[180px] h-[180px]";
   }
 
   let nombreStyle = "text-white font-bold";
-
   if (tipo === "Card Chica") {
     nombreStyle = "text-[16px]";
   } else if (tipo === "Card Grande") {
     nombreStyle = "text-[20px]";
+  } else if (tipo === "Card Grid") {
+    nombreStyle = "text-[13px]";
   }
 
   return (
@@ -2049,7 +2488,6 @@ export default function EntrenamientoCard({
         className="overflow-hidden rounded-3xl"
         style={{ position: "absolute", width: "100%", height: "100%" }}
         source={imagesMap[unEntrenamiento.imagen]}
-        // source={unEntrenamiento.imagen}
         resizeMode="cover"
       />
       <LinearGradient
@@ -2076,19 +2514,19 @@ export default function EntrenamientoCard({
         </Text>
         <View className="flex-row gap-1 items-center w-full">
           <View className="flex-row gap-1 justify-around w-1/3">
-            <Text className=" text-white text-[13px]">
+            <Text className="text-white text-[12px]">
               {calcularTiempo(unEntrenamiento.tiempoTotal)} min.
             </Text>
             <View className="border-r border-gray-400" />
-            <Text className=" text-white text-[13px]">
+            <Text className="text-white text-[12px]">
               {unEntrenamiento.nivel}
             </Text>
           </View>
-          <View className="flex-1 1/3">
-            <TouchableOpacity>
+          <View className="flex-1">
+            <TouchableOpacity onPress={handleFav}>
               <Image
-                className="flex-1 flex-end w-6 h-6 ml-auto"
-                source={require("@/assets/iconlyboldbookmark.png")}
+                className="w-6 h-6 ml-auto"
+                source={favIcon}
                 resizeMode="contain"
               />
             </TouchableOpacity>
