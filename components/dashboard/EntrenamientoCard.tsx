@@ -30,10 +30,8 @@ export default function EntrenamientoCard({
   // Actualiza el ícono según los favoritos del usuario
   useEffect(() => {
     if (user?.favs.includes(unEntrenamiento._id)) {
-      console.log("Favorito: Sí");
       setFavIcon(require("@/assets/icons/iconFavTrue.png"));
     } else {
-      console.log("Favorito: No");
       setFavIcon(require("@/assets/icons/iconFavFalse.png"));
     }
   }, [user?.favs, unEntrenamiento._id]);

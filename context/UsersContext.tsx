@@ -15,6 +15,7 @@ interface UserContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   addFav: (entrenamientoId: string) => Promise<void>;
   removeFav: (entrenamientoId: string) => Promise<void>;
 }
@@ -45,6 +46,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (e) {
       throw e;
     }
+  };
+
+  const logout = async () => {
+    await AsyncStorage.removeItem("@token");
+    await AsyncStorage.removeItem("@user");
+    setUser(null);
   };
 
   const addFav = async (entrenamientoId: string) => {
@@ -102,7 +109,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, login, addFav, removeFav }}>
+    <UserContext.Provider
+      value={{ user, setUser, login, logout, addFav, removeFav }}
+    >
       {children}
     </UserContext.Provider>
   );

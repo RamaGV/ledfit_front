@@ -1,43 +1,23 @@
 // app/(dashboard)/perfil.tsx
 
-import { View, Text, TouchableOpacity, Switch, ScrollView } from "react-native";
+import { View, Text, Switch, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 
+import { useUser } from "@/context/UsersContext";
+
+import Item from "@/components/usuario/ItemPerfil";
 import TopNavbar from "@/components/TopNavbar";
-
-function Item({
-  contenido,
-  icono,
-  color,
-  onPress,
-}: {
-  contenido: string;
-  icono: string;
-  color?: string;
-  onPress?: () => void;
-}) {
-  if (!color) {
-    color = "#FFFFFF";
-  }
-
-  return (
-    <TouchableOpacity className="flex-row items-center py-3" onPress={onPress}>
-      <Ionicons name={icono as any} size={20} color={color} />
-      <Text style={{ color: color }} className="ml-3">
-        {contenido}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 
 export default function PerfilScreen() {
   const router = useRouter();
 
-  // Ejemplo de control para el toggle “Dark Theme”
+  const { user, logout } = useUser();
+
   const [darkMode, setDarkMode] = useState(false);
+
   const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
 
   const handleNotificaciones = () => {
@@ -45,6 +25,7 @@ export default function PerfilScreen() {
   };
 
   const handleSalir = () => {
+    logout();
     router.push("/(usuario)/login");
   };
 
@@ -64,18 +45,12 @@ export default function PerfilScreen() {
               }}
               className="w-24 h-24 rounded-full"
             />
-            {/* Botón de edición en la foto */}
-            {/* <TouchableOpacity className="absolute right-0 bottom-0 bg-[#7B61FF] p-1 rounded-full">
-              <Ionicons name="camera" size={16} color="#FFF" />
-            </TouchableOpacity> */}
           </View>
 
           <Text className="text-white text-xl font-semibold mt-3">
-            Christina Ainsley
+            {user?.name}
           </Text>
-          <Text className="text-gray-300 text-sm">
-            christina_ainsley@gmail.com
-          </Text>
+          <Text className="text-gray-300 text-sm mt-2">{user?.email}</Text>
         </View>
 
         {/* Sección de items (Editar perfil, Notificaciones, etc.) */}

@@ -27,7 +27,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-col w-full h-full justify-around bg-gray-900 px-8">
+    <View className="flex-col w-full h-full justify-around bg-[#121212] px-8">
       <Text className="text-4xl text-white font-bold mt-12">
         Ingresa con tu cuenta
       </Text>
