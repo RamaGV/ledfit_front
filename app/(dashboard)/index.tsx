@@ -11,6 +11,7 @@ import {
 import { router } from "expo-router";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useUser } from "@/context/UsersContext";
 
 import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
@@ -20,6 +21,7 @@ import TopNavbar from "@/components/TopNavbar";
 
 export default function HomeScreen() {
   const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
+  const { user } = useUser();
 
   const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
 
@@ -34,7 +36,7 @@ export default function HomeScreen() {
     <View className="flex-1 bg-[#121212] p-3">
       <TopNavbar logo={true} iconNotif={true} iconFav={true} />
       <Text className="text-white text-2xl font-semibold p-2">
-        Hola, Rama 👋
+        Hola, {user?.name} 👋
       </Text>
 
       <View className="flex-row items-center justify-between pt-2 px-2">

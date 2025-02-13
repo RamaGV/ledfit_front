@@ -1,31 +1,35 @@
 // app/index.tsx
 
-import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-
-import Test from "./test";
+import { useEffect, useState } from "react";
 
 export default function RootIndex() {
   const router = useRouter();
 
+  const [isLoggin, setIsLoggin] = useState(true);
+
   useEffect(() => {
-    requestAnimationFrame(() => {
-      router.replace("/(usuario)/login");
-    });
+    const checkSession = async () => {
+      try {
+        const token = await AsyncStorage.getItem("@token");
+        // Si existe token => estamos logueados => ir al dashboard
+        if (token) {
+          router.replace("/(dashboard)");
+        } else {
+          // Si no hay token => ir a login
+          router.replace("/(usuario)/login");
+        }
+      } catch (error) {
+        console.log("Error leyendo AsyncStorage", error);
+        router.replace("/(usuario)/login");
+      } finally {
+        setIsLoggin(false);
+      }
+    };
+
+    checkSession();
   }, [router]);
 
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#121212",
-      }}
-    >
-      <Test />
-      {/* <ActivityIndicator color="#7B61FF" size="large" /> */}
-    </View>
-  );
+  return <></>;
 }

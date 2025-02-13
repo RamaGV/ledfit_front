@@ -1,6 +1,6 @@
 // app/context/UserContext.tsx
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
@@ -26,6 +26,30 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  // >>> Al montar, revisamos el almacenamiento para re-hidratar el user <<<
+  useEffect(() => {
+    const loadUserFromStorage = async () => {
+      try {
+        const token = await AsyncStorage.getItem("@token");
+        if (token) {
+          // Si hay token, intentamos leer el @user
+          const storedUser = await AsyncStorage.getItem("@user");
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          }
+        }
+      } catch (error) {
+        console.error("Error leyendo AsyncStorage:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    loadUserFromStorage();
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
