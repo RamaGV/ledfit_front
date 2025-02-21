@@ -6,4 +6,5 @@ module.exports = {
     "prettier/prettier": "error",
   },
   ignorePatterns: ["/dist/*"],
+  "no-mixed-spaces-and-tabs": "off",
 };

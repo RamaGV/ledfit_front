@@ -1,9 +1,6 @@
-// app/(entrenar)/screens/EjercicioScreen.tsx
-
-import CirculasProgress from "react-native-circular-progress-indicator";
+import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React from "react";
-
+import ProgressCircular from "@/components/entrenar/ProgressCircular";
 import { useEjercicios } from "@/context/EjerciciosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";
 
@@ -19,37 +16,50 @@ export default function EjercicioScreen({
   const { ejercicioActual } = useEjercicios();
   const { imagesMap } = useImagesMap();
 
-  if (!ejercicioActual) {
-    return null;
-  }
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  if (!ejercicioActual) return null;
 
   return (
-    <View className="flex-1 items-center justify-between bg-[#121212]">
+    <View className="flex-1 bg-[#121212]">
+      {/* Parte superior con la imagen */}
       <Image
         source={imagesMap[ejercicioActual.imagen]}
-        className="w-full h-1/2 mb-4"
+        className="w-full h-1/2"
         resizeMode="cover"
       />
-      <View className="flex-col items-center justify-around h-1/2">
-        <Text className="text-white text-2xl font-bold">
+
+      {/* Parte inferior */}
+      <View className="w-full h-1/2 items-center justify-around py-5">
+        <Text className="text-white text-3xl font-bold">
           {ejercicioActual.nombre}
         </Text>
 
-        <CirculasProgress
-          radius={75}
-          value={tiempoTranscurrido}
-          maxValue={ejercicioActual.tiempo}
-          inActiveStrokeColor="#2ecc71"
-          inActiveStrokeOpacity={0.2}
-          inActiveStrokeWidth={6}
-        />
+        {/* Contenedor que mediremos con onLayout */}
+        <View
+          className="w-full flex-1"
+          onLayout={(e) => {
+            const { width, height } = e.nativeEvent.layout;
+            setSize({ width, height });
+          }}
+        >
+          {/* Solo renderiza el ProgressCircular cuando tenemos las dimensiones */}
+          {size.width > 0 && size.height > 0 && (
+            <ProgressCircular
+              tiempoMaximo={ejercicioActual.tiempo}
+              containerWidth={size.width}
+              containerHeight={size.height}
+              colores={["#0CF25D", "#038C3E", "#025951", "#02735E"]}
+            />
+          )}
+        </View>
 
         <TouchableOpacity
           onPress={onPause}
           activeOpacity={0.7}
-          className="bg-[#7B61FF] py-2 px-6 rounded-full mt-4"
+          className="bg-[#6842FF] px-8 py-2 rounded-full"
         >
-          <Text className="text-white text-lg font-semibold">Pausar</Text>
+          <Text className="text-whit">Pausa</Text>
         </TouchableOpacity>
       </View>
     </View>

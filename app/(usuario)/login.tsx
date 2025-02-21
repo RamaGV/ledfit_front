@@ -67,20 +67,20 @@ export default function LoginScreen() {
           onPress={() => setRecordar(!recordar)}
         >
           <View
-            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#7B61FF]" : ""}`}
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#6842FF]" : ""}`}
           />
           <Text className="text-white">Recordarme</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-[#7B61FF] rounded-lg items-center py-4"
+          className="bg-[#6842FF] rounded-lg items-center py-4"
           onPress={handleLogin}
         >
           <Text className="text-white text-lg font-bold">Iniciar sesión</Text>
         </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.7}>
-          <Text className="text-[#7B61FF] text-center ">
+          <Text className="text-[#6842FF] text-center ">
             ¿Olvidaste tu contraseña?
           </Text>
         </TouchableOpacity>
@@ -112,7 +112,7 @@ export default function LoginScreen() {
           activeOpacity={0.7}
           onPress={() => router.push("/(usuario)/register")}
         >
-          <Text className="ml-2 text-[#7B61FF] font-bold">Regístrate</Text>
+          <Text className="ml-2 text-[#6842FF] font-bold">Regístrate</Text>
         </TouchableOpacity>
       </View>
     </View>

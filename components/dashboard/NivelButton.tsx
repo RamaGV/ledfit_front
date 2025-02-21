@@ -1,5 +1,4 @@
 // components/NivelButton.tsx
-
 import React from "react";
 import { Pressable, Text } from "react-native";
 
@@ -14,16 +13,14 @@ export function NivelButton({
   onPress,
   isActive = false,
 }: NivelButtonProps) {
-  let sizeClasses = "py-2 px-6";
-
   let backgroundClasses = isActive
-    ? "bg-[#7B61FF]"
-    : "bg-[#1E1E1E] border border-[#7B61FF]";
+    ? "bg-[#6842FF]"
+    : "bg-[#1E1E1E] border border-[#6842FF]";
 
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-full items-center justify-center ${sizeClasses} ${backgroundClasses}`}
+      className={`rounded-full items-center justify-center px-4 py-2 ${backgroundClasses}`}
     >
       <Text className="text-white text-sm">{label}</Text>
     </Pressable>

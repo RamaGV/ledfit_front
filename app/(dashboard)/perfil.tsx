@@ -73,7 +73,7 @@ export default function PerfilScreen() {
             <Switch
               value={darkMode}
               onValueChange={handleToggleDarkMode}
-              trackColor={{ false: "#767577", true: "#7B61FF" }}
+              trackColor={{ false: "#767577", true: "#6842FF" }}
               thumbColor={darkMode ? "#FFF" : "#f4f3f4"}
             />
           </View>

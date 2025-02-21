@@ -15,7 +15,7 @@ function ReadyScreen({ tiempoRestante, onReset }: ReadyProps) {
       <Text className="text-white text-6xl">{tiempoRestante}</Text>
       <TouchableOpacity
         onPress={onReset}
-        className="bg-[#7B61FF] py-2 px-4 rounded-full"
+        className="bg-[#6842FF] py-2 px-4 rounded-full"
       >
         <Text className="text-white">Reiniciar</Text>
       </TouchableOpacity>

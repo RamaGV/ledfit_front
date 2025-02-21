@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     borderRadius: Border.br_341xl,
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
   },
 });

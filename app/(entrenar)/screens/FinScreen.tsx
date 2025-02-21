@@ -17,8 +17,8 @@ export default function FinScreen() {
   }
 
   return (
-    <View className="flex-col justify-around p-6 bg-[#121212]">
-      <View className="items-center mt-20 mb-8">
+    <View className="flex-col items-center justify-around p-6 bg-[#121212]">
+      <View className="mt-10">
         <Image
           source={require("@/assets/ejercicios/trofeo.png")}
           style={{ width: 300, height: 300 }}
@@ -30,7 +30,7 @@ export default function FinScreen() {
         <Text className="text-[#FFD700] text-3xl font-bold mb-2">
           ¡Felicidades!
         </Text>
-        <Text className="text-white text-base mb-8">
+        <Text className="text-white text-base mb-6">
           ¡Has completado el entrenamiento!
         </Text>
       </View>
@@ -42,7 +42,7 @@ export default function FinScreen() {
           <Text className="text-white text-xl font-bold">
             {selectedEntrenamiento.ejercicios.length}
           </Text>
-          <Text className="text-gray-400 text-sm">Ejercicios</Text>
+          <Text className="text-gray-400 text-sm">Rondas</Text>
         </View>
         <View className="border-r border-gray-700" />
         <View className="items-center">
@@ -60,10 +60,10 @@ export default function FinScreen() {
         </View>
       </View>
 
-      <View className=" mt-12">
+      <View className="w-full mt-12">
         <TouchableOpacity
-          onPress={() => router.push("/(dashboard)")}
-          className="bg-[#7B61FF] w-full py-4 rounded-full mb-3"
+          onPress={() => router.push("/(dashboard)/entrenar")}
+          className="bg-[#6842FF] py-4 mb-6 rounded-full"
         >
           <Text className="text-white text-center font-semibold">
             Iniciar otro entrenamiento
@@ -72,7 +72,7 @@ export default function FinScreen() {
 
         <TouchableOpacity
           onPress={() => router.push("/(dashboard)")}
-          className="bg-[#1E1E1E] w-full py-4 rounded-full"
+          className="bg-[#1E1E1E] py-4 rounded-full"
         >
           <Text className="text-white text-center font-semibold">
             Volver al Inicio

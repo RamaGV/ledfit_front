@@ -54,7 +54,7 @@ export default function EntrenamientoCard({
 
   let cardContainer = "overflow-hidden rounded-3xl";
   if (tipo === "Card Chica") {
-    cardContainer += " w-[350px] h-[110px]";
+    cardContainer += " w-[300px] h-[100px]";
   } else if (tipo === "Card Grande") {
     cardContainer += " w-[240px] h-[240px]";
   } else if (tipo === "Card Grid") {

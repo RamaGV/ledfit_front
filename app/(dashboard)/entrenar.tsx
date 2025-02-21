@@ -44,20 +44,20 @@ export default function TrainingSelector() {
 
   return (
     <View className="flex-col h-full items-center justify-around bg-[#121212] p-4 py-8">
-      <Text className="text-[#7B61FF] text-4xl font-semibold">
-        Elije un entrenamiento
+      <Text className="text-white text-4xl font-semibold">
+        Entrena ahora
       </Text>
 
       <View className="flex-row w-full items-center justify-around">
-        <TouchableOpacity onPress={antEntrenamiento}>
-          <ChevronLeft size={50} color="#7B61FF" />
+        <TouchableOpacity className="" onPress={antEntrenamiento}>
+          <ChevronLeft size={40} color="#6842FF" />
         </TouchableOpacity>
         <Image
-          className="w-60 h-60 rounded-2xl"
+          className="w-[225px] h-[225px] rounded-2xl"
           source={imagesMap[entrenamientos[index].imagen]}
         />
         <TouchableOpacity onPress={sigEntrenamiento}>
-          <ChevronRight size={50} color="#7B61FF" />
+          <ChevronRight size={40} color="#6842FF" />
         </TouchableOpacity>
       </View>
 
@@ -90,7 +90,7 @@ export default function TrainingSelector() {
 
       <TouchableOpacity
         onPress={handleSelect}
-        className="bg-[#7B61FF] py-3 px-6 rounded-2xl"
+        className="bg-[#6842FF] py-3 px-6 rounded-2xl"
       >
         <Text className="text-white text-lg font-bold">Entrenar</Text>
       </TouchableOpacity>

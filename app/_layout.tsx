@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native";
 import { useFonts } from "expo-font";
 import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -38,6 +39,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
       <UserProvider>
         <ImagesMapProvider>
           <EjerciciosProvider>
@@ -62,6 +64,7 @@ export default function RootLayout() {
           </EjerciciosProvider>
         </ImagesMapProvider>
       </UserProvider>
+      </SafeAreaView>
     </ThemeProvider>
   );
 }

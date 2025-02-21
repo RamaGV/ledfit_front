@@ -1,4 +1,5 @@
 // app/(entrenar)/index.tsx
+
 import React, { useState, useEffect } from "react";
 import { View } from "react-native";
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
@@ -7,9 +8,9 @@ import { useEjercicios } from "@/context/EjerciciosContext";
 import { useTimer } from "@/utils/utilsEntrenamientos";
 
 import EjercicioScreen from "./screens/EjercicioScreen";
+import DescansoScreen from "./screens/DescansoScreen";
 import InicioScreen from "./screens/InicioScreen";
 import FinScreen from "./screens/FinScreen";
-import DescansoScreen from "./screens/DescansoScreen";
 
 type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
 
@@ -21,7 +22,7 @@ export default function Entrenamiento() {
   const [indiceEjercicio, setIndiceEjercicio] = useState<number>(-1);
   const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
   const [pausa, setPausa] = useState<boolean>(false);
-  const [tiempo, setTiempo] = useState<number>(10);
+  const [tiempo, setTiempo] = useState<number>(1);
 
   // Cuando cambia el índice, actualizamos el ejercicio actual y el tiempo
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function Entrenamiento() {
         setEtapaActual("FIN");
       } else {
         setEtapaActual("DESCANSO");
-        setTiempo(10);
+        setTiempo(5);
       }
     } else if (etapaActual === "DESCANSO") {
       if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {

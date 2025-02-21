@@ -30,7 +30,7 @@ export function useTimer(
         }
         return prev + 1;
       });
-    }, 100); // 1 segundo
+    }, 1000); // 1 segundo
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);

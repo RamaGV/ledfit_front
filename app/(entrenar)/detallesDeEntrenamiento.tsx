@@ -25,7 +25,7 @@ export default function DetallesDeEntrenamiento() {
   const { imagesMap } = useImagesMap();
 
   const handleStart = () => {
-    router.push("/(dashboard)/entrenar");
+    router.push("/(entrenar)/entrenar");
     console.log("Se envió 'Hola Mundo' a esp32/test");
   };
 
@@ -44,7 +44,7 @@ export default function DetallesDeEntrenamiento() {
         />
         <Pressable
           onPress={() => router.back()}
-          className="absolute top-10 left-4 p-2"
+          className="absolute top-8 p-2"
         >
           <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
         </Pressable>
@@ -71,7 +71,7 @@ export default function DetallesDeEntrenamiento() {
 
         {/* Sección de ejercicios (Ver más) */}
         <View className="flex-row items-center justify-between border-t border-gray-700 py-3 px-1">
-          <Text className="text-white text-lg font-semibold">Ejercicios</Text>
+          <Text className="text-white text-lg font-semibold">Rondas</Text>
           <TouchableOpacity
             onPress={() => router.push("/(entrenar)/detallesDeEjercicios")}
           >
@@ -96,7 +96,7 @@ export default function DetallesDeEntrenamiento() {
 
       <View className="px-3 py-2 border-t border-gray-700">
         <TouchableOpacity
-          className="bg-[#7B61FF] rounded-full py-4 mx-5 my-2"
+          className="bg-[#6842FF] rounded-full py-4 mx-5 my-2"
           onPress={handleStart}
         >
           <Text className="text-white text-center text-base font-semibold">

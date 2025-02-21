@@ -1,3 +1,5 @@
+// app/components/TopNavbar.tsx
+
 import { Color } from "@/GlobalStyles";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -11,8 +13,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-import { useUser } from "@/context/UsersContext";
 
 type TopNavbarType = {
   titulo?: string;
@@ -34,7 +34,7 @@ const TopNavbar = ({
   const router = useRouter();
 
   return (
-    <View className="flex-row items-center justify-between p-2 mt-5">
+    <View className="flex-row items-center justify-between my-6">
       <View className="flex-row items-center">
         {iconBack && (
           <TouchableOpacity className="" onPress={() => router.back()}>

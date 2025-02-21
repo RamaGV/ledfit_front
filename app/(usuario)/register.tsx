@@ -89,13 +89,13 @@ const RegisterScreen = () => {
           onPress={() => setRecordar(!recordar)}
         >
           <View
-            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#7B61FF]" : ""}`}
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#6842FF]" : ""}`}
           />
           <Text className="text-white">Recordarme</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-[#7B61FF] rounded-lg items-center py-4"
+          className="bg-[#6842FF] rounded-lg items-center py-4"
           onPress={handleRegister}
         >
           <Text className="text-white text-lg font-bold">Registrarse</Text>
@@ -128,7 +128,7 @@ const RegisterScreen = () => {
           activeOpacity={0.7}
           onPress={() => router.push("/(usuario)/login")}
         >
-          <Text className="ml-2 text-[#7B61FF] font-bold">Inicia sesión</Text>
+          <Text className="ml-2 text-[#6842FF] font-bold">Inicia sesión</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -1,5 +1,4 @@
 // app/(dashboard)/index.tsx
-
 import React, { useState } from "react";
 import {
   View,
@@ -33,24 +32,28 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#121212] p-3">
-      <TopNavbar logo={true} iconNotif={true} iconFav={true} />
-      <Text className="text-white text-2xl font-semibold p-2">
+    <View className="flex-col items-center justify-around pt-4 h-full bg-[#121212]">
+      <View className="w-full px-4">
+        <TopNavbar logo={true} iconNotif={true} iconFav={true} />
+      </View>
+
+      <Text className="w-full text-white text-2xl font-semibold p-2 px-4">
         Hola, {user?.name} 👋
       </Text>
 
-      <View className="flex-row items-center justify-between pt-2 px-2">
+      {/* Sección "Mis entrenamientos" */}
+      <View className="w-full flex-row items-center justify-between pt-2 px-4">
         <Text className="text-white text-lg">Mis entrenamientos</Text>
         <TouchableOpacity
           onPress={() => {
             router.push(`/(entrenar)/entrenamientosFav`);
           }}
         >
-          <Text className="text-[#7B61FF] text-sm">Ver más</Text>
+          <Text className="text-[#6842FF] text-sm">Ver más</Text>
         </TouchableOpacity>
       </View>
 
-      <View>
+      <View className="w-full">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {entrenamientos.map((unEntrenamiento, idx) => (
             <TouchableOpacity
@@ -68,20 +71,22 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      <View className="flex-row items-center justify-between">
+      {/* Sección "Niveles" */}
+      <View className="w-full flex-row items-center justify-between px-4">
         <Text className="text-white text-lg font-semibold">Niveles</Text>
         <Pressable
           onPress={() => {
             // router.push(`/entrenamientosPorNivel`);
           }}
         >
-          <Text className="text-[#7B61FF] text-sm">Ver más</Text>
+          <Text className="text-[#6842FF] text-sm">Ver más</Text>
         </Pressable>
       </View>
-      <View className="flex-row items-center justify-around py-2">
+
+      {/* Fila de botones */}
+      <View className="w-full flex-row items-center justify-around py-2 px-4">
         {niveles.map((nivel) => {
           const isActive = nivel === filtroPorNivel;
-
           return (
             <NivelButton
               key={nivel}
@@ -93,13 +98,11 @@ export default function HomeScreen() {
         })}
       </View>
 
-      <View className="flex-1 flex-col items-center justify-center">
+      {/* Lista de entrenamientos filtrados por nivel */}
+      <View className="flex-1 flex-col items-center justify-center py-1">
         <ScrollView showsVerticalScrollIndicator={false}>
           {entrenamientos
-            .filter(
-              (entrenamientoFiltrado) =>
-                entrenamientoFiltrado.nivel === filtroPorNivel,
-            )
+            .filter((entrenamientoFiltrado) => entrenamientoFiltrado.nivel === filtroPorNivel)
             .map((unEntrenamiento, idx) => (
               <TouchableOpacity
                 key={unEntrenamiento._id || idx}
