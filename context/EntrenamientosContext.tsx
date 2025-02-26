@@ -4,13 +4,18 @@ import React, { createContext, useState, useEffect, useCallback } from "react";
 
 import type { IEjercicio } from "./EjerciciosContext";
 
+interface IDataEjercicio {
+  ejercicioId: IEjercicio;
+  tiempo: number;
+}
 export interface IEntrenamiento {
   _id: string;
   nombre: string;
   nivel: string;
-  ejercicios: IEjercicio[];
+  ejercicios: IDataEjercicio[];
   imagen: string;
   tiempoTotal: number;
+  calorias: number;
   grupo: string;
   descripcion: string;
 }
@@ -38,7 +43,7 @@ export function EntrenamientosProvider({
   const fetchEntrenamientos = useCallback(async () => {
     try {
       const response = await fetch(
-        "http://192.168.1.5:5000/api/entrenamientos",
+        "https://ledfit-back.vercel.app/api/entrenamientos",
       );
       if (!response.ok) {
         throw new Error("ErrorWorkouts fetching workouts");
@@ -55,7 +60,7 @@ export function EntrenamientosProvider({
     async (entrenamientoId: string) => {
       try {
         const response = await fetch(
-          `http://192.168.1.5:5000/api/entrenamientos/${entrenamientoId}`,
+          `https://ledfit-back.vercel.app/api/entrenamientos/${entrenamientoId}`,
         );
         if (!response.ok) {
           throw new Error("Error fetching entrenamientos");

@@ -1,9 +1,10 @@
 // app/components/TopNavbar.tsx
 
-import { Color } from "@/GlobalStyles";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import { Color } from "@/GlobalStyles";
 import Logo from "@/components/Logo";
+import React from "react";
 import {
   View,
   Text,
@@ -12,7 +13,6 @@ import {
   ImageSourcePropType,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 type TopNavbarType = {
   titulo?: string;
@@ -50,21 +50,20 @@ const TopNavbar = ({
             onPress={() => router.push("/(usuario)/notificaciones")}
           >
             <Image
-              className="w-8 h-8"
-              source={require("@/assets/iconlycurvednotification.png")}
               style={styles.color}
+              source={require("@/assets/icons/iconNotif.png")}
             />
           </TouchableOpacity>
         )}
         {iconFav && (
           <TouchableOpacity
             onPress={() => {
-              router.push("/(entrenar)/entrenamientosFav");
+              router.push("/(entrenar)/detallesDeFavs");
             }}
           >
             <Image
               style={styles.color}
-              source={require("@/assets/iconlycurvedbookmark.png")}
+              source={require("@/assets/icons/iconFavFalse.png")}
             />
           </TouchableOpacity>
         )}

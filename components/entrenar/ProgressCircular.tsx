@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import {
   LinearGradient,
   Canvas,
@@ -11,10 +11,12 @@ import {
 } from "@shopify/react-native-skia";
 
 type Props = {
-  tiempoMaximo: number; // en segundos
+  tiempoMaximo: number;
   containerWidth: number;
   containerHeight: number;
   colores: string[];
+  pausa: boolean;
+  onTiempoAgotado: () => void;
 };
 
 export default function ProgressCircular({
@@ -22,6 +24,8 @@ export default function ProgressCircular({
   containerWidth,
   containerHeight,
   colores,
+  pausa,
+  onTiempoAgotado,
 }: Props) {
   // Define el radio según el tamaño del contenedor
   const RADIO = Math.min(containerWidth, containerHeight) / 2 - 45;
@@ -34,16 +38,21 @@ export default function ProgressCircular({
   // Actualiza cada 50ms
   useEffect(() => {
     const interval = setInterval(() => {
+      if (tiempoMs === 0) {
+        onTiempoAgotado();
+      }
+      if (pausa) return;
+
       setTiempoMs((prev) => {
         if (prev <= 0) {
           clearInterval(interval);
           return 0;
         }
-        return prev - 50;
+        return prev - 1000;
       });
     }, 50);
     return () => clearInterval(interval);
-  }, [tiempoMaximoMs]);
+  }, [tiempoMaximoMs, pausa]);
 
   // Cálculo del arco
   const FULL_DEGREES = 360;

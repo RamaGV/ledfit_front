@@ -50,9 +50,9 @@ export default function DetallesDeEntrenamiento() {
         </Pressable>
       </View>
 
-      <View className="px-4 flex-1">
+      <View className="flex-1 px-4">
         {/* Título */}
-        <Text className="text-white text-2xl font-semibold py-4">
+        <Text className="text-white text-2xl font-semibold py-3">
           {selectedEntrenamiento?.nombre}
         </Text>
 
@@ -86,8 +86,8 @@ export default function DetallesDeEntrenamiento() {
           {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
             <EjercicioCard
               key={idx}
-              imagen={imagesMap[ejercicio.imagen]}
-              label={ejercicio.nombre}
+              imagen={imagesMap[ejercicio.ejercicioId.imagen]}
+              label={ejercicio.ejercicioId.nombre}
               tiempoTotal={ejercicio.tiempo}
             />
           ))}

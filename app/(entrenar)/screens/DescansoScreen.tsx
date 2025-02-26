@@ -6,13 +6,15 @@ import { useEjercicios } from "@/context/EjerciciosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";
 
 interface DescansoScreenProps {
-  tiempoTranscurrido: number;
+  etapaCompleta: () => void;
   indiceDeEjercicio: number;
+  tiempo: number;
 }
 
 export default function DescansoScreen({
-  tiempoTranscurrido,
+  etapaCompleta,
   indiceDeEjercicio,
+  tiempo,
 }: DescansoScreenProps) {
   const { selectedEntrenamiento } = useEntrenamientos();
   const { ejercicioActual } = useEjercicios();
@@ -29,13 +31,9 @@ export default function DescansoScreen({
     );
   }
 
-  const handleSkipRest = () => {
-    // tu lógica para saltar el descanso
-  };
-
   // Formatear el tiempo para mostrarlo como mm:ss
-  const minutes = Math.floor(tiempoTranscurrido / 60);
-  const seconds = tiempoTranscurrido % 60;
+  const minutes = Math.floor(tiempo / 60);
+  const seconds = tiempo % 60;
   const formattedMinutes = minutes.toString().padStart(2, "0");
   const formattedSeconds = seconds.toString().padStart(2, "0");
 
@@ -56,12 +54,12 @@ export default function DescansoScreen({
           Siguiente ronda ({indiceDeEjercicio + 2} de {selectedEntrenamiento?.ejercicios.length})
         </Text>
         <Text className="text-white text-2xl font-semibold mb-4">
-          {siguienteEjercicio.nombre}
+          {siguienteEjercicio.ejercicioId.nombre}
         </Text>
         <View className="items-center">
           <View className="w-[275px] h-[275px] overflow-hidden rounded-3xl">
             <Image
-              source={imagesMap[siguienteEjercicio.imagen]}
+              source={imagesMap[siguienteEjercicio.ejercicioId.imagen]}
               className="w-full h-full"
               resizeMode="contain"
               />
@@ -71,7 +69,7 @@ export default function DescansoScreen({
 
       {/* Botón Quitar Descanso */}
       <TouchableOpacity
-        onPress={handleSkipRest}
+        onPress={etapaCompleta}
         className="bg-[#6842FF] py-4 px-8 rounded-full w-full"
         style={{ maxWidth: 300, alignSelf: "center" }}
       >

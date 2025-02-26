@@ -17,7 +17,7 @@ const RegisterScreen = () => {
     try {
       console.log(name, email, password);
       const response = await fetch(
-        "http://192.168.1.5:5000/api/auth/register",
+        "https://ledfit-back.vercel.app/api/auth/register",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

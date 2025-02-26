@@ -7,8 +7,7 @@ export interface IEjercicio {
   _id: string;
   imagen: string;
   nombre: string;
-  tiempo: number;
-  calorias: number;
+  caloriasPorSegundo: number;
   grupo: string;
   descripcion: string;
 }
@@ -38,7 +37,7 @@ export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchEjercicios = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.1.5:5000/api/ejercicios",
+        "https://ledfit-back.vercel.app/api/ejercicios",
       );
       setEjercicios(response.data);
     } catch (err: any) {
@@ -50,7 +49,7 @@ export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchEjercicioById = async (ejercicioId: string) => {
     try {
       const response = await axios.get(
-        `http://192.168.1.5:5000/api/ejercicios/${ejercicioId}`,
+        `https://ledfit-back.vercel.app/api/ejercicios/${ejercicioId}`,
       );
 
       return response.data;

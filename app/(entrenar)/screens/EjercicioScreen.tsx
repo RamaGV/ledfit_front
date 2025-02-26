@@ -1,22 +1,23 @@
-import React, { useState } from "react";
+// app/(entrenar)/screens/EjercicioScreen.tsx
+
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import ProgressCircular from "@/components/entrenar/ProgressCircular";
+import React, { useState, useEffect } from "react";
+
 import { useEjercicios } from "@/context/EjerciciosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";
 
-type EjercicioScreenProps = {
-  tiempoTranscurrido: number;
-  onPause: () => void;
-};
+import ProgressCircular from "@/components/entrenar/ProgressCircular";
+interface EjercicioScreenProps {
+  etapaCompleta: () => void;
+  tiempo: number;
+}
 
-export default function EjercicioScreen({
-  tiempoTranscurrido,
-  onPause,
-}: EjercicioScreenProps) {
+export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreenProps) {
   const { ejercicioActual } = useEjercicios();
   const { imagesMap } = useImagesMap();
 
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [pausa, setPausa] = useState<boolean>(false);
 
   if (!ejercicioActual) return null;
 
@@ -46,20 +47,23 @@ export default function EjercicioScreen({
           {/* Solo renderiza el ProgressCircular cuando tenemos las dimensiones */}
           {size.width > 0 && size.height > 0 && (
             <ProgressCircular
-              tiempoMaximo={ejercicioActual.tiempo}
-              containerWidth={size.width}
-              containerHeight={size.height}
               colores={["#0CF25D", "#038C3E", "#025951", "#02735E"]}
+              containerHeight={size.height}
+              containerWidth={size.width}
+
+              tiempoMaximo={tiempo}
+              pausa={pausa}
+              onTiempoAgotado={etapaCompleta}
             />
           )}
         </View>
 
         <TouchableOpacity
-          onPress={onPause}
+          onPress={() => setPausa((prev) => !prev)}
           activeOpacity={0.7}
-          className="bg-[#6842FF] px-8 py-2 rounded-full"
+          className="bg-[#6842FF] px-16 py-4 rounded-full"
         >
-          <Text className="text-whit">Pausa</Text>
+          <Text className="text-white">{pausa ? "Reanudar" : "Pausa"}</Text>
         </TouchableOpacity>
       </View>
     </View>

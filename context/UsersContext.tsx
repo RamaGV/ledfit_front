@@ -3,13 +3,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
 interface User {
   id: string;
   name: string;
   email: string;
   token?: string;
   favs: string[];
+  caloriasQuemadas: number; 
 }
 
 interface UserContextType {
@@ -19,6 +19,7 @@ interface UserContextType {
   logout: () => Promise<void>;
   addFav: (entrenamientoId: string) => Promise<void>;
   removeFav: (entrenamientoId: string) => Promise<void>;
+  updateCaloriasQuemadas: (calorias: number) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -35,7 +36,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const token = await AsyncStorage.getItem("@token");
         if (token) {
-          // Si hay token, intentamos leer el @user
           const storedUser = await AsyncStorage.getItem("@user");
           if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
@@ -54,7 +54,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch("http://192.168.1.5:5000/api/auth/login", {
+      const response = await fetch("https://ledfit-back.vercel.app/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -84,7 +84,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await AsyncStorage.getItem("@token");
       if (!token) throw new Error("No token found");
       const response = await fetch(
-        `http://192.168.1.5:5000/api/auth/favs/agregar/${entrenamientoId}`,
+        `https://ledfit-back.vercel.app/api/auth/favs/agregar/${entrenamientoId}`,
         {
           method: "POST",
           headers: {
@@ -110,7 +110,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error("No token found");
       }
       const response = await fetch(
-        `http://192.168.1.5:5000/api/auth/favs/eliminar/${entrenamientoId}`,
+        `https://ledfit-back.vercel.app/api/auth/favs/eliminar/${entrenamientoId}`,
         {
           method: "DELETE",
           headers: {
@@ -133,9 +133,35 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const updateCaloriasQuemadas = async (calorias: number) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+      const response = await fetch("https://ledfit-back.vercel.app/api/auth/update-calorias", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ calorias }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error al actualizar calorías");
+      }
+      const data = await response.json();
+      if (user) {
+        setUser({ ...user, caloriasQuemadas: data.caloriasQuemadas });
+      }
+    } catch (error) {
+      console.error("Error updating calories:", error);
+      throw error;
+    }
+  };
+
   return (
     <UserContext.Provider
-      value={{ user, setUser, login, logout, addFav, removeFav }}
+      value={{ user, setUser, login, logout, addFav, removeFav, updateCaloriasQuemadas }}
     >
       {children}
     </UserContext.Provider>

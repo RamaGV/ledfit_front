@@ -22,8 +22,8 @@ export default function DetallesDeEjercicios() {
         {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
           <EjercicioCard
             key={idx}
-            imagen={imagesMap[ejercicio.imagen]}
-            label={ejercicio.nombre}
+            imagen={imagesMap[ejercicio.ejercicioId.imagen]}
+            label={ejercicio.ejercicioId.nombre}
             tiempoTotal={ejercicio.tiempo}
           />
         ))}

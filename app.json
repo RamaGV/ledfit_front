@@ -1,8 +1,8 @@
 {
   "expo": {
-    "owner": "ramagv",
-    "name": "ledfit_front",
-    "slug": "ledfit_front",
+    "owner": "funesgv",
+    "name": "Ledfit",
+    "slug": "Ledfit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,10 +14,6 @@
       "bundleIdentifier": "com.anonymous.ledfit-front"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
       "package": "com.anonymous.ledfit_front"
     },
     "web": {
@@ -42,10 +38,11 @@
     },
     "extra": {
       "router": {
+        "projectId": "3e1cdb34-bace-4ca7-ab4",
         "origin": false
       },
       "eas": {
-        "projectId": "fa2026c8-b3a9-49ac-b654-bd2ea3b7b3ff"
+        "projectId": "3e1cdb34-bace-4ca7-ab45-a467abecb563"
       }
     }
   }

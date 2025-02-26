@@ -1,11 +1,9 @@
-// app/(entrenar)/index.tsx
-
-import React, { useState, useEffect } from "react";
-import { View } from "react-native";
+// app/(entrenar)/entrenar.tsx
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
 import { useEjercicios } from "@/context/EjerciciosContext";
-
-import { useTimer } from "@/utils/utilsEntrenamientos";
+import { useUser } from "@/context/UsersContext";
+import React, { useState, useEffect } from "react";
+import { View } from "react-native";
 
 import EjercicioScreen from "./screens/EjercicioScreen";
 import DescansoScreen from "./screens/DescansoScreen";
@@ -17,33 +15,35 @@ type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
 export default function Entrenamiento() {
   const { selectedEntrenamiento } = useEntrenamientos();
   const { setEjercicioActual } = useEjercicios();
+  const { updateCaloriasQuemadas } = useUser();
 
   // Estados
-  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(-1);
+  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(0);
   const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
-  const [pausa, setPausa] = useState<boolean>(false);
-  const [tiempo, setTiempo] = useState<number>(1);
 
-  // Cuando cambia el índice, actualizamos el ejercicio actual y el tiempo
+  // Cuando cambia el índice, actualizamos el ejercicio actual
   useEffect(() => {
     if (selectedEntrenamiento && indiceEjercicio >= 0) {
       const ejercicio = selectedEntrenamiento.ejercicios[indiceEjercicio];
-      setEjercicioActual(ejercicio);
-      setTiempo(ejercicio.tiempo);
-      resetTimer();
+      setEjercicioActual(ejercicio.ejercicioId);
     }
-  }, [indiceEjercicio]);
+  }, [indiceEjercicio, selectedEntrenamiento, setEjercicioActual]);
 
-  const onTiempoAgotado = () => {
+  // Al finalizar el entrenamiento, se calcula el total de calorías quemadas y se actualiza el usuario.
+  const onTiempoAgotado = async () => {
     if (etapaActual === "INICIO") {
-      setIndiceEjercicio(0);
       setEtapaActual("ACTIVO");
     } else if (etapaActual === "ACTIVO") {
+      // Si es el último ejercicio
       if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
+        await updateCaloriasQuemadas(selectedEntrenamiento!.calorias);
         setEtapaActual("FIN");
       } else {
+        // Si aun hay ejercicios, avanzamos y pasamos a la etapa de descanso
+        const sigIndice = indiceEjercicio + 1;
+        setIndiceEjercicio(sigIndice);
+        console.log("Descanso");
         setEtapaActual("DESCANSO");
-        setTiempo(5);
       }
     } else if (etapaActual === "DESCANSO") {
       if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
@@ -54,28 +54,20 @@ export default function Entrenamiento() {
     }
   };
 
-  const { tiempoTranscurrido, resetTimer } = useTimer(
-    tiempo,
-    pausa,
-    onTiempoAgotado,
-  );
-
   return (
     <View className="flex-1 bg-[#121212]">
       {etapaActual === "INICIO" ? (
-        <InicioScreen
-          tiempoRestante={tiempo - tiempoTranscurrido}
-          onReset={resetTimer}
-        />
+        <InicioScreen etapaCompleta={onTiempoAgotado} />
       ) : etapaActual === "ACTIVO" ? (
-        <EjercicioScreen
-          tiempoTranscurrido={tiempoTranscurrido}
-          onPause={() => setPausa((prev) => !prev)}
+        <EjercicioScreen 
+          tiempo={selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo} 
+          etapaCompleta={onTiempoAgotado} 
         />
       ) : etapaActual === "DESCANSO" ? (
         <DescansoScreen
-          tiempoTranscurrido={tiempoTranscurrido}
+          tiempo={selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo} 
           indiceDeEjercicio={indiceEjercicio}
+          etapaCompleta={onTiempoAgotado}
         />
       ) : etapaActual === "FIN" ? (
         <FinScreen />

@@ -1,13 +1,14 @@
 // app/(dashboard)/index.tsx
+
 import React, { useState } from "react";
+import { router } from "expo-router";
 import {
-  View,
-  Text,
+  TouchableOpacity,
   ScrollView,
   Pressable,
-  TouchableOpacity,
+  View,
+  Text,
 } from "react-native";
-import { router } from "expo-router";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
 import { useUser } from "@/context/UsersContext";
@@ -46,13 +47,14 @@ export default function HomeScreen() {
         <Text className="text-white text-lg">Mis entrenamientos</Text>
         <TouchableOpacity
           onPress={() => {
-            router.push(`/(entrenar)/entrenamientosFav`);
+            router.push(`/(entrenar)/detallesDeFavs`);
           }}
         >
           <Text className="text-[#6842FF] text-sm">Ver más</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Sección "Entrenamientos horizontales" */}
       <View className="w-full">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {entrenamientos.map((unEntrenamiento, idx) => (
@@ -84,23 +86,27 @@ export default function HomeScreen() {
       </View>
 
       {/* Fila de botones */}
-      <View className="w-full flex-row items-center justify-around py-2 px-4">
+      <View className="w-full flex-row items-center justify-around py-2">
         {niveles.map((nivel) => {
           const isActive = nivel === filtroPorNivel;
           return (
-            <NivelButton
+            <View
+              className="w-[30%]" 
               key={nivel}
-              label={nivel}
-              onPress={() => setFiltroPorNivel(nivel)}
-              isActive={isActive}
-            />
+            >
+              <NivelButton
+                label={nivel}
+                onPress={() => setFiltroPorNivel(nivel)}
+                isActive={isActive}
+              />
+            </View>
           );
         })}
       </View>
 
       {/* Lista de entrenamientos filtrados por nivel */}
-      <View className="flex-1 flex-col items-center justify-center py-1">
-        <ScrollView showsVerticalScrollIndicator={false}>
+      <View className="flex-1 w-full h-full items-center justify-center py-1">
+        <ScrollView className="w-11/12" showsVerticalScrollIndicator={false}>
           {entrenamientos
             .filter((entrenamientoFiltrado) => entrenamientoFiltrado.nivel === filtroPorNivel)
             .map((unEntrenamiento, idx) => (

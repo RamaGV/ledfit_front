@@ -5,4 +5,4 @@ declare module '@env' {
 }
 
 
-API_URL="http://192.168.1.5:5000"
+API_URL="https://ledfit-back.vercel.app"

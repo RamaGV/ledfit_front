@@ -6,9 +6,9 @@ import React, { useState, useEffect } from "react";
 
 import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
+import { calcularTiempo } from "@/utils/utilsEntrenamientos";
 import { useImagesMap } from "@/context/ImagesMapContext";
 import { useUser } from "@/context/UsersContext";
-import { calcularTiempo } from "@/utils/utilsEntrenamientos";
 
 type EntrenamientoCardProps = {
   tipo: "Card Chica" | "Card Grande" | "Card Grid";
@@ -19,8 +19,8 @@ export default function EntrenamientoCard({
   entrenamiento: unEntrenamiento,
   tipo,
 }: EntrenamientoCardProps) {
-  const { imagesMap } = useImagesMap();
   const { user, addFav, removeFav } = useUser();
+  const { imagesMap } = useImagesMap();
 
   // Estado local para el ícono de favorito
   const [favIcon, setFavIcon] = useState(
@@ -54,11 +54,11 @@ export default function EntrenamientoCard({
 
   let cardContainer = "overflow-hidden rounded-3xl";
   if (tipo === "Card Chica") {
-    cardContainer += " w-[300px] h-[100px]";
+    cardContainer += " w-full h-[100px]";
   } else if (tipo === "Card Grande") {
     cardContainer += " w-[240px] h-[240px]";
   } else if (tipo === "Card Grid") {
-    cardContainer += " w-[180px] h-[180px]";
+    cardContainer += " w-full h-[190px]";
   }
 
   let nombreStyle = "text-white font-bold";

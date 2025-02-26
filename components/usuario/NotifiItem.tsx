@@ -1,3 +1,5 @@
+// componentes/usuario/NotifItem.tsx
+
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
 import React from "react";
