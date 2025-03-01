@@ -3,13 +3,24 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface User {
+export interface Logro {
+  key: string;
+  title: string;
+  content: string;
+  type: "check" | "plus" | "time";
+  obtenido: boolean;
+}
+
+export interface User {
   id: string;
   name: string;
   email: string;
   token?: string;
   favs: string[];
-  caloriasQuemadas: number; 
+  entrenamientosCompletos: number;
+  caloriasQuemadas: number;
+  tiempoEntrenado: number;
+  logros: Logro[];
 }
 
 interface UserContextType {
@@ -19,7 +30,9 @@ interface UserContextType {
   logout: () => Promise<void>;
   addFav: (entrenamientoId: string) => Promise<void>;
   removeFav: (entrenamientoId: string) => Promise<void>;
+  updateEntrenamientosCompletos: () => Promise<void>;
   updateCaloriasQuemadas: (calorias: number) => Promise<void>;
+  updateTiempoEntrenado: (tiempo: number) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -30,7 +43,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // >>> Al montar, revisamos el almacenamiento para re-hidratar el user <<<
+  // >>> Al montar, re-hidratar el user desde AsyncStorage <<<
   useEffect(() => {
     const loadUserFromStorage = async () => {
       try {
@@ -159,9 +172,73 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const updateTiempoEntrenado = async (tiempo: number) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+      const response = await fetch("https://ledfit-back.vercel.app/api/auth/update-tiempo", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tiempo }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error al actualizar tiempo");
+      }
+      const data = await response.json();
+      if (user) {
+        setUser({ ...user, tiempoEntrenado: data.tiempoEntrenado });
+      }
+    } catch (error) {
+      console.error("Error updating time:", error);
+      throw error;
+    }
+  };
+
+  const updateEntrenamientosCompletos = async (): Promise<void> => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+      const response = await fetch("https://ledfit-back.vercel.app/api/auth/update-entrenamientos", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        // No enviamos body, el backend suma internamente
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error al actualizar entrenamientos");
+      }
+      const data = await response.json();
+      if (user) {
+        setUser({ ...user, entrenamientosCompletos: data.entrenamientosCompletos });
+      }
+    } catch (error) {
+      console.error("Error updating completed workouts:", error);
+      throw error;
+    }
+  };  
+
+  // Cambio el logro enviado por parametro a true
+  
   return (
     <UserContext.Provider
-      value={{ user, setUser, login, logout, addFav, removeFav, updateCaloriasQuemadas }}
+      value={{ 
+        user, 
+        setUser, 
+        login, 
+        logout, 
+        addFav, 
+        removeFav, 
+        updateCaloriasQuemadas, 
+        updateTiempoEntrenado, 
+        updateEntrenamientosCompletos, 
+      }}
     >
       {children}
     </UserContext.Provider>

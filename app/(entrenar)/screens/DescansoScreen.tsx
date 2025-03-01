@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
 import { useEjercicios } from "@/context/EjerciciosContext";
@@ -16,6 +16,11 @@ export default function DescansoScreen({
   indiceDeEjercicio,
   tiempo,
 }: DescansoScreenProps) {
+  // Inicializamos el tiempo restante con el valor recibido en props
+  const [tiempoTranscurrido, setTiempoTranscurrido] = useState<number>(tiempo);
+  // Estado para el tiempo formateado
+  const [formattedTime, setFormattedTime] = useState<string>("");
+
   const { selectedEntrenamiento } = useEntrenamientos();
   const { ejercicioActual } = useEjercicios();
   const { imagesMap } = useImagesMap();
@@ -23,6 +28,7 @@ export default function DescansoScreen({
   const siguienteEjercicio =
     selectedEntrenamiento?.ejercicios[indiceDeEjercicio + 1];
 
+  // Si no hay datos, muestra un mensaje
   if (!ejercicioActual || !siguienteEjercicio) {
     return (
       <View className="flex-1 items-center justify-center w-full h-full bg-[#121212]">
@@ -31,11 +37,29 @@ export default function DescansoScreen({
     );
   }
 
-  // Formatear el tiempo para mostrarlo como mm:ss
-  const minutes = Math.floor(tiempo / 60);
-  const seconds = tiempo % 60;
-  const formattedMinutes = minutes.toString().padStart(2, "0");
-  const formattedSeconds = seconds.toString().padStart(2, "0");
+  // Intervalo para decrementar el tiempo cada segundo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTiempoTranscurrido((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          etapaCompleta();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Cada vez que el tiempo restante cambie, calculamos el tiempo formateado
+  useEffect(() => {
+    const minutes = Math.floor(tiempoTranscurrido / 60);
+    const seconds = tiempoTranscurrido % 60;
+    setFormattedTime(
+      `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+    );
+  }, [tiempoTranscurrido]);
 
   return (
     <View className="flex-1 items-center justify-between bg-[#121212] py-5">
@@ -43,9 +67,9 @@ export default function DescansoScreen({
       <View className="flex-col items-center justify-around py-5 mt-12">
         <Text className="text-[#6842FF] text-3xl font-semibold">Toma un descanso</Text>
         <Text className="text-white text-5xl font-extrabold mt-6">
-          {formattedMinutes}:{formattedSeconds}
+          {formattedTime}
         </Text>
-        <View className="mt-4 border-b border-gray-700 w-72"/>
+        <View className="mt-4 border-b border-gray-700 w-72" />
       </View>
 
       {/* Sección Intermedia */}
@@ -62,12 +86,12 @@ export default function DescansoScreen({
               source={imagesMap[siguienteEjercicio.ejercicioId.imagen]}
               className="w-full h-full"
               resizeMode="contain"
-              />
+            />
           </View>
         </View>
       </View>
 
-      {/* Botón Quitar Descanso */}
+      {/* Botón para salir del descanso */}
       <TouchableOpacity
         onPress={etapaCompleta}
         className="bg-[#6842FF] py-4 px-8 rounded-full w-full"

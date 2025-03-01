@@ -1,4 +1,5 @@
 // app/(entrenar)/entrenar.tsx
+
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
 import { useEjercicios } from "@/context/EjerciciosContext";
 import { useUser } from "@/context/UsersContext";
@@ -15,7 +16,7 @@ type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
 export default function Entrenamiento() {
   const { selectedEntrenamiento } = useEntrenamientos();
   const { setEjercicioActual } = useEjercicios();
-  const { updateCaloriasQuemadas } = useUser();
+  const { updateCaloriasQuemadas, updateTiempoEntrenado, updateEntrenamientosCompletos } = useUser();
 
   // Estados
   const [indiceEjercicio, setIndiceEjercicio] = useState<number>(0);
@@ -31,18 +32,22 @@ export default function Entrenamiento() {
 
   // Al finalizar el entrenamiento, se calcula el total de calorías quemadas y se actualiza el usuario.
   const onTiempoAgotado = async () => {
+    console.log("onTiempoAgotado llamado, etapaActual:", etapaActual);
     if (etapaActual === "INICIO") {
       setEtapaActual("ACTIVO");
     } else if (etapaActual === "ACTIVO") {
       // Si es el último ejercicio
       if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
         await updateCaloriasQuemadas(selectedEntrenamiento!.calorias);
+        await updateTiempoEntrenado(selectedEntrenamiento!.tiempoTotal);
+        await updateEntrenamientosCompletos();
+
         setEtapaActual("FIN");
       } else {
         // Si aun hay ejercicios, avanzamos y pasamos a la etapa de descanso
+
         const sigIndice = indiceEjercicio + 1;
         setIndiceEjercicio(sigIndice);
-        console.log("Descanso");
         setEtapaActual("DESCANSO");
       }
     } else if (etapaActual === "DESCANSO") {
@@ -65,7 +70,7 @@ export default function Entrenamiento() {
         />
       ) : etapaActual === "DESCANSO" ? (
         <DescansoScreen
-          tiempo={selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo} 
+          tiempo={selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo}
           indiceDeEjercicio={indiceEjercicio}
           etapaCompleta={onTiempoAgotado}
         />

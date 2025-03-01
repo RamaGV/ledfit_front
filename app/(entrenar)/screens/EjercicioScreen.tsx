@@ -1,7 +1,7 @@
 // app/(entrenar)/screens/EjercicioScreen.tsx
 
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import { useEjercicios } from "@/context/EjerciciosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";

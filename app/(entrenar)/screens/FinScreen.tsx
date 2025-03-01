@@ -47,7 +47,7 @@ export default function FinScreen() {
         <View className="border-r border-gray-700" />
         <View className="items-center">
           <Text className="text-white text-xl font-bold">
-            {ejercicioActual.calorias}
+            {selectedEntrenamiento.calorias}
           </Text>
           <Text className="text-gray-400 text-sm">Cal</Text>
         </View>
