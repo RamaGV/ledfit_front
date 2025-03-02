@@ -9,15 +9,17 @@ import { useImagesMap } from "@/context/ImagesMapContext";
 import ProgressCircular from "@/components/entrenar/ProgressCircular";
 interface EjercicioScreenProps {
   etapaCompleta: () => void;
-  tiempo: number;
+  tiempoTranscurrido: number;
+  tiempoMaximo: number;
+  pausa: boolean;
+  cambioPausa: () => void;
 }
 
-export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreenProps) {
+export default function EjercicioScreen({etapaCompleta, tiempoTranscurrido, tiempoMaximo, pausa, cambioPausa}: EjercicioScreenProps) {
   const { ejercicioActual } = useEjercicios();
   const { imagesMap } = useImagesMap();
 
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [pausa, setPausa] = useState<boolean>(false);
 
   if (!ejercicioActual) return null;
 
@@ -51,7 +53,8 @@ export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreen
               containerHeight={size.height}
               containerWidth={size.width}
 
-              tiempoMaximo={tiempo}
+              tiempoMaximo={tiempoMaximo}
+              tiempoTranscurrido={tiempoTranscurrido}
               pausa={pausa}
               onTiempoAgotado={etapaCompleta}
             />
@@ -59,7 +62,7 @@ export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreen
         </View>
 
         <TouchableOpacity
-          onPress={() => setPausa((prev) => !prev)}
+          onPress={() => cambioPausa()}
           activeOpacity={0.7}
           className="bg-[#6842FF] px-16 py-4 rounded-full"
         >

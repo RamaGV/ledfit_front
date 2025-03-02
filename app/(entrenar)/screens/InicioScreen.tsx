@@ -1,27 +1,23 @@
 // app/(entrenar)/screens/InicioScreen.tsx
 
 import { View, Text, TouchableOpacity } from "react-native";
-import React, { useState, useEffect } from "react";
+import React from "react";
 
-function InicioScreen({ etapaCompleta }: any) {
-  const [tiempo, setTiempo] = useState(3);
+interface InicioScreenProps {
+  etapaCompleta: () => void;
+  tiempoRestante: number; // Recibido en segundos (puede ser decimal)
+}
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (tiempo === 0) {
-        etapaCompleta();
-      }
-        setTiempo((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    } , [tiempo]);
+export default function InicioScreen({ etapaCompleta, tiempoRestante }: InicioScreenProps) {
+  // Redondea el tiempo restante para que se muestre solo como un entero.
+  const tiempo = Math.ceil(tiempoRestante);
 
   return (
     <View className="flex-1 items-center justify-center">
       <Text className="text-white text-4xl font-bold mb-4">¡Prepárate!</Text>
       <Text className="text-white text-6xl">{tiempo}</Text>
       <TouchableOpacity
-        onPress={ () => setTiempo(3) }
+        onPress={etapaCompleta}
         className="bg-[#6842FF] py-2 px-4 rounded-full"
       >
         <Text className="text-white">Reiniciar</Text>
@@ -29,5 +25,3 @@ function InicioScreen({ etapaCompleta }: any) {
     </View>
   );
 }
-
-export default InicioScreen;
