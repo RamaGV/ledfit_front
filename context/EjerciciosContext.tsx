@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "@/env"; // Importa la variable de entorno
 
 export interface IEjercicio {
   _id: string;
@@ -24,7 +25,6 @@ const EjerciciosContext = createContext<EjerciciosContextProps | undefined>(
   undefined,
 );
 
-// Proveedor
 export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -33,25 +33,22 @@ export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
     null,
   );
 
-  // Obtener la lista de ejercicios
+  // Obtener la lista de ejercicios usando API_URL
   const fetchEjercicios = async () => {
     try {
-      const response = await axios.get(
-        "https://ledfit-back.vercel.app/api/ejercicios",
-      );
+      const response = await axios.get(`${API_URL}/api/ejercicios`);
       setEjercicios(response.data);
     } catch (err: any) {
       console.error("Error fetching exercises:", err);
     }
   };
 
-  // Obtener un ejercicio por su ID
+  // Obtener un ejercicio por su ID usando API_URL
   const fetchEjercicioById = async (ejercicioId: string) => {
     try {
       const response = await axios.get(
-        `https://ledfit-back.vercel.app/api/ejercicios/${ejercicioId}`,
+        `${API_URL}/api/ejercicios/${ejercicioId}`,
       );
-
       return response.data;
     } catch (err: any) {
       console.error("Error fetching exercise:", err);

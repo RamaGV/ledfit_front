@@ -1,26 +1,18 @@
 // app/(usuario)/notificaciones.tsx
 
 import React, { useContext } from "react";
-import { View, ScrollView, ActivityIndicator, TouchableOpacity, Text } from "react-native";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 import TopNavbar from "@/components/TopNavbar";
 import NotifItem from "@/components/usuario/NotifiItem";
 import { NotificationsContext } from "@/context/NotificationsContext";
 
 export default function NotificationScreen({ navigation }: any) {
-  const { notifications, createNotification } = useContext(NotificationsContext);
+  const { notifications } = useContext(NotificationsContext);
 
   return (
     <View className="flex-1 bg-[#121212] pt-10 p-4 pb-4">
       <TopNavbar titulo="Notificaciones" iconBack={true} />
-      {/* Botón para crear notificación de prueba vía API */}
-      <TouchableOpacity
-        onPress={createNotification}
-        className="bg-[#6842FF] py-3 px-4 rounded-lg mb-4"
-      >
-        <Text className="text-white text-center font-bold">
-          Crear Notificación de Prueba
-        </Text>
-      </TouchableOpacity>
+
       <ScrollView className="flex-1 mt-8" showsVerticalScrollIndicator={false}>
         {notifications.length === 0 ? (
           <ActivityIndicator size="large" color="#6842FF" />

@@ -14,11 +14,9 @@ export default function EntrenarLayout() {
         name="detallesDeEjercicios"
         options={{ headerShown: false }}
       />
-      <Stack.Screen
-        name="detallesDeFavs"
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="detallesDeFavs" options={{ headerShown: false }} />
       <Stack.Screen name="ejercicios" options={{ headerShown: false }} />
+      <Stack.Screen name="entrenamientos" options={{ headerShown: false }} />
       <Stack.Screen name="entrenar" options={{ headerShown: false }} />
     </Stack>
   );

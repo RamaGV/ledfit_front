@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@/env"; // Importa la variable de entorno
 
 export interface INotification {
   _id: string;
@@ -26,18 +27,22 @@ export const NotificationsContext = createContext<INotificationsContext>({
   createNotification: async () => {},
 });
 
-export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
+export const NotificationsProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const [notifications, setNotifications] = useState<INotification[]>([]);
 
   const fetchNotifications = async () => {
     try {
       const token = await AsyncStorage.getItem("@token");
-      console.log("Token:", token);
       if (!token) {
         console.error("No token found");
         return;
       }
-      const response = await fetch("https://ledfit-back.vercel.app/api/notifications", {
+      // Usamos la variable API_URL para formar la URL de la API
+      const response = await fetch(`${API_URL}/api/notifications`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -71,7 +76,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     setNotifications((prev) => [newNotif, ...prev]);
   };
 
-  // Función para crear una notificación en el backend
+  // Función para crear una notificación en el backend utilizando API_URL
   const createNotification = async () => {
     try {
       const token = await AsyncStorage.getItem("@token");
@@ -79,7 +84,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         console.error("No token found");
         return;
       }
-      const response = await fetch("https://ledfit-back.vercel.app/api/notifications", {
+      const response = await fetch(`${API_URL}/api/notifications`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,8 +92,8 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         },
         body: JSON.stringify({
           title: "Notificación de prueba API",
-          message: "Esta notificación fue creada desde el botón de pruebas."
-          // Nota: El backend, gracias al middleware, debería asignar el usuario a partir del token.
+          message: "Esta notificación fue creada desde el botón de pruebas.",
+          // El backend asigna el usuario a partir del token
         }),
       });
       if (response.ok) {
@@ -108,9 +113,16 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
 
   return (
     <NotificationsContext.Provider
-      value={{ notifications, refreshNotifications, addSampleNotification, createNotification }}
+      value={{
+        notifications,
+        refreshNotifications,
+        addSampleNotification,
+        createNotification,
+      }}
     >
       {children}
     </NotificationsContext.Provider>
   );
 };
+
+export default NotificationsContext;

@@ -15,14 +15,11 @@ export default function PerfilScreen() {
   const router = useRouter();
 
   const { user, logout } = useUser();
+  console.log(user);
 
   const [darkMode, setDarkMode] = useState(false);
 
   const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
-
-  const handleNotificaciones = () => {
-    router.push("/(usuario)/notificaciones");
-  };
 
   const handleSalir = () => {
     logout();
@@ -30,20 +27,21 @@ export default function PerfilScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#121212]">
-      {/* Navbar superior */}
-      <TopNavbar titulo="Perfil" />
+    <View className="flex-1 bg-[#121212] pt-4">
+      <View className="w-full px-4">
+        <TopNavbar titulo="Perfil" />
+      </View>
 
       {/* Contenido principal */}
       <ScrollView className="flex-1 px-4">
         {/* Foto y datos de usuario */}
-        <View className="items-center mt-6">
+        <View className="items-center">
           <View className="relative">
             <Image
               source={{
                 uri: "https://randomuser.me/api/portraits/women/32.jpg",
               }}
-              className="w-24 h-24 rounded-full"
+              className="w-24 h-24 rounded-full border border-[#6842FF]"
             />
           </View>
 
@@ -54,14 +52,18 @@ export default function PerfilScreen() {
         </View>
 
         {/* Sección de items (Editar perfil, Notificaciones, etc.) */}
-        <View className="p-2 mt-6  border-t border-gray-700">
+        <View className="p-2 mt-6  border-t border-gray-800">
+          <Item
+            icono="medal-outline"
+            contenido="Logros"
+            onPress={() => router.push("/(usuario)/logros")}
+          />
           <Item icono="person-outline" contenido="Editar perfil" />
           <Item
             icono="notifications-outline"
             contenido="Notificaciones"
-            onPress={handleNotificaciones}
+            onPress={() => router.push("/(usuario)/notificaciones")}
           />
-          <Item icono="settings-outline" contenido="Configuracion" />
           <Item icono="help-circle-outline" contenido="Informacion" />
 
           {/* Dark Theme */}
@@ -80,7 +82,7 @@ export default function PerfilScreen() {
         </View>
 
         {/* Salir */}
-        <View className="w-full border-t border-gray-700 p-2">
+        <View className="w-full border-t border-gray-800 p-2">
           <Item
             icono="log-out-outline"
             contenido="Salir"

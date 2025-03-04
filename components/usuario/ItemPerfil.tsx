@@ -21,7 +21,7 @@ export default function Item({
 
   return (
     <TouchableOpacity className="flex-row items-center py-3" onPress={onPress}>
-      <Ionicons name={icono as any} size={20} color={color} />
+      <Ionicons name={icono as any} size={25} color={color} />
       <Text style={{ color: color }} className="ml-3">
         {contenido}
       </Text>

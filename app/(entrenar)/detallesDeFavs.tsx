@@ -3,7 +3,10 @@
 import { View, TouchableOpacity, ScrollView } from "react-native";
 import React from "react";
 
-import { IEntrenamiento, useEntrenamientos } from "@/context/EntrenamientosContext";
+import {
+  IEntrenamiento,
+  useEntrenamientos,
+} from "@/context/EntrenamientosContext";
 import { useUser } from "@/context/UsersContext";
 
 import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
@@ -32,8 +35,8 @@ export default function EntrenamientosFav() {
         <View className="flex-row flex-wrap h-full justify-start mx-1">
           {entrenamientosFav.map((item, idx) => (
             <TouchableOpacity
-              key={idx} 
-              className="w-1/2 p-3 items-center"
+              key={idx}
+              className="w-1/2 h-full p-3 items-center"
               onPress={() => entrenamientoSeleccionado(item)}
             >
               <EntrenamientoCard tipo="Card Grid" entrenamiento={item} />

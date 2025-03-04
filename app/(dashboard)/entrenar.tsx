@@ -6,13 +6,15 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 
+import type { IEntrenamiento } from "@/context/EntrenamientosContext";
+
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";
 
 export default function TrainingSelector() {
   const router = useRouter();
 
-  const { entrenamientos } = useEntrenamientos();
+  const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
   const { imagesMap } = useImagesMap();
 
   const [index, setIndex] = useState(0);
@@ -33,7 +35,8 @@ export default function TrainingSelector() {
     setIndex((prev) => (prev === 0 ? entrenamientos.length - 1 : prev - 1));
   };
 
-  const handleSelect = () => {
+  const handleSelect = (entrenamiento: IEntrenamiento) => {
+    setSelectedEntrenamiento(entrenamiento);
     router.push("/(entrenar)/detallesDeEntrenamiento");
   };
 
@@ -44,9 +47,7 @@ export default function TrainingSelector() {
 
   return (
     <View className="flex-col h-full items-center justify-around bg-[#121212] p-4 py-8">
-      <Text className="text-white text-4xl font-semibold">
-        Entrena ahora
-      </Text>
+      <Text className="text-white text-4xl font-semibold">Entrena ahora</Text>
 
       <View className="flex-row w-full items-center justify-around">
         <TouchableOpacity className="" onPress={antEntrenamiento}>
@@ -82,14 +83,20 @@ export default function TrainingSelector() {
             {minutos}:{segundos} min
           </Text>
         </View>
-        <Text className="text-gray-400 text-sm px-6">
-          {entrenamientos[index].descripcion}
-        </Text>
+        <View className="px-6" style={{ minHeight: 60 }}>
+          <Text
+            className="text-gray-400 text-sm"
+            numberOfLines={3}
+            ellipsizeMode="tail"
+          >
+            {entrenamientos[index].descripcion}
+          </Text>
+        </View>
         <View className="border-b border-gray-700 m-2" />
       </View>
 
       <TouchableOpacity
-        onPress={handleSelect}
+        onPress={() => handleSelect(entrenamientos[index])}
         className="bg-[#6842FF] py-3 px-6 rounded-2xl"
       >
         <Text className="text-white text-lg font-bold">Entrenar</Text>

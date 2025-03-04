@@ -58,7 +58,7 @@ export default function EntrenamientoCard({
   } else if (tipo === "Card Grande") {
     cardContainer += " w-[240px] h-[240px]";
   } else if (tipo === "Card Grid") {
-    cardContainer += " w-full h-[190px]";
+    cardContainer += " w-full h-[150px]";
   }
 
   let nombreStyle = "text-white font-bold";

@@ -13,7 +13,7 @@ import FinScreen from "./screens/FinScreen";
 type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
 
 export default function Entrenamiento() {
-  const { updateCaloriasQuemadas, updateTiempoEntrenado, updateEntrenamientosCompletos } = useUser();
+  const { updateMetricas, updateLogros } = useUser();
   const { selectedEntrenamiento } = useEntrenamientos();
   const { setEjercicioActual } = useEjercicios();
 
@@ -36,44 +36,51 @@ export default function Entrenamiento() {
   // Se usa useCallback para evitar recrear la función en cada render.
   const onTiempoAgotado = useCallback(async () => {
     if (etapaActual === "INICIO") {
-      const nuevoTiempo = selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
+      const nuevoTiempo =
+        selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
       setTiempoMs(nuevoTiempo);
 
       setEtapaActual("ACTIVO");
-    } else if (etapaActual === "ACTIVO") { // Si es el último ejercicio
+    } else if (etapaActual === "ACTIVO") {
+      // Si es el último ejercicio
       if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
         setEtapaActual("FIN");
 
-        await updateCaloriasQuemadas(selectedEntrenamiento!.calorias);
-        await updateTiempoEntrenado(selectedEntrenamiento!.tiempoTotal);
-        await updateEntrenamientosCompletos();
-      } else { // Si quedan ejercicios, pasamos a descanso
-        const tiempoDescanso = selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
+        await updateMetricas(
+          selectedEntrenamiento!.tiempoTotal,
+          selectedEntrenamiento!.calorias,
+        );
+        await updateLogros();
+      } else {
+        // Si quedan ejercicios, pasamos a descanso
+        const tiempoDescanso =
+          selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
         setTiempoMs(tiempoDescanso);
-        setIndiceEjercicio(prev => prev + 1);
+        setIndiceEjercicio((prev) => prev + 1);
 
         setEtapaActual("DESCANSO");
       }
     } else if (etapaActual === "DESCANSO") {
       if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
-        const nuevoTiempo = selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
+        const nuevoTiempo =
+          selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
         setTiempoMs(nuevoTiempo);
-        setIndiceEjercicio(prev => prev + 1);
+        setIndiceEjercicio((prev) => prev + 1);
 
         setEtapaActual("ACTIVO");
       }
     }
-  }, [etapaActual, indiceEjercicio, selectedEntrenamiento, updateCaloriasQuemadas, updateTiempoEntrenado, updateEntrenamientosCompletos]);
+  }, [etapaActual, indiceEjercicio, selectedEntrenamiento]);
 
   const cambioPausa = () => {
-    setPausa(prev => !prev);
+    setPausa((prev) => !prev);
   };
 
   // useEffect con intervalo de 50ms para una transición más detallada
   useEffect(() => {
     if (pausa) return;
     const interval = setInterval(() => {
-      setTiempoMs(prev => {
+      setTiempoMs((prev) => {
         if (prev <= 50) {
           onTiempoAgotado();
           return 0;
@@ -87,13 +94,15 @@ export default function Entrenamiento() {
   return (
     <View className="flex-1 bg-[#121212]">
       {etapaActual === "INICIO" ? (
-        <InicioScreen 
-          etapaCompleta={onTiempoAgotado} 
+        <InicioScreen
+          etapaCompleta={onTiempoAgotado}
           tiempoRestante={tiempoMs / 1000} // Convertido a segundos
         />
       ) : etapaActual === "ACTIVO" ? (
         <EjercicioScreen
-          tiempoMaximo={selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo}
+          tiempoMaximo={
+            selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo
+          }
           tiempoTranscurrido={tiempoMs / 1000} // Se pasa en segundos
           pausa={pausa}
           cambioPausa={cambioPausa}

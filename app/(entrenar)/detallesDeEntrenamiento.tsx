@@ -42,10 +42,7 @@ export default function DetallesDeEntrenamiento() {
           className="w-full h-[300px]"
           contentFit="cover"
         />
-        <Pressable
-          onPress={() => router.back()}
-          className="absolute top-8 p-2"
-        >
+        <Pressable onPress={() => router.back()} className="absolute top-8 p-2">
           <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
         </Pressable>
       </View>

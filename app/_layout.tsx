@@ -1,6 +1,6 @@
 // app/_layout.tsx
 
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -15,11 +15,17 @@ import {
 } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 
+// Providers de la app
 import { EntrenamientosProvider } from "@/context/EntrenamientosContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { EjerciciosProvider } from "@/context/EjerciciosContext";
 import { ImagesMapProvider } from "@/context/ImagesMapContext";
 import { UserProvider } from "@/context/UsersContext";
+
+// Clerk
+import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
+import { tokenCache } from "@/cache";
+import { EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY } from "@/env";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,7 +62,6 @@ export default function RootLayout() {
     initNotifications();
   }, []);
 
-
   if (!loaded) {
     return null;
   }
@@ -64,32 +69,43 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-        <UserProvider>
-          <NotificationsProvider>
-            <ImagesMapProvider>
-              <EjerciciosProvider>
-                <EntrenamientosProvider>
-                  <Stack>
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                      <Stack.Screen
-                        name="(dashboard)"
-                        options={{ headerShown: false }}
-                      />
-                      <Stack.Screen
-                        name="(entrenar)"
-                        options={{ headerShown: false }}
-                      />
-                      <Stack.Screen
-                        name="(usuario)"
-                        options={{ headerShown: false }}
-                      />
-                    </Stack>
-                  <StatusBar style="auto" />
-                </EntrenamientosProvider>
-              </EjerciciosProvider>
-            </ImagesMapProvider>
-          </NotificationsProvider>
-        </UserProvider>
+        <ClerkProvider
+          publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          tokenCache={tokenCache}
+        >
+          <ClerkLoaded>
+            <UserProvider>
+              <NotificationsProvider>
+                <ImagesMapProvider>
+                  <EjerciciosProvider>
+                    <EntrenamientosProvider>
+                      <Slot />
+                      {/* <Stack>
+                        <Stack.Screen
+                          name="index"
+                          options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                          name="(dashboard)"
+                          options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                          name="(entrenar)"
+                          options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                          name="(usuario)"
+                          options={{ headerShown: false }}
+                        />
+                      </Stack> */}
+                      <StatusBar style="auto" />
+                    </EntrenamientosProvider>
+                  </EjerciciosProvider>
+                </ImagesMapProvider>
+              </NotificationsProvider>
+            </UserProvider>
+          </ClerkLoaded>
+        </ClerkProvider>
       </SafeAreaView>
     </ThemeProvider>
   );

@@ -1,6 +1,6 @@
 // app/context/WorkoutsContext.tsx
-
 import React, { createContext, useState, useEffect, useCallback } from "react";
+import { API_URL } from "@/env"; // Asegúrate de que API_URL esté correctamente definido en tu .env y declarado en env.d.ts
 
 import type { IEjercicio } from "./EjerciciosContext";
 
@@ -39,12 +39,10 @@ export function EntrenamientosProvider({
   const [selectedEntrenamiento, setSelectedEntrenamiento] =
     useState<IEntrenamiento | null>(null);
 
-  // Obtener lista de ejercicios
+  // Obtener lista de entrenamientos utilizando API_URL
   const fetchEntrenamientos = useCallback(async () => {
     try {
-      const response = await fetch(
-        "https://ledfit-back.vercel.app/api/entrenamientos",
-      );
+      const response = await fetch(`${API_URL}/api/entrenamientos`);
       if (!response.ok) {
         throw new Error("ErrorWorkouts fetching workouts");
       }
@@ -55,12 +53,12 @@ export function EntrenamientosProvider({
     }
   }, []);
 
-  // Obtener un entrenamiento por su ID
+  // Obtener un entrenamiento por su ID utilizando API_URL
   const fetchEntrenamientoById = useCallback(
     async (entrenamientoId: string) => {
       try {
         const response = await fetch(
-          `https://ledfit-back.vercel.app/api/entrenamientos/${entrenamientoId}`,
+          `${API_URL}/api/entrenamientos/${entrenamientoId}`,
         );
         if (!response.ok) {
           throw new Error("Error fetching entrenamientos");
@@ -84,9 +82,9 @@ export function EntrenamientosProvider({
       value={
         {
           entrenamientos: entrenamientos,
-          setEntrenamientos: setEntrenamientos,
-          selectedEntrenamiento: selectedEntrenamiento,
           setSelectedEntrenamiento: setSelectedEntrenamiento,
+          selectedEntrenamiento: selectedEntrenamiento,
+          // Puedes incluir fetchEntrenamientoById en el contexto si lo necesitas
           fetchEntrenamientoById: fetchEntrenamientoById,
         } as any
       }

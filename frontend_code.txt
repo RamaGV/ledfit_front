@@ -1,66 +1,4 @@
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\index.tsx ---
-// app/index.tsx
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-
-export default function RootIndex() {
-  const router = useRouter();
-
-  const [isLoggin, setIsLoggin] = useState(true);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const token = await AsyncStorage.getItem("@token");
-        // Si existe token => estamos logueados => ir al dashboard
-        if (token) {
-          router.replace("/(dashboard)");
-        } else {
-          // Si no hay token => ir a login
-          router.replace("/(usuario)/login");
-        }
-      } catch (error) {
-        console.log("Error leyendo AsyncStorage", error);
-        router.replace("/(usuario)/login");
-      } finally {
-        setIsLoggin(false);
-      }
-    };
-
-    checkSession();
-  }, [router]);
-
-  return <></>;
-}
-
-
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\test.tsx ---
-import React, { useState } from "react";
-import { View, Text, Button } from "react-native";
-import CirculasProgress from "react-native-circular-progress-indicator";
-
-export default function Test() {
-  const [valor, setValor] = useState(0);
-
-  return (
-    <View className="flex-1 items-center justify-center">
-      <CirculasProgress
-        radius={100}
-        value={valor}
-        duration={1000}
-        valueSuffix="%"
-        inActiveStrokeColor="#2ecc71"
-        inActiveStrokeOpacity={0.2}
-        inActiveStrokeWidth={6}
-      />
-    </View>
-  );
-}
-
-
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\_layout.tsx ---
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/_layout.tsx ---
 // app/_layout.tsx
 
 import { Stack } from "expo-router";
@@ -78,14 +16,22 @@ import {
 } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 
+// Providers
 import { EntrenamientosProvider } from "@/context/EntrenamientosContext";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 import { EjerciciosProvider } from "@/context/EjerciciosContext";
 import { ImagesMapProvider } from "@/context/ImagesMapContext";
 import { UserProvider } from "@/context/UsersContext";
 
+// Importar Clerk
+import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
+import { tokenCache } from "@/cache";
+import { EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY } from "@env";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  console.log(EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY);
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -118,7 +64,6 @@ export default function RootLayout() {
     initNotifications();
   }, []);
 
-
   if (!loaded) {
     return null;
   }
@@ -126,451 +71,648 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-      <UserProvider>
-        <ImagesMapProvider>
-          <EjerciciosProvider>
-            <EntrenamientosProvider>
-              <Stack>
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="(dashboard)"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="(entrenar)"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="(usuario)"
-                  options={{ headerShown: false }}
-                />
-              </Stack>
-              <StatusBar style="auto" />
-            </EntrenamientosProvider>
-          </EjerciciosProvider>
-        </ImagesMapProvider>
-      </UserProvider>
+        <ClerkProvider
+          publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          tokenCache={tokenCache}
+        >
+          <ClerkLoaded>
+            <UserProvider>
+              <NotificationsProvider>
+                <ImagesMapProvider>
+                  <EjerciciosProvider>
+                    <EntrenamientosProvider>
+                      <Stack>
+                        <Stack.Screen
+                          name="index"
+                          options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                          name="(dashboard)"
+                          options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                          name="(entrenar)"
+                          options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                          name="(usuario)"
+                          options={{ headerShown: false }}
+                        />
+                      </Stack>
+                      <StatusBar style="auto" />
+                    </EntrenamientosProvider>
+                  </EjerciciosProvider>
+                </ImagesMapProvider>
+              </NotificationsProvider>
+            </UserProvider>
+          </ClerkLoaded>
+        </ClerkProvider>
       </SafeAreaView>
     </ThemeProvider>
   );
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(dashboard)\entrenar.tsx ---
-// app/(dashboard)/entrenar.tsx
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/index.tsx ---
+// // app/index.tsx
 
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { View, Text, TouchableOpacity } from "react-native";
-import React, { useState, useEffect } from "react";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { useRouter } from "expo-router";
+// import { useEffect, useState } from "react";
+
+// export default function RootIndex() {
+//   const router = useRouter();
+
+//   const [isLoggin, setIsLoggin] = useState(true);
+
+//   useEffect(() => {
+//     const checkSession = async () => {
+//       try {
+//         const token = await AsyncStorage.getItem("@token");
+//         // Si existe token => estamos logueados => ir al dashboard
+//         if (token) {
+//           router.replace("/(dashboard)");
+//         } else {
+//           // Si no hay token => ir a login
+//           router.replace("/(usuario)/login");
+//         }
+//       } catch (error) {
+//         router.replace("/(usuario)/login");
+//       } finally {
+//         setIsLoggin(false);
+//       }
+//     };
+
+//     checkSession();
+//   }, [router]);
+
+//   return <></>;
+// }
+
+// app/index.tsx
+import { useAuth } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { Image } from "expo-image";
+import { useEffect } from "react";
 
-import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useImagesMap } from "@/context/ImagesMapContext";
-
-export default function TrainingSelector() {
+export default function RootIndex() {
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
 
-  const { entrenamientos } = useEntrenamientos();
-  const { imagesMap } = useImagesMap();
-
-  const [index, setIndex] = useState(0);
-
-  // Si hay entrenamientos, selecciona uno aleatorio al iniciar
   useEffect(() => {
-    if (entrenamientos.length > 0) {
-      const randomIndex = Math.floor(Math.random() * entrenamientos.length);
-      setIndex(randomIndex);
+    // Esperamos a que Clerk cargue el estado de autenticación
+    if (isLoaded) {
+      if (isSignedIn) {
+        router.replace("/(dashboard)");
+      } else {
+        router.replace("/(usuario)/login");
+      }
     }
-  }, [entrenamientos]);
+  }, [isLoaded, isSignedIn, router]);
 
-  const sigEntrenamiento = () => {
-    setIndex((prev) => (prev + 1) % entrenamientos.length);
-  };
-
-  const antEntrenamiento = () => {
-    setIndex((prev) => (prev === 0 ? entrenamientos.length - 1 : prev - 1));
-  };
-
-  const handleSelect = () => {
-    router.push("/(entrenar)/detallesDeEntrenamiento");
-  };
-
-  const minutos = Math.floor(entrenamientos[index].tiempoTotal / 60);
-  const segundos = (entrenamientos[index].tiempoTotal % 60)
-    .toString()
-    .padStart(2, "0");
-
-  return (
-    <View className="flex-col h-full items-center justify-around bg-[#121212] p-4 py-8">
-      <Text className="text-white text-4xl font-semibold">
-        Entrena ahora
-      </Text>
-
-      <View className="flex-row w-full items-center justify-around">
-        <TouchableOpacity className="" onPress={antEntrenamiento}>
-          <ChevronLeft size={40} color="#6842FF" />
-        </TouchableOpacity>
-        <Image
-          className="w-[225px] h-[225px] rounded-2xl"
-          source={imagesMap[entrenamientos[index].imagen]}
-        />
-        <TouchableOpacity onPress={sigEntrenamiento}>
-          <ChevronRight size={40} color="#6842FF" />
-        </TouchableOpacity>
-      </View>
-
-      <View className="w-full px-2">
-        <Text className="text-white text-2xl font-bold mb-2">
-          {entrenamientos[index].nombre}
-        </Text>
-        <View className="border-b border-gray-700 m-2" />
-        <View className="flex-row items-center justify-between ">
-          <Text className="text-gray-400 text-base px-3 mb-4">
-            Nivel: {entrenamientos[index].nivel}
-          </Text>
-          <Text className="text-gray-400 text-base px-3 mb-4">
-            {entrenamientos[index].ejercicios.length} ejercicios
-          </Text>
-        </View>
-        <View className="flex-row items-center justify-between">
-          <Text className="text-gray-400 text-base px-3 mb-4">
-            Grupo: {entrenamientos[index].grupo}
-          </Text>
-          <Text className="text-gray-400 text-base px-3 mb-4">
-            {minutos}:{segundos} min
-          </Text>
-        </View>
-        <Text className="text-gray-400 text-sm px-6">
-          {entrenamientos[index].descripcion}
-        </Text>
-        <View className="border-b border-gray-700 m-2" />
-      </View>
-
-      <TouchableOpacity
-        onPress={handleSelect}
-        className="bg-[#6842FF] py-3 px-6 rounded-2xl"
-      >
-        <Text className="text-white text-lg font-bold">Entrenar</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  return null;
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(dashboard)\index.tsx ---
-// app/(dashboard)/index.tsx
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(usuario)/notificaciones.tsx ---
+// app/(usuario)/notificaciones.tsx
 
-import React, { useState } from "react";
-import { router } from "expo-router";
-import {
-  TouchableOpacity,
-  ScrollView,
-  Pressable,
-  View,
-  Text,
-} from "react-native";
-
-import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useUser } from "@/context/UsersContext";
-
-import type { IEntrenamiento } from "@/context/EntrenamientosContext";
-
-import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
-import NivelButton from "@/components/dashboard/NivelButton";
+import React, { useContext } from "react";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 import TopNavbar from "@/components/TopNavbar";
+import NotifItem from "@/components/usuario/NotifiItem";
+import { NotificationsContext } from "@/context/NotificationsContext";
 
-export default function HomeScreen() {
-  const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
-  const { user } = useUser();
-
-  const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
-
-  const niveles = ["Principiante", "Intermedio", "Avanzado"];
-
-  const entrenamientoSeleccionado = (entrenamiento: IEntrenamiento) => {
-    setSelectedEntrenamiento(entrenamiento);
-    router.push("/(entrenar)/detallesDeEntrenamiento");
-  };
+export default function NotificationScreen({ navigation }: any) {
+  const { notifications } = useContext(NotificationsContext);
 
   return (
-    <View className="flex-col items-center justify-around pt-4 h-full bg-[#121212]">
-      <View className="w-full px-4">
-        <TopNavbar logo={true} iconNotif={true} iconFav={true} />
-      </View>
+    <View className="flex-1 bg-[#121212] pt-10 p-4 pb-4">
+      <TopNavbar titulo="Notificaciones" iconBack={true} />
 
-      <Text className="w-full text-white text-2xl font-semibold p-2 px-4">
-        Hola, {user?.name} 👋
-      </Text>
-
-      {/* Sección "Mis entrenamientos" */}
-      <View className="w-full flex-row items-center justify-between pt-2 px-4">
-        <Text className="text-white text-lg">Mis entrenamientos</Text>
-        <TouchableOpacity
-          onPress={() => {
-            router.push(`/(entrenar)/detallesDeFavs`);
-          }}
-        >
-          <Text className="text-[#6842FF] text-sm">Ver más</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Sección "Entrenamientos horizontales" */}
-      <View className="w-full">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {entrenamientos.map((unEntrenamiento, idx) => (
-            <TouchableOpacity
-              key={unEntrenamiento._id || idx}
-              className="m-3"
-              onPress={() => entrenamientoSeleccionado(unEntrenamiento)}
-            >
-              <EntrenamientoCard
-                key={unEntrenamiento._id || idx}
-                tipo="Card Grande"
-                entrenamiento={unEntrenamiento}
-              />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Sección "Niveles" */}
-      <View className="w-full flex-row items-center justify-between px-4">
-        <Text className="text-white text-lg font-semibold">Niveles</Text>
-        <Pressable
-          onPress={() => {
-            // router.push(`/entrenamientosPorNivel`);
-          }}
-        >
-          <Text className="text-[#6842FF] text-sm">Ver más</Text>
-        </Pressable>
-      </View>
-
-      {/* Fila de botones */}
-      <View className="w-full flex-row items-center justify-around py-2">
-        {niveles.map((nivel) => {
-          const isActive = nivel === filtroPorNivel;
-          return (
-            <View
-              className="w-[30%]" 
-              key={nivel}
-            >
-              <NivelButton
-                label={nivel}
-                onPress={() => setFiltroPorNivel(nivel)}
-                isActive={isActive}
-              />
-            </View>
-          );
-        })}
-      </View>
-
-      {/* Lista de entrenamientos filtrados por nivel */}
-      <View className="flex-1 w-full h-full items-center justify-center py-1">
-        <ScrollView className="w-11/12" showsVerticalScrollIndicator={false}>
-          {entrenamientos
-            .filter((entrenamientoFiltrado) => entrenamientoFiltrado.nivel === filtroPorNivel)
-            .map((unEntrenamiento, idx) => (
-              <TouchableOpacity
-                key={unEntrenamiento._id || idx}
-                className="py-2"
-                onPress={() => entrenamientoSeleccionado(unEntrenamiento)}
-              >
-                <EntrenamientoCard
-                  key={unEntrenamiento._id || idx}
-                  tipo="Card Chica"
-                  entrenamiento={unEntrenamiento}
-                />
-              </TouchableOpacity>
-            ))}
-        </ScrollView>
-      </View>
-    </View>
-  );
-}
-
-
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(dashboard)\perfil.tsx ---
-// app/(dashboard)/perfil.tsx
-
-import { View, Text, Switch, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
-import { Image } from "expo-image";
-
-import { useUser } from "@/context/UsersContext";
-
-import Item from "@/components/usuario/ItemPerfil";
-import TopNavbar from "@/components/TopNavbar";
-
-export default function PerfilScreen() {
-  const router = useRouter();
-
-  const { user, logout } = useUser();
-
-  const [darkMode, setDarkMode] = useState(false);
-
-  const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
-
-  const handleNotificaciones = () => {
-    router.push("/(usuario)/notificaciones");
-  };
-
-  const handleSalir = () => {
-    logout();
-    router.push("/(usuario)/login");
-  };
-
-  return (
-    <View className="flex-1 bg-[#121212]">
-      {/* Navbar superior */}
-      <TopNavbar titulo="Perfil" />
-
-      {/* Contenido principal */}
-      <ScrollView className="flex-1 px-4">
-        {/* Foto y datos de usuario */}
-        <View className="items-center mt-6">
-          <View className="relative">
-            <Image
-              source={{
-                uri: "https://randomuser.me/api/portraits/women/32.jpg",
-              }}
-              className="w-24 h-24 rounded-full"
+      <ScrollView className="flex-1 mt-8" showsVerticalScrollIndicator={false}>
+        {notifications.length === 0 ? (
+          <ActivityIndicator size="large" color="#6842FF" />
+        ) : (
+          notifications.map((notif) => (
+            <NotifItem
+              key={notif._id}
+              tipo={notif.type}
+              titulo={notif.title}
+              contenido={notif.content}
             />
-          </View>
-
-          <Text className="text-white text-xl font-semibold mt-3">
-            {user?.name}
-          </Text>
-          <Text className="text-gray-300 text-sm mt-2">{user?.email}</Text>
-        </View>
-
-        {/* Sección de items (Editar perfil, Notificaciones, etc.) */}
-        <View className="p-2 mt-6  border-t border-gray-700">
-          <Item icono="person-outline" contenido="Editar perfil" />
-          <Item
-            icono="notifications-outline"
-            contenido="Notificaciones"
-            onPress={handleNotificaciones}
-          />
-          <Item icono="settings-outline" contenido="Configuracion" />
-          <Item icono="help-circle-outline" contenido="Informacion" />
-
-          {/* Dark Theme */}
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <Ionicons name="moon-outline" size={20} color="#FFF" />
-              <Text className="text-white ml-3">Dark Theme</Text>
-            </View>
-            <Switch
-              value={darkMode}
-              onValueChange={handleToggleDarkMode}
-              trackColor={{ false: "#767577", true: "#6842FF" }}
-              thumbColor={darkMode ? "#FFF" : "#f4f3f4"}
-            />
-          </View>
-        </View>
-
-        {/* Salir */}
-        <View className="w-full border-t border-gray-700 p-2">
-          <Item
-            icono="log-out-outline"
-            contenido="Salir"
-            color="#FF4444"
-            onPress={handleSalir}
-          />
-        </View>
+          ))
+        )}
       </ScrollView>
     </View>
   );
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(dashboard)\_layout.tsx ---
-// app/(dashboard)/_layout.tsx
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(usuario)/_layout.tsx ---
+// app/(usuario)/_layout.tsx
 
-import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
-import React from "react";
+import { Stack } from "expo-router";
 
-export default function TabLayout() {
+export default function UsuarioLayout() {
   return (
-    <>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: "#121212",
-            borderTopColor: "#1E1E1E",
-          },
-          tabBarActiveTintColor: "#6842FF",
-          tabBarInactiveTintColor: "#888",
-          tabBarBackground: undefined,
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Home",
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="home" size={24} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="entrenar"
-          options={{
-            title: "Entrenar",
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="play-circle" size={24} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="perfil"
-          options={{
-            title: "Perfil",
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="person-circle" size={24} color={color} />
-            ),
-          }}
-        />
-      </Tabs>
-    </>
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="notificaciones" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="register" options={{ headerShown: false }} />
+      <Stack.Screen name="logros" options={{ headerShown: false }} />
+    </Stack>
   );
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\detallesDeEjercicios.tsx ---
-// app/(entrenar)/detallesDeEjercicios.tsx
-
-import { View, ScrollView } from "react-native";
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(usuario)/logros.tsx ---
+// app/(usuario)/logros.tsx
+import { View, Text, ScrollView } from "react-native";
 import React from "react";
-
-import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useImagesMap } from "@/context/ImagesMapContext";
-
-import EjercicioCard from "@/components/entrenar/EjercicioCard";
-
 import TopNavbar from "@/components/TopNavbar";
 
-export default function DetallesDeEjercicios() {
-  const { selectedEntrenamiento } = useEntrenamientos();
-  const { imagesMap } = useImagesMap();
+import { useUser } from "@/context/UsersContext";
+import { HexBadge } from "@/components/usuario/ItemLogro";
+
+export default function Logros() {
+  const { user } = useUser();
+  const logros = user?.logros ?? [];
+
+  // Agrupamos los logros por tipo
+  const groupedLogros = {
+    check: logros.filter((l) => l.type === "check"),
+    time: logros.filter((l) => l.type === "time"),
+    plus: logros.filter((l) => l.type === "plus"),
+  };
+
+  // Función para renderizar una sección (rectángulo con título superpuesto)
+  const renderLogroSection = (title: string, logroList: typeof logros) => {
+    if (logroList.length === 0) return null; // Si no hay logros de ese tipo, no renderiza nada
+
+    return (
+      <View style={{ marginVertical: 16 }}>
+        {/* Contenedor con el borde */}
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#666",
+            borderRadius: 4,
+            paddingTop: 16,
+            position: "relative",
+          }}
+        >
+          {/* Texto superpuesto */}
+          <Text
+            style={{
+              position: "absolute",
+              top: -12, // Levanta el texto sobre el borde
+              left: 16,
+              backgroundColor: "#121212", // Mismo color de fondo que la pantalla
+              color: "#fff",
+              paddingHorizontal: 8,
+            }}
+          >
+            {title}
+          </Text>
+
+          {/* ScrollView horizontal con los hexágonos */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={{ flexDirection: "row", padding: 12 }}>
+              {logroList.map((logro, index) => (
+                <View key={index} style={{ marginRight: 16 }}>
+                  <HexBadge logroKey={logro.key} obtenido={logro.obtenido} />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    );
+  };
 
   return (
-    <View className="flex-1 bg-[#121212] p-3">
-      <TopNavbar iconBack={true} titulo="Rondas" />
+    <View className="flex-1 bg-[#121212] pt-10 p-4 pb-4">
+      <TopNavbar titulo="Logros" iconBack={true} />
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 pt-4">
-        {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
-          <EjercicioCard
-            key={idx}
-            imagen={imagesMap[ejercicio.ejercicioId.imagen]}
-            label={ejercicio.ejercicioId.nombre}
-            tiempoTotal={ejercicio.tiempo}
+      <ScrollView className="flex-1 mt-8" showsVerticalScrollIndicator={false}>
+        {/* Sección para calorías (type="check") */}
+        {renderLogroSection("Calorías", groupedLogros.check)}
+
+        {/* Sección para tiempo (type="time") */}
+        {renderLogroSection("Tiempo", groupedLogros.time)}
+
+        {/* Sección para entrenamientos completados (type="plus") */}
+        {renderLogroSection("Entrenamientos", groupedLogros.plus)}
+      </ScrollView>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(usuario)/register.tsx ---
+import React, { useState, useCallback } from "react";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+
+const RegisterScreen = () => {
+  const router = useRouter();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [recordar, setRecordar] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleRegister = useCallback(async () => {
+    try {
+      // Se puede validar que los campos no estén vacíos
+      if (!name || !email || !password) {
+        setError("Completa todos los campos");
+        return;
+      }
+      const response = await fetch(
+        "https://ledfit-back.vercel.app/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        },
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.message || "Error en el registro");
+        return;
+      }
+      const data = await response.json();
+      await AsyncStorage.setItem("@token", data.token);
+      await AsyncStorage.setItem("@user", JSON.stringify(data.user));
+      router.push("/(dashboard)");
+    } catch (e: any) {
+      console.error(e);
+      setError("Error en la conexión");
+    }
+  }, [name, email, password, router]);
+
+  return (
+    <View className="flex-col w-full h-full justify-around bg-[#121212] px-8">
+      <Text className="text-4xl text-white font-bold mt-12 mb-4">
+        Crea tu cuenta
+      </Text>
+
+      <View className="flex-col space-y-6">
+        {/* Campo de Nombre */}
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Nombre"
+            placeholderTextColor="#888"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+            accessibilityLabel="Nombre"
           />
+        </View>
+
+        {/* Campo de Email */}
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="email" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Correo electrónico"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            accessibilityLabel="Correo electrónico"
+          />
+        </View>
+
+        {/* Campo de Contraseña con toggle de visibilidad */}
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="lock" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Contraseña"
+            placeholderTextColor="#888"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            accessibilityLabel="Contraseña"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword((prev) => !prev)}
+            accessibilityLabel={
+              showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+            }
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialIcons
+              name={showPassword ? "visibility" : "visibility-off"}
+              size={20}
+              color="#888"
+              style={{ marginLeft: 8 }}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Opción "Recordarme" */}
+        <TouchableOpacity
+          className="flex-row items-center justify-center"
+          onPress={() => setRecordar(!recordar)}
+          accessibilityLabel="Recordarme"
+        >
+          <View
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#6842FF]" : ""}`}
+          />
+          <Text className="text-white">Recordarme</Text>
+        </TouchableOpacity>
+
+        {/* Mensaje de error */}
+        {error ? (
+          <Text className="text-red-500 text-center">{error}</Text>
+        ) : null}
+
+        {/* Botón de registro */}
+        <TouchableOpacity
+          className="bg-[#6842FF] rounded-lg items-center py-4"
+          onPress={handleRegister}
+          accessibilityLabel="Registrarse"
+        >
+          <Text className="text-white text-lg font-bold">Registrarse</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Sección para login social */}
+      <View className="flex-row items-center justify-around">
+        <View className="w-1/4 border-b border-gray-700" />
+        <Text className="text-gray-400 text-center">o continúa con</Text>
+        <View className="w-1/4 border-b border-gray-700" />
+      </View>
+
+      <View className="flex-row items-center justify-around px-10">
+        <TouchableOpacity
+          className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg"
+          accessibilityLabel="Registrarse con Facebook"
+        >
+          <FontAwesome name="facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg"
+          accessibilityLabel="Registrarse con Google"
+        >
+          <FontAwesome name="google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg"
+          accessibilityLabel="Registrarse con Apple"
+        >
+          <FontAwesome name="apple" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row items-center justify-center">
+        <Text className="text-gray-400 text-center">
+          ¿Ya tienes una cuenta?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/(usuario)/login")}
+          accessibilityLabel="Iniciar sesión"
+        >
+          <Text className="ml-2 text-[#6842FF] font-bold">Inicia sesión</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+export default RegisterScreen;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(usuario)/login.tsx ---
+import React, { useState, useCallback } from "react";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useUser } from "@/context/UsersContext";
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const { login } = useUser();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [recordar, setRecordar] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = useCallback(async () => {
+    try {
+      await login(email, password);
+      router.push("/(dashboard)");
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || "Error en la conexión");
+    }
+  }, [email, password, login, router]);
+
+  return (
+    <View className="flex-col w-full h-full justify-around bg-[#121212] px-8">
+      <Text className="text-4xl text-white font-bold mt-12 mb-2">
+        Ingresa con tu cuenta
+      </Text>
+
+      <View className="flex-col space-y-6">
+        {/* Input de correo */}
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="email" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Correo electrónico"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            accessibilityLabel="Correo electrónico"
+          />
+        </View>
+
+        {/* Input de contraseña con toggle de visibilidad */}
+        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
+          <MaterialIcons name="lock" size={20} color="#888" />
+          <TextInput
+            className="flex-1 text-white h-12 ml-2"
+            placeholder="Contraseña"
+            placeholderTextColor="#888"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            accessibilityLabel="Contraseña"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword((prev) => !prev)}
+            accessibilityLabel={
+              showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+            }
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialIcons
+              name={showPassword ? "visibility" : "visibility-off"}
+              size={20}
+              color="#888"
+              style={{ marginLeft: 8 }}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Opción "Recordarme" */}
+        <TouchableOpacity
+          className="flex-row items-center justify-center"
+          onPress={() => setRecordar(!recordar)}
+          accessibilityLabel="Recordarme"
+        >
+          <View
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#6842FF]" : ""}`}
+          />
+          <Text className="text-white">Recordarme</Text>
+        </TouchableOpacity>
+
+        {/* Mensaje de error */}
+        {error ? (
+          <Text className="text-red-500 text-center">{error}</Text>
+        ) : null}
+
+        {/* Botón de login */}
+        <TouchableOpacity
+          className="bg-[#6842FF] rounded-lg items-center py-4"
+          onPress={handleLogin}
+          accessibilityLabel="Iniciar sesión"
+        >
+          <Text className="text-white text-lg font-bold">Iniciar sesión</Text>
+        </TouchableOpacity>
+
+        {/* Opción "Olvidaste tu contraseña" */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          accessibilityLabel="Olvidaste tu contraseña"
+        >
+          <Text className="text-[#6842FF] text-center">
+            ¿Olvidaste tu contraseña?
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Sección de login social */}
+      <View className="flex-row items-center justify-around">
+        <View className="w-1/4 border-b border-gray-700" />
+        <Text className="text-gray-400 text-center">o continúa con</Text>
+        <View className="w-1/4 border-b border-gray-700" />
+      </View>
+
+      <View className="flex-row items-center justify-around px-10">
+        <TouchableOpacity
+          className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg"
+          accessibilityLabel="Iniciar sesión con Facebook"
+        >
+          <FontAwesome name="facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg"
+          accessibilityLabel="Iniciar sesión con Google"
+        >
+          <FontAwesome name="google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg"
+          accessibilityLabel="Iniciar sesión con Apple"
+        >
+          <FontAwesome name="apple" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row items-center justify-center">
+        <Text className="text-gray-400 text-center">
+          ¿No tienes una cuenta?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/(usuario)/register")}
+          accessibilityLabel="Registrarse"
+        >
+          <Text className="ml-2 text-[#6842FF] font-bold">Regístrate</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/entrenamientos.tsx ---
+// app/(dashboard)/Entrenamientos.tsx
+import React, { useState } from "react";
+import { View, ScrollView, Text, TouchableOpacity } from "react-native";
+import TopNavbar from "@/components/TopNavbar";
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import GroupSelector from "@/components/entrenar/GroupSelector";
+import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
+
+export default function Entrenamientos() {
+  const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
+  const [selectedGroup, setSelectedGroup] = useState("Todos");
+
+  // Extraemos los grupos únicos y agregamos la opción "Todos"
+  const gruposUnicos = Array.from(new Set(entrenamientos.map((e) => e.grupo)));
+  const groups = ["Todos", ...gruposUnicos];
+
+  // Filtramos los entrenamientos según el grupo seleccionado
+  const filteredEntrenamientos =
+    selectedGroup === "Todos"
+      ? entrenamientos
+      : entrenamientos.filter((e) => e.grupo === selectedGroup);
+
+  const handleSelectGroup = (group: string) => {
+    setSelectedGroup(group);
+  };
+
+  const entrenamientoSeleccionado = (entrenamiento: any) => {
+    setSelectedEntrenamiento(entrenamiento);
+    // Redirigir a la pantalla de detalles, por ejemplo:
+    // router.push("/(entrenar)/detallesDeEntrenamiento");
+  };
+
+  return (
+    <View className="flex-1 p-4 bg-[#121212]">
+      <TopNavbar iconBack={true} titulo="Entrenamientos" />
+
+      {/* Componente selector de grupos */}
+      <GroupSelector
+        groups={groups}
+        selectedGroup={selectedGroup}
+        onSelect={handleSelectGroup}
+      />
+
+      {/* Lista de entrenamientos filtrados */}
+      <ScrollView showsVerticalScrollIndicator={false} className="mt-2">
+        {filteredEntrenamientos.map((entrenamiento, idx) => (
+          <TouchableOpacity
+            key={entrenamiento._id || idx}
+            onPress={() => entrenamientoSeleccionado(entrenamiento)}
+            className="py-2"
+          >
+            <EntrenamientoCard
+              key={entrenamiento._id || idx}
+              tipo="Card Chica"
+              entrenamiento={entrenamiento}
+            />
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
@@ -578,7 +720,7 @@ export default function DetallesDeEjercicios() {
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\detallesDeEntrenamiento.tsx ---
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/detallesDeEntrenamiento.tsx ---
 // app/(entrenar)/detallesDeEntrenamiento.tsx
 
 import {
@@ -623,10 +765,7 @@ export default function DetallesDeEntrenamiento() {
           className="w-full h-[300px]"
           contentFit="cover"
         />
-        <Pressable
-          onPress={() => router.back()}
-          className="absolute top-8 p-2"
-        >
+        <Pressable onPress={() => router.back()} className="absolute top-8 p-2">
           <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
         </Pressable>
       </View>
@@ -690,13 +829,167 @@ export default function DetallesDeEntrenamiento() {
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\detallesDeFavs.tsx ---
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/_layout.tsx ---
+// app/(entrenar)/_layout.tsx
+
+import { Stack } from "expo-router";
+
+export default function EntrenarLayout() {
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="detallesDeEntrenamiento"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="detallesDeEjercicios"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen name="detallesDeFavs" options={{ headerShown: false }} />
+      <Stack.Screen name="ejercicios" options={{ headerShown: false }} />
+      <Stack.Screen name="entrenamientos" options={{ headerShown: false }} />
+      <Stack.Screen name="entrenar" options={{ headerShown: false }} />
+    </Stack>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/entrenar.tsx ---
+import React, { useState, useEffect, useCallback } from "react";
+import { useUser } from "@/context/UsersContext";
+import { View } from "react-native";
+
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useEjercicios } from "@/context/EjerciciosContext";
+
+import EjercicioScreen from "./screens/EjercicioScreen";
+import DescansoScreen from "./screens/DescansoScreen";
+import InicioScreen from "./screens/InicioScreen";
+import FinScreen from "./screens/FinScreen";
+
+type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
+
+export default function Entrenamiento() {
+  const { updateMetricas, updateLogros } = useUser();
+  const { selectedEntrenamiento } = useEntrenamientos();
+  const { setEjercicioActual } = useEjercicios();
+
+  // Estados
+  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(0);
+  const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
+  // Guardamos el tiempo en milisegundos para una transición más fluida.
+  const [tiempoMs, setTiempoMs] = useState(2000); // Ejemplo: 2 segundos iniciales
+  const [pausa, setPausa] = useState<boolean>(false);
+
+  // Actualiza el ejercicio actual cuando cambia el índice
+  useEffect(() => {
+    if (selectedEntrenamiento && indiceEjercicio >= 0) {
+      const ejercicio = selectedEntrenamiento.ejercicios[indiceEjercicio];
+      setEjercicioActual(ejercicio.ejercicioId);
+    }
+  }, [indiceEjercicio, selectedEntrenamiento, setEjercicioActual]);
+
+  // Función para cambiar de etapa cuando se agota el tiempo.
+  // Se usa useCallback para evitar recrear la función en cada render.
+  const onTiempoAgotado = useCallback(async () => {
+    if (etapaActual === "INICIO") {
+      const nuevoTiempo =
+        selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
+      setTiempoMs(nuevoTiempo);
+
+      setEtapaActual("ACTIVO");
+    } else if (etapaActual === "ACTIVO") {
+      // Si es el último ejercicio
+      if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
+        setEtapaActual("FIN");
+
+        await updateMetricas(
+          selectedEntrenamiento!.tiempoTotal,
+          selectedEntrenamiento!.calorias,
+        );
+        await updateLogros();
+      } else {
+        // Si quedan ejercicios, pasamos a descanso
+        const tiempoDescanso =
+          selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
+        setTiempoMs(tiempoDescanso);
+        setIndiceEjercicio((prev) => prev + 1);
+
+        setEtapaActual("DESCANSO");
+      }
+    } else if (etapaActual === "DESCANSO") {
+      if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
+        const nuevoTiempo =
+          selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo * 1000;
+        setTiempoMs(nuevoTiempo);
+        setIndiceEjercicio((prev) => prev + 1);
+
+        setEtapaActual("ACTIVO");
+      }
+    }
+  }, [etapaActual, indiceEjercicio, selectedEntrenamiento]);
+
+  const cambioPausa = () => {
+    setPausa((prev) => !prev);
+  };
+
+  // useEffect con intervalo de 50ms para una transición más detallada
+  useEffect(() => {
+    if (pausa) return;
+    const interval = setInterval(() => {
+      setTiempoMs((prev) => {
+        if (prev <= 50) {
+          onTiempoAgotado();
+          return 0;
+        }
+        return prev - 50;
+      });
+    }, 50);
+    return () => clearInterval(interval);
+  }, [pausa, onTiempoAgotado]);
+
+  return (
+    <View className="flex-1 bg-[#121212]">
+      {etapaActual === "INICIO" ? (
+        <InicioScreen
+          etapaCompleta={onTiempoAgotado}
+          tiempoRestante={tiempoMs / 1000} // Convertido a segundos
+        />
+      ) : etapaActual === "ACTIVO" ? (
+        <EjercicioScreen
+          tiempoMaximo={
+            selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo
+          }
+          tiempoTranscurrido={tiempoMs / 1000} // Se pasa en segundos
+          pausa={pausa}
+          cambioPausa={cambioPausa}
+          etapaCompleta={onTiempoAgotado}
+        />
+      ) : etapaActual === "DESCANSO" ? (
+        <DescansoScreen
+          tiempoRestante={tiempoMs / 1000}
+          indiceDeEjercicio={indiceEjercicio}
+          etapaCompleta={onTiempoAgotado}
+        />
+      ) : etapaActual === "FIN" ? (
+        <FinScreen />
+      ) : null}
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/detallesDeFavs.tsx ---
 // app/(entrenar)/entrenamientosFav.tsx
 
 import { View, TouchableOpacity, ScrollView } from "react-native";
 import React from "react";
 
-import { IEntrenamiento, useEntrenamientos } from "@/context/EntrenamientosContext";
+import {
+  IEntrenamiento,
+  useEntrenamientos,
+} from "@/context/EntrenamientosContext";
 import { useUser } from "@/context/UsersContext";
 
 import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
@@ -725,8 +1018,8 @@ export default function EntrenamientosFav() {
         <View className="flex-row flex-wrap h-full justify-start mx-1">
           {entrenamientosFav.map((item, idx) => (
             <TouchableOpacity
-              key={idx} 
-              className="w-1/2 p-3 items-center"
+              key={idx}
+              className="w-1/2 h-full p-3 items-center"
               onPress={() => entrenamientoSeleccionado(item)}
             >
               <EntrenamientoCard tipo="Card Grid" entrenamiento={item} />
@@ -739,148 +1032,67 @@ export default function EntrenamientosFav() {
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\entrenar.tsx ---
-// app/(entrenar)/entrenar.tsx
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/detallesDeEjercicios.tsx ---
+// app/(entrenar)/detallesDeEjercicios.tsx
+
+import { View, ScrollView } from "react-native";
+import React from "react";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useEjercicios } from "@/context/EjerciciosContext";
-import React, { useState, useEffect } from "react";
-import { View } from "react-native";
+import { useImagesMap } from "@/context/ImagesMapContext";
 
-import EjercicioScreen from "./screens/EjercicioScreen";
-import DescansoScreen from "./screens/DescansoScreen";
-import InicioScreen from "./screens/InicioScreen";
-import FinScreen from "./screens/FinScreen";
+import EjercicioCard from "@/components/entrenar/EjercicioCard";
 
-type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
+import TopNavbar from "@/components/TopNavbar";
 
-export default function Entrenamiento() {
+export default function DetallesDeEjercicios() {
   const { selectedEntrenamiento } = useEntrenamientos();
-  const { setEjercicioActual } = useEjercicios();
-
-  // Estados
-  const [indiceEjercicio, setIndiceEjercicio] = useState<number>(0);
-  const [etapaActual, setEtapaActual] = useState<Etapa>("INICIO");
-
-  // Cuando cambia el índice, actualizamos el ejercicio actual y el tiempo
-  useEffect(() => {
-    if (selectedEntrenamiento && indiceEjercicio >= 0) {
-      const ejercicio = selectedEntrenamiento.ejercicios[indiceEjercicio];
-      setEjercicioActual(ejercicio.ejercicioId);
-    }
-  }, [indiceEjercicio]);
-
-  const onTiempoAgotado = () => {
-    if (etapaActual === "INICIO") {
-      setEtapaActual("ACTIVO");
-    } else if (etapaActual === "ACTIVO") {
-      if (indiceEjercicio === selectedEntrenamiento!.ejercicios.length - 1) {
-        setEtapaActual("FIN");
-      } else {
-        const sigIndice = indiceEjercicio + 1;
-        setIndiceEjercicio(sigIndice);
-        console.log("Descanso");
-        setEtapaActual("DESCANSO");
-      }
-    } else if (etapaActual === "DESCANSO") {
-      if (indiceEjercicio < selectedEntrenamiento!.ejercicios.length - 1) {
-        const sigIndice = indiceEjercicio + 1;
-        setIndiceEjercicio(sigIndice);
-        setEtapaActual("ACTIVO");
-      }
-    }
-  };
+  const { imagesMap } = useImagesMap();
 
   return (
-    <View className="flex-1 bg-[#121212]">
-      {etapaActual === "INICIO" ? (
-        <InicioScreen etapaCompleta={onTiempoAgotado} />
-      ) : etapaActual === "ACTIVO" ? (
-        <EjercicioScreen 
-          tiempo={selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo} 
-          etapaCompleta={onTiempoAgotado} 
-        />
-      ) : etapaActual === "DESCANSO" ? (
-        <DescansoScreen
-          tiempo={selectedEntrenamiento!.ejercicios[indiceEjercicio].tiempo} 
-          indiceDeEjercicio={indiceEjercicio}
-          etapaCompleta={onTiempoAgotado}
-        />
-      ) : etapaActual === "FIN" ? (
-        <FinScreen />
-      ) : null}
+    <View className="flex-1 bg-[#121212] p-4 h-full">
+      <TopNavbar iconBack={true} titulo="Rondas" />
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
+          <EjercicioCard
+            key={idx}
+            imagen={imagesMap[ejercicio.ejercicioId.imagen]}
+            label={ejercicio.ejercicioId.nombre}
+            tiempoTotal={ejercicio.tiempo}
+          />
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\_layout.tsx ---
-// app/(entrenar)/_layout.tsx
-
-import { Stack } from "expo-router";
-
-export default function EntrenarLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="detallesDeEntrenamiento"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="detallesDeEjercicios"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="detallesDeFavs"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen name="ejercicios" options={{ headerShown: false }} />
-      <Stack.Screen name="entrenar" options={{ headerShown: false }} />
-    </Stack>
-  );
-}
-
-
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\screens\DescansoScreen.tsx ---
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/screens/DescansoScreen.tsx ---
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import React from "react";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useEjercicios } from "@/context/EjerciciosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";
 
 interface DescansoScreenProps {
   etapaCompleta: () => void;
+  tiempoRestante: number;
   indiceDeEjercicio: number;
-  tiempo: number;
 }
 
 export default function DescansoScreen({
-  etapaCompleta,
+  tiempoRestante,
   indiceDeEjercicio,
-  tiempo,
+  etapaCompleta,
 }: DescansoScreenProps) {
+  
   const { selectedEntrenamiento } = useEntrenamientos();
-  const { ejercicioActual } = useEjercicios();
   const { imagesMap } = useImagesMap();
+  const tiempo = Math.ceil(tiempoRestante);
 
   const siguienteEjercicio =
     selectedEntrenamiento?.ejercicios[indiceDeEjercicio + 1];
-
-  if (!ejercicioActual || !siguienteEjercicio) {
-    return (
-      <View className="flex-1 items-center justify-center w-full h-full bg-[#121212]">
-        <Text className="text-white">No hay datos de entrenamiento o ejercicio.</Text>
-      </View>
-    );
-  }
-
-  // Formatear el tiempo para mostrarlo como mm:ss
-  const minutes = Math.floor(tiempo / 60);
-  const seconds = tiempo % 60;
-  const formattedMinutes = minutes.toString().padStart(2, "0");
-  const formattedSeconds = seconds.toString().padStart(2, "0");
 
   return (
     <View className="flex-1 items-center justify-between bg-[#121212] py-5">
@@ -888,9 +1100,9 @@ export default function DescansoScreen({
       <View className="flex-col items-center justify-around py-5 mt-12">
         <Text className="text-[#6842FF] text-3xl font-semibold">Toma un descanso</Text>
         <Text className="text-white text-5xl font-extrabold mt-6">
-          {formattedMinutes}:{formattedSeconds}
+          {tiempo}
         </Text>
-        <View className="mt-4 border-b border-gray-700 w-72"/>
+        <View className="mt-4 border-b border-gray-700 w-72" />
       </View>
 
       {/* Sección Intermedia */}
@@ -899,20 +1111,20 @@ export default function DescansoScreen({
           Siguiente ronda ({indiceDeEjercicio + 2} de {selectedEntrenamiento?.ejercicios.length})
         </Text>
         <Text className="text-white text-2xl font-semibold mb-4">
-          {siguienteEjercicio.ejercicioId.nombre}
+          {siguienteEjercicio!.ejercicioId.nombre}
         </Text>
         <View className="items-center">
           <View className="w-[275px] h-[275px] overflow-hidden rounded-3xl">
             <Image
-              source={imagesMap[siguienteEjercicio.ejercicioId.imagen]}
+              source={imagesMap[siguienteEjercicio!.ejercicioId.imagen]}
               className="w-full h-full"
               resizeMode="contain"
-              />
+            />
           </View>
         </View>
       </View>
 
-      {/* Botón Quitar Descanso */}
+      {/* Botón para salir del descanso */}
       <TouchableOpacity
         onPress={etapaCompleta}
         className="bg-[#6842FF] py-4 px-8 rounded-full w-full"
@@ -925,11 +1137,11 @@ export default function DescansoScreen({
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\screens\EjercicioScreen.tsx ---
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/screens/EjercicioScreen.tsx ---
 // app/(entrenar)/screens/EjercicioScreen.tsx
 
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import { useEjercicios } from "@/context/EjerciciosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";
@@ -937,15 +1149,17 @@ import { useImagesMap } from "@/context/ImagesMapContext";
 import ProgressCircular from "@/components/entrenar/ProgressCircular";
 interface EjercicioScreenProps {
   etapaCompleta: () => void;
-  tiempo: number;
+  tiempoTranscurrido: number;
+  tiempoMaximo: number;
+  pausa: boolean;
+  cambioPausa: () => void;
 }
 
-export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreenProps) {
+export default function EjercicioScreen({etapaCompleta, tiempoTranscurrido, tiempoMaximo, pausa, cambioPausa}: EjercicioScreenProps) {
   const { ejercicioActual } = useEjercicios();
   const { imagesMap } = useImagesMap();
 
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [pausa, setPausa] = useState<boolean>(false);
 
   if (!ejercicioActual) return null;
 
@@ -979,7 +1193,8 @@ export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreen
               containerHeight={size.height}
               containerWidth={size.width}
 
-              tiempoMaximo={tiempo}
+              tiempoMaximo={tiempoMaximo}
+              tiempoTranscurrido={tiempoTranscurrido}
               pausa={pausa}
               onTiempoAgotado={etapaCompleta}
             />
@@ -987,7 +1202,7 @@ export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreen
         </View>
 
         <TouchableOpacity
-          onPress={() => setPausa((prev) => !prev)}
+          onPress={() => cambioPausa()}
           activeOpacity={0.7}
           className="bg-[#6842FF] px-16 py-4 rounded-full"
         >
@@ -999,7 +1214,7 @@ export default function EjercicioScreen({etapaCompleta, tiempo}: EjercicioScreen
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\screens\FinScreen.tsx ---
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/screens/FinScreen.tsx ---
 // app/(entrenar)/screens/FinScreen.tsx
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
@@ -1049,7 +1264,7 @@ export default function FinScreen() {
         <View className="border-r border-gray-700" />
         <View className="items-center">
           <Text className="text-white text-xl font-bold">
-            {ejercicioActual.calorias}
+            {selectedEntrenamiento.calorias}
           </Text>
           <Text className="text-gray-400 text-sm">Cal</Text>
         </View>
@@ -1086,31 +1301,27 @@ export default function FinScreen() {
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(entrenar)\screens\InicioScreen.tsx ---
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(entrenar)/screens/InicioScreen.tsx ---
 // app/(entrenar)/screens/InicioScreen.tsx
 
 import { View, Text, TouchableOpacity } from "react-native";
-import React, { useState, useEffect } from "react";
+import React from "react";
 
-function InicioScreen({ etapaCompleta }: any) {
-  const [tiempo, setTiempo] = useState(3);
+interface InicioScreenProps {
+  etapaCompleta: () => void;
+  tiempoRestante: number; // Recibido en segundos (puede ser decimal)
+}
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (tiempo === 0) {
-        etapaCompleta();
-      }
-        setTiempo((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    } , [tiempo]);
+export default function InicioScreen({ etapaCompleta, tiempoRestante }: InicioScreenProps) {
+  // Redondea el tiempo restante para que se muestre solo como un entero.
+  const tiempo = Math.ceil(tiempoRestante);
 
   return (
     <View className="flex-1 items-center justify-center">
       <Text className="text-white text-4xl font-bold mb-4">¡Prepárate!</Text>
       <Text className="text-white text-6xl">{tiempo}</Text>
       <TouchableOpacity
-        onPress={ () => setTiempo(3) }
+        onPress={etapaCompleta}
         className="bg-[#6842FF] py-2 px-4 rounded-full"
       >
         <Text className="text-white">Reiniciar</Text>
@@ -1119,315 +1330,2045 @@ function InicioScreen({ etapaCompleta }: any) {
   );
 }
 
-export default InicioScreen;
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(dashboard)/_layout.tsx ---
+// app/(dashboard)/_layout.tsx
+
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import React from "react";
+
+export default function TabLayout() {
+  return (
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: "#121212",
+            borderTopColor: "#1E1E1E",
+          },
+          tabBarActiveTintColor: "#6842FF",
+          tabBarInactiveTintColor: "#888",
+          tabBarBackground: undefined,
+        }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Inicio",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="home" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="entrenar"
+          options={{
+            title: "Entrenar",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="play-circle" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="perfil"
+          options={{
+            title: "Perfil",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="person-circle" size={26} color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </>
+  );
+}
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(usuario)\login.tsx ---
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
-import React, { useState } from "react";
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(dashboard)/entrenar.tsx ---
+// app/(dashboard)/entrenar.tsx
+
+import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
+import { Image } from "expo-image";
 
-import { useUser } from "@/context/UsersContext";
+import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
-export default function LoginScreen() {
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+export default function TrainingSelector() {
   const router = useRouter();
 
-  const { login } = useUser();
+  const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
+  const { imagesMap } = useImagesMap();
 
-  const [recordar, setRecordar] = useState(false);
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [index, setIndex] = useState(0);
 
-  const handleLogin = async () => {
-    try {
-      await login(email, password);
-      router.push("/(dashboard)");
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message || "Error en la conexión");
+  // Si hay entrenamientos, selecciona uno aleatorio al iniciar
+  useEffect(() => {
+    if (entrenamientos.length > 0) {
+      const randomIndex = Math.floor(Math.random() * entrenamientos.length);
+      setIndex(randomIndex);
     }
+  }, [entrenamientos]);
+
+  const sigEntrenamiento = () => {
+    setIndex((prev) => (prev + 1) % entrenamientos.length);
   };
 
+  const antEntrenamiento = () => {
+    setIndex((prev) => (prev === 0 ? entrenamientos.length - 1 : prev - 1));
+  };
+
+  const handleSelect = (entrenamiento: IEntrenamiento) => {
+    setSelectedEntrenamiento(entrenamiento);
+    router.push("/(entrenar)/detallesDeEntrenamiento");
+  };
+
+  const minutos = Math.floor(entrenamientos[index].tiempoTotal / 60);
+  const segundos = (entrenamientos[index].tiempoTotal % 60)
+    .toString()
+    .padStart(2, "0");
+
   return (
-    <View className="flex-col w-full h-full justify-around bg-[#121212] px-8">
-      <Text className="text-4xl text-white font-bold mt-12">
-        Ingresa con tu cuenta
-      </Text>
+    <View className="flex-col h-full items-center justify-around bg-[#121212] p-4 py-8">
+      <Text className="text-white text-4xl font-semibold">Entrena ahora</Text>
 
-      <View className="flex-col space-y-6">
-        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
-          <MaterialIcons name="email" size={20} color="#888" />
-          <TextInput
-            className="flex-1 text-white h-12 ml-2"
-            placeholder="Correo electrónico"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-
-        <View className="flex-row items-center bg-gray-800 rounded-lg px-4 ">
-          <MaterialIcons name="lock" size={20} color="#888" />
-          <TextInput
-            className="flex-1 text-white h-12 ml-2"
-            placeholder="Contraseña"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          <MaterialIcons
-            name="visibility-off"
-            size={20}
-            color="#888"
-            className="ml-2"
-          />
-        </View>
-
-        <TouchableOpacity
-          className="flex-row items-center justify-center"
-          onPress={() => setRecordar(!recordar)}
-        >
-          <View
-            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#6842FF]" : ""}`}
-          />
-          <Text className="text-white">Recordarme</Text>
+      <View className="flex-row w-full items-center justify-around">
+        <TouchableOpacity className="" onPress={antEntrenamiento}>
+          <ChevronLeft size={40} color="#6842FF" />
         </TouchableOpacity>
-
-        <TouchableOpacity
-          className="bg-[#6842FF] rounded-lg items-center py-4"
-          onPress={handleLogin}
-        >
-          <Text className="text-white text-lg font-bold">Iniciar sesión</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity activeOpacity={0.7}>
-          <Text className="text-[#6842FF] text-center ">
-            ¿Olvidaste tu contraseña?
-          </Text>
+        <Image
+          className="w-[225px] h-[225px] rounded-2xl"
+          source={imagesMap[entrenamientos[index].imagen]}
+        />
+        <TouchableOpacity onPress={sigEntrenamiento}>
+          <ChevronRight size={40} color="#6842FF" />
         </TouchableOpacity>
       </View>
 
-      <View className="flex-row items-center justify-around">
-        <View className="w-1/4 border-b border-gray-700" />
-        <Text className="text-gray-400 text-center ">o continúa con</Text>
-        <View className="w-1/4 border-b border-gray-700" />
-      </View>
-
-      <View className="flex-row items-center justify-around px-12">
-        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
-          <FontAwesome name="facebook" size={24} color="#1877F2" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
-          <FontAwesome name="google" size={24} color="#DB4437" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
-          <FontAwesome name="apple" size={24} color="#FFF" />
-        </TouchableOpacity>
-      </View>
-
-      <View className="flex-row items-center justify-center">
-        <Text className="text-gray-400 text-center">
-          ¿No tienes una cuenta?
+      <View className="w-full px-2">
+        <Text className="text-white text-2xl font-bold mb-2">
+          {entrenamientos[index].nombre}
         </Text>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => router.push("/(usuario)/register")}
-        >
-          <Text className="ml-2 text-[#6842FF] font-bold">Regístrate</Text>
-        </TouchableOpacity>
+        <View className="border-b border-gray-700 m-2" />
+        <View className="flex-row items-center justify-between ">
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            Nivel: {entrenamientos[index].nivel}
+          </Text>
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            {entrenamientos[index].ejercicios.length} ejercicios
+          </Text>
+        </View>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            Grupo: {entrenamientos[index].grupo}
+          </Text>
+          <Text className="text-gray-400 text-base px-3 mb-4">
+            {minutos}:{segundos} min
+          </Text>
+        </View>
+        <View className="px-6" style={{ minHeight: 60 }}>
+          <Text
+            className="text-gray-400 text-sm"
+            numberOfLines={3}
+            ellipsizeMode="tail"
+          >
+            {entrenamientos[index].descripcion}
+          </Text>
+        </View>
+        <View className="border-b border-gray-700 m-2" />
       </View>
+
+      <TouchableOpacity
+        onPress={() => handleSelect(entrenamientos[index])}
+        className="bg-[#6842FF] py-3 px-6 rounded-2xl"
+      >
+        <Text className="text-white text-lg font-bold">Entrenar</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(usuario)\notificaciones.tsx ---
-// app/(usuario)/notificaciones.tsx
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(dashboard)/perfil.tsx ---
+// app/(dashboard)/perfil.tsx
 
-import { View, ScrollView } from "react-native";
-import React from "react";
+import { View, Text, Switch, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import { Image } from "expo-image";
 
+import { useUser } from "@/context/UsersContext";
+
+import Item from "@/components/usuario/ItemPerfil";
 import TopNavbar from "@/components/TopNavbar";
-import NotifItem from "@/components/usuario/NotifiItem";
 
-export default function NotificationScreen({ navigation }: any) {
+export default function PerfilScreen() {
+  const router = useRouter();
+
+  const { user, logout } = useUser();
+
+  const [darkMode, setDarkMode] = useState(false);
+
+  const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
+
+  const handleSalir = () => {
+    logout();
+    router.push("/(usuario)/login");
+  };
+
   return (
-    <View className="flex-1 bg-[#121212] pt-10 p-4 pb-4">
-      <TopNavbar titulo="Notificaciones" iconBack={true} />
+    <View className="flex-1 bg-[#121212] pt-4">
+      <View className="w-full px-4">
+        <TopNavbar titulo="Perfil" />
+      </View>
 
-      {/* CONTENIDO */}
-      <ScrollView className="flex-1 mt-8" showsVerticalScrollIndicator={false}>
-        {/* Lista de notificaciones */}
-        <NotifItem
-          tipo="check"
-          titulo="Congratulations!"
-          contenido="You've been exercising for 2 hours"
-        />
+      {/* Contenido principal */}
+      <ScrollView className="flex-1 px-4">
+        {/* Foto y datos de usuario */}
+        <View className="items-center">
+          <View className="relative">
+            <Image
+              source={{
+                uri: "https://randomuser.me/api/portraits/women/32.jpg",
+              }}
+              className="w-24 h-24 rounded-full border border-[#6842FF]"
+            />
+          </View>
+
+          <Text className="text-white text-xl font-semibold mt-3">
+            {user?.name}
+          </Text>
+          <Text className="text-gray-300 text-sm mt-2">{user?.email}</Text>
+        </View>
+
+        {/* Sección de items (Editar perfil, Notificaciones, etc.) */}
+        <View className="p-2 mt-6  border-t border-gray-800">
+          <Item
+            icono="medal-outline"
+            contenido="Logros"
+            onPress={() => router.push("/(usuario)/logros")}
+          />
+          <Item icono="person-outline" contenido="Editar perfil" />
+          <Item
+            icono="notifications-outline"
+            contenido="Notificaciones"
+            onPress={() => router.push("/(usuario)/notificaciones")}
+          />
+          <Item icono="help-circle-outline" contenido="Informacion" />
+
+          {/* Dark Theme */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <Ionicons name="moon-outline" size={20} color="#FFF" />
+              <Text className="text-white ml-3">Dark Theme</Text>
+            </View>
+            <Switch
+              value={darkMode}
+              onValueChange={handleToggleDarkMode}
+              trackColor={{ false: "#767577", true: "#6842FF" }}
+              thumbColor={darkMode ? "#FFF" : "#f4f3f4"}
+            />
+          </View>
+        </View>
+
+        {/* Salir */}
+        <View className="w-full border-t border-gray-800 p-2">
+          <Item
+            icono="log-out-outline"
+            contenido="Salir"
+            color="#FF4444"
+            onPress={handleSalir}
+          />
+        </View>
       </ScrollView>
     </View>
   );
 }
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(usuario)\register.tsx ---
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(dashboard)/index.tsx ---
+// app/(dashboard)/index.tsx
+
 import React, { useState } from "react";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
+import {
+  TouchableOpacity,
+  ScrollView,
+  Pressable,
+  View,
+  Text,
+} from "react-native";
 
-const RegisterScreen = () => {
-  const router = useRouter();
+import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useUser } from "@/context/UsersContext";
 
-  const [name, setName] = useState("");
-  const [recordar, setRecordar] = useState(false);
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
-  const handleRegister = async () => {
+import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
+import NivelButton from "@/components/dashboard/NivelButton";
+import TopNavbar from "@/components/TopNavbar";
+
+export default function HomeScreen() {
+  const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
+  const { user } = useUser();
+
+  const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
+
+  const niveles = ["Principiante", "Intermedio", "Avanzado"];
+
+  const entrenamientoSeleccionado = (entrenamiento: IEntrenamiento) => {
+    setSelectedEntrenamiento(entrenamiento);
+    router.push("/(entrenar)/detallesDeEntrenamiento");
+  };
+
+  return (
+    <View className="flex-col items-center justify-around pt-4 h-full bg-[#121212]">
+      <View className="w-full px-4">
+        <TopNavbar logo={true} iconNotif={true} iconFav={true} />
+      </View>
+
+      <Text className="w-full text-white text-2xl font-semibold pb-2 px-4">
+        Hola, {user?.name} 👋
+      </Text>
+
+      {/* Sección "Mis entrenamientos" */}
+      <View className="w-full flex-row items-center justify-between px-4">
+        <Text className="text-white text-lg">Entrenamientos</Text>
+        <TouchableOpacity
+          onPress={() => {
+            router.push(`/(entrenar)/entrenamientos`);
+          }}
+        >
+          <Text className="text-[#6842FF] text-sm">Ver más</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Sección "Entrenamientos horizontales" */}
+      <View className="w-full">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {entrenamientos.map((unEntrenamiento, idx) => (
+            <TouchableOpacity
+              key={unEntrenamiento._id || idx}
+              className="m-3"
+              onPress={() => entrenamientoSeleccionado(unEntrenamiento)}
+            >
+              <EntrenamientoCard
+                key={unEntrenamiento._id || idx}
+                tipo="Card Grande"
+                entrenamiento={unEntrenamiento}
+              />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Sección "Niveles" */}
+      <View className="w-full flex-row items-center justify-between px-4">
+        <Text className="text-white text-lg font-semibold">Niveles</Text>
+        <Pressable
+          onPress={() => {
+            // router.push(`/entrenamientosPorNivel`);
+          }}
+        >
+          <Text className="text-[#6842FF] text-sm">Ver más</Text>
+        </Pressable>
+      </View>
+
+      {/* Fila de botones */}
+      <View className="w-full flex-row items-center justify-around py-2">
+        {niveles.map((nivel) => {
+          const isActive = nivel === filtroPorNivel;
+          return (
+            <View className="w-[31%]" key={nivel}>
+              <NivelButton
+                label={nivel}
+                onPress={() => setFiltroPorNivel(nivel)}
+                isActive={isActive}
+              />
+            </View>
+          );
+        })}
+      </View>
+
+      {/* Lista de entrenamientos filtrados por nivel */}
+      <View className="flex-1 w-full h-full items-center justify-center py-1">
+        <ScrollView className="w-11/12" showsVerticalScrollIndicator={false}>
+          {entrenamientos
+            .filter(
+              (entrenamientoFiltrado) =>
+                entrenamientoFiltrado.nivel === filtroPorNivel,
+            )
+            .map((unEntrenamiento, idx) => (
+              <TouchableOpacity
+                key={unEntrenamiento._id || idx}
+                className="py-2"
+                onPress={() => entrenamientoSeleccionado(unEntrenamiento)}
+              >
+                <EntrenamientoCard
+                  key={unEntrenamiento._id || idx}
+                  tipo="Card Chica"
+                  entrenamiento={unEntrenamiento}
+                />
+              </TouchableOpacity>
+            ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/context/UsersContext.tsx ---
+// app/context/UserContext.tsx
+
+import React, { createContext, useContext, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export interface Logro {
+  key: string;
+  title: string;
+  content: string;
+  type: "check" | "plus" | "time";
+  obtenido: boolean;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  token?: string;
+  favs: string[];
+  entrenamientosCompletos: number;
+  caloriasQuemadas: number;
+  tiempoEntrenado: number;
+  logros: Logro[];
+}
+
+interface UserContextType {
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  addFav: (entrenamientoId: string) => Promise<void>;
+  removeFav: (entrenamientoId: string) => Promise<void>;
+  updateMetricas: (tiempo: number, calorias: number) => Promise<void>;
+  updateLogros: () => Promise<void>;
+}
+
+const UserContext = createContext<UserContextType | undefined>(undefined);
+
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  // >>> Al montar, re-hidratar el user desde AsyncStorage <<<
+  useEffect(() => {
+    const loadUserFromStorage = async () => {
+      try {
+        const token = await AsyncStorage.getItem("@token");
+        if (token) {
+          const storedUser = await AsyncStorage.getItem("@user");
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          }
+        }
+      } catch (error) {
+        console.error("Error leyendo AsyncStorage:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    loadUserFromStorage();
+  }, []);
+
+  const login = async (email: string, password: string) => {
     try {
-      console.log(name, email, password);
       const response = await fetch(
-        "https://ledfit-back.vercel.app/api/auth/register",
+        "https://ledfit-back.vercel.app/api/auth/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ email, password }),
         },
       );
       if (!response.ok) {
         const data = await response.json();
-        setError(data.message || "Error en el registro");
-        return;
+        throw new Error(data.message || "Error en el login");
       }
       const data = await response.json();
+      // Guarda el token y la información del usuario en AsyncStorage
       await AsyncStorage.setItem("@token", data.token);
       await AsyncStorage.setItem("@user", JSON.stringify(data.user));
-      router.push("/(dashboard)");
+      setUser(data.user);
     } catch (e) {
-      console.error(e);
-      setError("Error en la conexión");
+      throw e;
     }
   };
 
+  const logout = async () => {
+    await AsyncStorage.removeItem("@token");
+    await AsyncStorage.removeItem("@user");
+    setUser(null);
+  };
+
+  const addFav = async (entrenamientoId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+      const response = await fetch(
+        `https://ledfit-back.vercel.app/api/auth/favs/agregar/${entrenamientoId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const data = await response.json();
+      if (user) {
+        setUser({ ...user, favs: data.favs.map((id: any) => id.toString()) });
+      }
+    } catch (e) {
+      console.error("Error en addFav:", e);
+      throw e;
+    }
+  };
+
+  const removeFav = async (entrenamientoId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+      const response = await fetch(
+        `https://ledfit-back.vercel.app/api/auth/favs/eliminar/${entrenamientoId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error al eliminar de favoritos");
+      }
+      const data = await response.json();
+      // Actualizamos la propiedad favs del usuario
+      if (user) {
+        setUser({ ...user, favs: data.favs.map((id: any) => id.toString()) });
+      }
+    } catch (error) {
+      console.error("Error en removeFav:", error);
+    }
+  };
+
+  const updateMetricas = async (
+    tiempo: number,
+    calorias: number,
+  ): Promise<void> => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+
+      const response = await fetch(
+        "https://ledfit-back.vercel.app/api/auth/update-metricas",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ tiempo, calorias }),
+        },
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error actualizando metricas");
+      }
+
+      const data = await response.json();
+      if (user) {
+        setUser({
+          ...user,
+          tiempoEntrenado: data.tiempoEntrenado,
+          caloriasQuemadas: data.caloriasQuemadas,
+          entrenamientosCompletos: data.entrenamientosCompletos,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating metrics:", error);
+      throw error;
+    }
+  };
+
+  const updateLogros = async (): Promise<void> => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) throw new Error("No token found");
+
+      const response = await fetch(
+        "https://ledfit-back.vercel.app/api/auth/update-logros",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const text = await response.text();
+      console.log("Respuesta de update-logros:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error("La respuesta no es JSON válido: " + text + e);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error actualizando logros");
+      }
+
+      if (user) {
+        setUser({
+          ...user,
+          logros: data.logros,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating logros:", error);
+      throw error;
+    }
+  };
+
+  // Cambio el logro enviado por parametro a true
   return (
-    <View className="flex-col w-full h-full justify-around bg-gray-900 px-8">
-      <Text className="text-4xl text-white font-bold mt-12 mb-4">
-        Crea tu cuenta
-      </Text>
+    <UserContext.Provider
+      value={{
+        user,
+        setUser,
+        login,
+        logout,
+        addFav,
+        removeFav,
+        updateMetricas,
+        updateLogros,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
+  );
+};
 
-      <View className="flex-col space-y-6">
-        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
-          <TextInput
-            className="flex-1 text-white h-12 ml-2"
-            placeholder="Nombre"
-            placeholderTextColor="#888"
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
-        <View className="flex-row items-center bg-gray-800 rounded-lg px-4">
-          <MaterialIcons name="email" size={20} color="#888" />
-          <TextInput
-            className="flex-1 text-white h-12 ml-2"
-            placeholder="Correo electrónico"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser debe ser usado dentro de un UserProvider");
+  }
+  return context;
+};
 
-        <View className="flex-row items-center bg-gray-800 rounded-lg px-4 ">
-          <MaterialIcons name="lock" size={20} color="#888" />
-          <TextInput
-            className="flex-1 text-white h-12 ml-2"
-            placeholder="Contraseña"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          <MaterialIcons
-            name="visibility-off"
-            size={20}
-            color="#888"
-            className="ml-2"
-          />
-        </View>
+export default UserContext;
 
-        <TouchableOpacity
-          className="flex-row items-center justify-center"
-          onPress={() => setRecordar(!recordar)}
-        >
-          <View
-            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#6842FF]" : ""}`}
-          />
-          <Text className="text-white">Recordarme</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          className="bg-[#6842FF] rounded-lg items-center py-4"
-          onPress={handleRegister}
-        >
-          <Text className="text-white text-lg font-bold">Registrarse</Text>
-        </TouchableOpacity>
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/context/MqttContext.tsx ---
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { Client, Message } from "paho-mqtt";
+
+interface MqttContextValue {
+  client: Client | null;
+  publishMessage: (topic: string, message: string) => void;
+  connected: boolean;
+}
+
+export const MqttContext = createContext<MqttContextValue>({
+  client: null,
+  publishMessage: () => {},
+  connected: false,
+});
+
+export function MqttProvider({ children }: { children: React.ReactNode }) {
+  const [connected, setConnected] = useState(false);
+  const clientRef = useRef<Client | null>(null);
+
+  // Datos del broker y configuración
+  const host = "broker.mqtt-dashboard.com";
+  const port = 8000; // WebSocket sin SSL
+  const path = "/mqtt";
+  const clientId = "myClientId_" + new Date().getTime(); // Generar un ID único
+
+  // Función para inicializar el cliente Paho
+  const initializeMqttClient = useCallback(() => {
+    // Crea el cliente MQTT sobre WebSocket
+    const c = new Client(host, port, path, clientId);
+
+    c.onConnectionLost = (responseObject) => {
+      setConnected(false);
+    };
+
+    c.onMessageArrived = (message: Message) => {
+      console.log(
+        "Mensaje recibido:",
+        message.destinationName,
+        message.payloadString,
+      );
+      // Aquí podrías manejar los mensajes entrantes si lo necesitas
+    };
+
+    // Conectar al broker
+    c.connect({
+      useSSL: false,
+      onSuccess: () => {
+        setConnected(true);
+        // Ejemplo: suscribirse a un tópico si se requiere:
+        // c.subscribe("test/topic", { qos: 0 });
+      },
+      onFailure: (error) => {
+        console.error("Error al conectar MQTT:", error.errorMessage);
+      },
+    });
+
+    clientRef.current = c;
+  }, [host, port, path, clientId]);
+
+  useEffect(() => {
+    initializeMqttClient();
+
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.disconnect();
+      }
+    };
+  }, [initializeMqttClient]);
+
+  const publishMessage = useCallback(
+    (pubTopic: string, message: string) => {
+      const { current: c } = clientRef;
+      if (c && connected) {
+        const msg = new Message(message);
+        msg.destinationName = pubTopic;
+        c.send(msg);
+        console.log("Mensaje publicado en", pubTopic, ":", message);
+      } else {
+        console.warn("No conectado a MQTT, no se puede publicar.");
+      }
+    },
+    [connected],
+  );
+
+  return (
+    <MqttContext.Provider
+      value={{
+        client: clientRef.current,
+        publishMessage,
+        connected,
+      }}
+    >
+      {children}
+    </MqttContext.Provider>
+  );
+}
+
+export default MqttProvider;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/context/ImagesMapContext.tsx ---
+import React, { createContext, useState, useEffect } from "react";
+
+interface ImagesMap {
+  [key: string]: any;
+}
+
+interface ImagesMapContextValue {
+  imagesMap: ImagesMap;
+}
+
+export const ImagesMapContext = createContext<ImagesMapContextValue>({
+  imagesMap: {},
+});
+
+export function ImagesMapProvider({ children }: { children: React.ReactNode }) {
+  const [imagesMap, setImagesMap] = useState<ImagesMap>({});
+  useEffect(() => {
+    const imagesMap: { [key: string]: any } = {
+      // Entrenamientos
+      yogaIntermedioImage: require("@/assets/entrenamientos/yogaIntermedioImage.webp"),
+      flexibilidadPrincipianteImage: require("@/assets/entrenamientos/flexibilidadPrincipianteImage.webp"),
+      hiitParaPrincipiantesImage: require("@/assets/entrenamientos/hiitParaPrincipiantesImage.webp"),
+      fuerzaTotalIntermedioImage: require("@/assets/entrenamientos/fuerzaTotalIntermedioImage.webp"),
+      crossfitAvanzadoImage: require("@/assets/entrenamientos/crossfitAvanzadoImage.webp"),
+
+      // Ejercicios
+      perroBocaAbajoImage: require("@/assets/ejercicios/perroBocaAbajoImage.webp"),
+      deadliftImage: require("@/assets/ejercicios/deadliftImage.webp"),
+      pressBancaImage: require("@/assets/ejercicios/pressBancaImage.webp"),
+      dominadasImage: require("@/assets/ejercicios/dominadasImage.webp"),
+      highKneesImage: require("@/assets/ejercicios/highKneesImage.webp"),
+      burpeesImage: require("@/assets/ejercicios/burpeesImage.webp"),
+      warrior1Image: require("@/assets/ejercicios/warrior1Image.webp"),
+      pesoMuertoImage: require("@/assets/ejercicios/pesoMuertoImage.webp"),
+      posturaDelGatoImage: require("@/assets/ejercicios/posturaDelGatoImage.webp"),
+      kettlebellSwingImage: require("@/assets/ejercicios/kettlebellSwingImage.webp"),
+      fondosTricepsImage: require("@/assets/ejercicios/fondosTricepsImage.webp"),
+      squatJumpImage: require("@/assets/ejercicios/squatJumpImage.webp"),
+      boxJumpImage: require("@/assets/ejercicios/boxJumpImage.webp"),
+      zancadaConRotacionImage: require("@/assets/ejercicios/zancadaConRotacionImage.webp"),
+      mountainClimbersImage: require("@/assets/ejercicios/mountainClimbersImage.webp"),
+      pressMilitarImage: require("@/assets/ejercicios/pressMilitarImage.webp"),
+      estiramientoAductoresImage: require("@/assets/ejercicios/estiramientoAductoresImage.webp"),
+      remoBarraBajaImage: require("@/assets/ejercicios/remoBarraBajaImage.webp"),
+      sidePlankImage: require("@/assets/ejercicios/sidePlankImage.webp"),
+      sentadillaProfundaImage: require("@/assets/ejercicios/sentadillaProfundaImage.webp"),
+      curlBicepsBarraImage: require("@/assets/ejercicios/curlBicepsBarraImage.webp"),
+      trianglePoseImage: require("@/assets/ejercicios/trianglePoseImage.webp"),
+      wallBallShotImage: require("@/assets/ejercicios/wallBallShotImage.webp"),
+      jumpingJacksImage: require("@/assets/ejercicios/jumpingJacksImage.webp"),
+      plankToPushUpImage: require("@/assets/ejercicios/plankToPushUpImage.webp"),
+
+      // Iconos de notificaciones
+      notifCheck: require("@/assets/icons/notifCheck.png"),
+      notifPlus: require("@/assets/icons/notifPlus.png"),
+      notifTime: require("@/assets/icons/notifTime.png"),
+    };
+    setImagesMap(imagesMap);
+  }, []);
+
+  return (
+    <ImagesMapContext.Provider value={{ imagesMap }}>
+      {children}
+    </ImagesMapContext.Provider>
+  );
+}
+
+export const useImagesMap = () => {
+  const context = React.useContext(ImagesMapContext);
+  if (!context) {
+    throw new Error("useImagesMap must be used within a ImagesMapProvider");
+  }
+  return context;
+};
+
+export default ImagesMapContext;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/context/EjerciciosContext.tsx ---
+// app/context/ExercisesContext.tsx
+
+import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
+
+export interface IEjercicio {
+  _id: string;
+  imagen: string;
+  nombre: string;
+  caloriasPorSegundo: number;
+  grupo: string;
+  descripcion: string;
+}
+
+interface EjerciciosContextProps {
+  ejercicios: IEjercicio[];
+  setEjercicios: (e: IEjercicio[]) => void;
+  ejercicioActual: IEjercicio | null;
+  setEjercicioActual: (e: IEjercicio | null) => void;
+  fetchEjercicioById: (ejercicioId: string) => Promise<IEjercicio | null>;
+}
+
+const EjerciciosContext = createContext<EjerciciosContextProps | undefined>(
+  undefined,
+);
+
+// Proveedor
+export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [ejercicios, setEjercicios] = useState<IEjercicio[]>([]);
+  const [ejercicioActual, setEjercicioActual] = useState<IEjercicio | null>(
+    null,
+  );
+
+  // Obtener la lista de ejercicios
+  const fetchEjercicios = async () => {
+    try {
+      const response = await axios.get(
+        "https://ledfit-back.vercel.app/api/ejercicios",
+      );
+      setEjercicios(response.data);
+    } catch (err: any) {
+      console.error("Error fetching exercises:", err);
+    }
+  };
+
+  // Obtener un ejercicio por su ID
+  const fetchEjercicioById = async (ejercicioId: string) => {
+    try {
+      const response = await axios.get(
+        `https://ledfit-back.vercel.app/api/ejercicios/${ejercicioId}`,
+      );
+
+      return response.data;
+    } catch (err: any) {
+      console.error("Error fetching exercise:", err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchEjercicios();
+  }, []);
+
+  return (
+    <EjerciciosContext.Provider
+      value={{
+        ejercicios,
+        setEjercicios,
+        ejercicioActual,
+        setEjercicioActual,
+        fetchEjercicioById,
+      }}
+    >
+      {children}
+    </EjerciciosContext.Provider>
+  );
+};
+
+export const useEjercicios = () => {
+  const context = React.useContext(EjerciciosContext);
+  if (!context) {
+    throw new Error("useEjercicios must be used within a EjerciciosProvider");
+  }
+  return context;
+};
+
+export default EjerciciosContext;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/context/NotificationsContext.tsx ---
+// src/context/NotificationsContext.tsx
+
+import React, { createContext, useState, useEffect, ReactNode } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export interface INotification {
+  _id: string;
+  title: string;
+  content: string;
+  type: "check" | "plus" | "time";
+  date: string;
+  read: boolean;
+}
+
+interface INotificationsContext {
+  notifications: INotification[];
+  refreshNotifications: () => Promise<void>;
+  addSampleNotification: () => void;
+  createNotification: () => Promise<void>;
+}
+
+export const NotificationsContext = createContext<INotificationsContext>({
+  notifications: [],
+  refreshNotifications: async () => {},
+  addSampleNotification: () => {},
+  createNotification: async () => {},
+});
+
+export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
+  const [notifications, setNotifications] = useState<INotification[]>([]);
+
+  const fetchNotifications = async () => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      console.log("Token:", token);
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+      const response = await fetch("https://ledfit-back.vercel.app/api/notifications", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications);
+      } else {
+        console.error("Error fetching notifications:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  const refreshNotifications = async () => {
+    await fetchNotifications();
+  };
+
+  // Función para agregar una notificación de prueba localmente
+  const addSampleNotification = () => {
+    const newNotif: INotification = {
+      _id: Math.random().toString(36).substr(2, 9),
+      title: "Notificación de prueba",
+      content: "Esta es una notificación de ejemplo para pruebas.",
+      type: "check",
+      date: new Date().toISOString(),
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  // Función para crear una notificación en el backend
+  const createNotification = async () => {
+    try {
+      const token = await AsyncStorage.getItem("@token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+      const response = await fetch("https://ledfit-back.vercel.app/api/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: "Notificación de prueba API",
+          message: "Esta notificación fue creada desde el botón de pruebas."
+          // Nota: El backend, gracias al middleware, debería asignar el usuario a partir del token.
+        }),
+      });
+      if (response.ok) {
+        console.log("Notificación creada en backend");
+        await fetchNotifications();
+      } else {
+        console.error("Error creating notification:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  return (
+    <NotificationsContext.Provider
+      value={{ notifications, refreshNotifications, addSampleNotification, createNotification }}
+    >
+      {children}
+    </NotificationsContext.Provider>
+  );
+};
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/context/EntrenamientosContext.tsx ---
+// app/context/WorkoutsContext.tsx
+
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import { API_URL } from "@env";
+
+import type { IEjercicio } from "./EjerciciosContext";
+
+interface IDataEjercicio {
+  ejercicioId: IEjercicio;
+  tiempo: number;
+}
+export interface IEntrenamiento {
+  _id: string;
+  nombre: string;
+  nivel: string;
+  ejercicios: IDataEjercicio[];
+  imagen: string;
+  tiempoTotal: number;
+  calorias: number;
+  grupo: string;
+  descripcion: string;
+}
+
+interface EntrenamientosContextValue {
+  entrenamientos: IEntrenamiento[];
+  selectedEntrenamiento: IEntrenamiento | null;
+  setSelectedEntrenamiento: (e: IEntrenamiento | null) => void;
+}
+
+const EntrenamientosContext = createContext<
+  EntrenamientosContextValue | undefined
+>(undefined);
+
+export function EntrenamientosProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  console.log("API_URL:", API_URL);
+  const [entrenamientos, setEntrenamientos] = useState<IEntrenamiento[]>([]);
+  const [selectedEntrenamiento, setSelectedEntrenamiento] =
+    useState<IEntrenamiento | null>(null);
+
+  // Obtener lista de ejercicios
+  const fetchEntrenamientos = useCallback(async () => {
+    try {
+      const response = await fetch(
+        "https://ledfit-back.vercel.app/api/entrenamientos",
+      );
+      if (!response.ok) {
+        throw new Error("ErrorWorkouts fetching workouts");
+      }
+      const data = await response.json();
+      setEntrenamientos(data);
+    } catch (err: any) {
+      console.error("ErrorWorkouts fetching workouts:", err);
+    }
+  }, []);
+
+  // Obtener un entrenamiento por su ID
+  const fetchEntrenamientoById = useCallback(
+    async (entrenamientoId: string) => {
+      try {
+        const response = await fetch(
+          `https://ledfit-back.vercel.app/api/entrenamientos/${entrenamientoId}`,
+        );
+        if (!response.ok) {
+          throw new Error("Error fetching entrenamientos");
+        }
+        const data = await response.json();
+        return data;
+      } catch (err: any) {
+        console.error("Error fetching entrenamientos:", err);
+        return null;
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    fetchEntrenamientos();
+  }, []);
+
+  return (
+    <EntrenamientosContext.Provider
+      value={
+        {
+          entrenamientos: entrenamientos,
+          setEntrenamientos: setEntrenamientos,
+          selectedEntrenamiento: selectedEntrenamiento,
+          setSelectedEntrenamiento: setSelectedEntrenamiento,
+          fetchEntrenamientoById: fetchEntrenamientoById,
+        } as any
+      }
+    >
+      {children}
+    </EntrenamientosContext.Provider>
+  );
+}
+
+export const useEntrenamientos = () => {
+  const context = React.useContext(EntrenamientosContext);
+  if (context === undefined) {
+    throw new Error(
+      "useEntrenamientos must be used within a EntrenamientosProvider",
+    );
+  }
+  return context;
+};
+
+export default EntrenamientosProvider;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/Button.tsx ---
+// app/components/Button.tsx
+
+import React from "react";
+import { Text, TouchableOpacity } from "react-native";
+
+interface ButtonProps {
+  title: string;
+  onPress: () => void;
+  color?: string;
+}
+
+export default function Button({ title, onPress, color }: ButtonProps) {
+  let colorButton = "bg-[#7B61FF]";
+
+  return (
+    <TouchableOpacity onPress={onPress} style={{ backgroundColor: color }}>
+      <Text>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/TopNavbar.tsx ---
+// app/components/TopNavbar.tsx
+
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Color } from "@/GlobalStyles";
+import Logo from "@/components/Logo";
+import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ImageSourcePropType,
+  TouchableOpacity,
+} from "react-native";
+
+type TopNavbarType = {
+  titulo?: string;
+  iconBuscar?: ImageSourcePropType;
+  iconNotif?: boolean;
+  iconBack?: boolean;
+  iconFav?: boolean;
+  logo?: boolean;
+};
+
+const TopNavbar = ({
+  titulo: titulo = "Ledfit",
+  iconBuscar: iconBuscar,
+  iconNotif: iconNotif,
+  iconBack: iconBack,
+  iconFav: iconFav,
+  logo: logo,
+}: TopNavbarType) => {
+  const router = useRouter();
+
+  return (
+    <View className="flex-row items-center justify-between my-6">
+      <View className="flex-row items-center">
+        {iconBack && (
+          <TouchableOpacity className="" onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
+        {logo && <Logo />}
+        <Text className="text-2xl font-bold text-gray-200 pl-4">{titulo}</Text>
       </View>
-
-      <View className="flex-row items-center justify-around">
-        <View className="w-1/4 border-b border-gray-700" />
-        <Text className="text-gray-400 text-center ">o continúa con</Text>
-        <View className="w-1/4 border-b border-gray-700" />
-      </View>
-
-      <View className="flex-row items-center justify-around px-12">
-        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
-          <FontAwesome name="facebook" size={24} color="#1877F2" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
-          <FontAwesome name="google" size={24} color="#DB4437" />
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg">
-          <FontAwesome name="apple" size={24} color="#FFF" />
-        </TouchableOpacity>
-      </View>
-
-      <View className="flex-row items-center justify-center">
-        <Text className="text-gray-400 text-center">
-          ¿Ya tienes una cuenta?
-        </Text>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => router.push("/(usuario)/login")}
-        >
-          <Text className="ml-2 text-[#6842FF] font-bold">Inicia sesión</Text>
-        </TouchableOpacity>
+      <View className="flex-row items-center gap-4">
+        {iconNotif && (
+          <TouchableOpacity
+            onPress={() => router.push("/(usuario)/notificaciones")}
+          >
+            <Image
+              style={styles.color}
+              source={require("@/assets/icons/iconNotif.png")}
+            />
+          </TouchableOpacity>
+        )}
+        {iconFav && (
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/(entrenar)/detallesDeFavs");
+            }}
+          >
+            <Image
+              style={styles.color}
+              source={require("@/assets/icons/iconFavFalse.png")}
+            />
+          </TouchableOpacity>
+        )}
+        {iconBuscar && (
+          <TouchableOpacity>
+            <Image
+              className="w-8 h-8"
+              style={styles.color}
+              source={iconBuscar}
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
 };
 
-export default RegisterScreen;
+export default TopNavbar;
+
+// Color de icono //
+const styles = StyleSheet.create({
+  color: {
+    tintColor: Color.greyscale300,
+  },
+});
 
 
-// --- Contenido de C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app\(usuario)\_layout.tsx ---
-// app/(usuario)/_layout.tsx
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/Logo.tsx ---
+import * as React from "react";
+import { View, Image, StyleSheet } from "react-native";
+import { Border, Color } from "@/GlobalStyles";
 
-import { Stack } from "expo-router";
-
-export default function UsuarioLayout() {
+export default function Logo() {
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="notificaciones" options={{ headerShown: false }} />
-      <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="register" options={{ headerShown: false }} />
-    </Stack>
+    <View style={styles.logoContainer}>
+      <View style={styles.rectangle} />
+      <Image
+        source={require("@/assets/vector.png")}
+        style={styles.vectorIcon}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  rectangle: {
+    height: "100%",
+    width: "100%",
+    top: "0%",
+    right: "0%",
+    bottom: "0%",
+    left: "0%",
+    borderRadius: Border.br_xs,
+    backgroundColor: Color.primary500,
+    position: "absolute",
+  },
+  vectorIcon: {
+    height: "33.44%",
+    width: "66.56%",
+    top: "33.44%",
+    right: "16.88%",
+    bottom: "33.13%",
+    left: "16.56%",
+    maxWidth: "100%",
+    overflow: "hidden",
+    maxHeight: "100%",
+    position: "absolute",
+    tintColor: Color.greyscale300,
+  },
+  logoContainer: {
+    borderRadius: Border.br_341xl,
+    width: 36,
+    height: 36,
+  },
+});
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/InputField.tsx ---
+// app/components/InputField.tsx
+
+import React from "react";
+import { View, Text, TextInput } from "react-native";
+
+interface InputFieldProps {
+  label?: string; // Etiqueta opcional para el campo
+  placeholder: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  secureTextEntry?: boolean; // Campo para contraseñas
+  multiline?: boolean; // Para textos largos
+  numberOfLines?: number; // Líneas visibles si es multilínea
+  error?: string; // Mensaje de error opcional
+}
+
+export default function InputField({
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  secureTextEntry = false,
+  multiline = false,
+  numberOfLines = 1,
+  error,
+}: InputFieldProps) {
+  return (
+    <View className="mb-6">
+      {label && (
+        <Text className="text-gray-200 text-sm font-semibold mb-2">
+          {label}
+        </Text>
+      )}
+      <TextInput
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        multiline={multiline}
+        numberOfLines={numberOfLines}
+        placeholderTextColor="#aaaaaa"
+        className={`bg-gray-800 text-gray-200 border border-gray-700 rounded-lg px-4 py-3 ${
+          error ? "border-red-400" : "border-gray-300"
+        }`}
+      />
+      {error && <Text className="text-red-400 text-xs mt-1">{error}</Text>}
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/entrenar/EjercicioCard.tsx ---
+// components/EjercicioCard.tsx
+
+import { Text, View, Image } from "react-native";
+import React from "react";
+
+type EjercicioCardProps = {
+  key: number;
+  imagen: any;
+  label: string;
+  tiempoTotal: number;
+};
+
+const EjercicioCard = ({
+  imagen: imagen,
+  label: label,
+  tiempoTotal: tiempoTotal,
+}: EjercicioCardProps) => {
+  return (
+    <View className="flex-row items-center bg-[#1E1E1E] rounded-xl mb-3 overflow-hidden">
+      <Image source={imagen} className="w-24 h-24" resizeMode="cover" />
+      <View className="flex-col ml-4">
+        <Text className="text-white font-extrabold text-lg pb-1">{label}</Text>
+        <Text className="text-white text-xs">{tiempoTotal} segundos</Text>
+      </View>
+    </View>
+  );
+};
+
+export default EjercicioCard;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/entrenar/ChipInfo.tsx ---
+// app/components/entrenar/ChipInfo.tsx
+
+import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+
+export type ChipProps = {
+  label?: string | number;
+  icon?: "None" | "Time" | "Play";
+  totalTime?: number;
+};
+
+// Formatea el tiempo en mm:ss
+function formatTime(totalTime: number) {
+  const m = Math.floor(totalTime / 60);
+  const s = totalTime % 60;
+  return `${m}:${s < 10 ? `0${s}` : s} min`;
+}
+
+const ChipInfo = ({ label, icon, totalTime }: ChipProps) => {
+  if (icon === "Time") {
+    label = formatTime(totalTime ?? 0);
+  } else if (icon === "Play") {
+    label = label + " rondas";
+  }
+
+  return (
+    <View className="flex-row items-center justify-center bg-[#1E1E1E] px-3 py-1 rounded-full border border-[#6842FF]">
+      {icon === "None" ? null : (
+        <Ionicons
+          name={icon === "Time" ? "time-outline" : "play"}
+          size={15}
+          color="#7B61FF"
+        />
+      )}
+      <Text className="text-[#6842FF] text-sm text-center ml-1">{label}</Text>
+    </View>
+  );
+};
+
+export default ChipInfo;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/entrenar/GroupSelector.tsx ---
+// components/dashboard/GroupDropdown.tsx
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+
+interface GroupDropdownProps {
+  groups: string[];
+  selectedGroup: string;
+  onSelect: (group: string) => void;
+}
+
+const GroupDropdown: React.FC<GroupDropdownProps> = ({
+  groups,
+  selectedGroup,
+  onSelect,
+}) => {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <View className="relative">
+      {/* Botón del dropdown */}
+      <TouchableOpacity
+        onPress={() => setVisible(!visible)}
+        className="bg-gray-800 p-3 rounded-md flex-row justify-between items-center border border-[#6842FF]"
+      >
+        <Text className="text-white">{selectedGroup}</Text>
+        <Text className="text-white">{visible ? "▲" : "▼"}</Text>
+      </TouchableOpacity>
+
+      {/* Lista de opciones, posicionada justo debajo */}
+      {visible && (
+        <View className="absolute top-full mt-2 w-full bg-[#121212] rounded-lg border border-[#6842FF] z-50">
+          {groups.map((group, idx) => (
+            <TouchableOpacity
+              key={idx}
+              onPress={() => {
+                onSelect(group);
+                setVisible(false);
+              }}
+              className="p-4 border-b border-gray-700 last:border-b-0"
+            >
+              <Text className="text-white">{group}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
+export default GroupDropdown;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/entrenar/MyCircularProgress.tsx ---
+// Ejemplo: app/components/MyCircularProgress.tsx
+import React from "react";
+import { View, Text } from "react-native";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
+
+type MyCircularProgressProps = {
+  progress: number; // Progreso en porcentaje (0 a 100)
+  totalTime: number; // Tiempo total del ejercicio en segundos
+};
+
+const MyCircularProgress: React.FC<MyCircularProgressProps> = ({
+  progress,
+  totalTime,
+}) => {
+  const segundosRestantes =
+    totalTime - Math.round((totalTime * progress) / 100);
+
+  return (
+    <View>
+      <AnimatedCircularProgress
+        size={150}
+        width={10}
+        fill={progress}
+        tintColor="#2ecc71"
+        backgroundColor="#3d5875"
+      >
+        {(fill: number) => (
+          <Text style={{ fontSize: 20, color: "white" }}>
+            {segundosRestantes}s
+          </Text>
+        )}
+      </AnimatedCircularProgress>
+    </View>
+  );
+};
+
+export default MyCircularProgress;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/entrenar/ProgressCircular.tsx ---
+import React from "react";
+import { View, Text } from "react-native";
+import { LinearGradient, Canvas, Circle, Shadow, Path, Skia, vec } from "@shopify/react-native-skia";
+
+type Props = {
+  tiempoMaximo: number;       // Tiempo total en segundos
+  tiempoTranscurrido: number; // Tiempo restante en segundos (según tu comentario)
+  containerWidth: number;
+  containerHeight: number;
+  colores: string[];
+  pausa: boolean;
+  onTiempoAgotado: () => void;
+};
+
+export default function ProgressCircular({
+  tiempoMaximo,
+  tiempoTranscurrido,
+  containerWidth,
+  containerHeight,
+  colores,
+  onTiempoAgotado,
+}: Props) {
+  // Dimensiones y centro del canvas
+  const RADIO = Math.min(containerWidth, containerHeight) / 2 - 45;
+  const CX = containerWidth / 2;
+  const CY = containerHeight / 2;
+
+  // Convertir tiempos de segundos a milisegundos
+  const totalTimeMs = tiempoMaximo * 1000;
+  // Como 'tiempoTranscurrido' es el tiempo restante, lo usamos directamente:
+  const remainingTimeMs = tiempoTranscurrido * 1000;
+  // El tiempo que ya ha pasado es la diferencia
+  const elapsedTimeMs = totalTimeMs - remainingTimeMs;
+
+  // Calcular el ángulo del arco (360° representa el total del tiempo)
+  const FULL_DEGREES = 360;
+  const sweepAngle = (elapsedTimeMs / totalTimeMs) * FULL_DEGREES;
+
+  // Si ya se agotó el tiempo, se invoca la función para pasar a la siguiente etapa
+  if (remainingTimeMs <= 0) {
+    onTiempoAgotado();
+  }
+
+  // Formatear el tiempo restante para mostrar (mm:ss:cc)
+  const minutes = Math.floor(remainingTimeMs / 60000);
+  const seconds = Math.floor((remainingTimeMs % 60000) / 1000);
+  const centiseconds = Math.floor((remainingTimeMs % 1000) / 10);
+
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedSeconds = seconds.toString().padStart(2, "0");
+  const formattedCentiseconds = centiseconds.toString().padStart(2, "0");
+
+  // Crear el arco usando Skia
+  const boundingRect = Skia.XYWHRect(CX - RADIO, CY - RADIO, RADIO * 2, RADIO * 2);
+  const arcPath = Skia.Path.Make();
+  arcPath.addArc(boundingRect, -90, sweepAngle);
+
+  // Convertir los colores a formato Skia
+  const skiaColors = colores.map((c) => Skia.Color(c));
+
+  return (
+    <View
+      style={{
+        width: containerWidth,
+        height: containerHeight,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Canvas style={{ width: containerWidth, height: containerHeight }}>
+        <Circle
+          cx={CX}
+          cy={CY}
+          r={RADIO}
+          color="#333"
+          style="stroke"
+          strokeWidth={13}
+        >
+          <Shadow dx={0} dy={0} blur={10} color="#000" />
+        </Circle>
+
+        <Path
+          path={arcPath}
+          style="stroke"
+          strokeWidth={15}
+          strokeCap="round"
+        >
+          <Shadow dx={0} dy={0} blur={4} color="#038C3E" />
+          <LinearGradient
+            start={vec(CX - RADIO, CY)}
+            end={vec(CX + RADIO, CY)}
+            colors={skiaColors}
+          />
+        </Path>
+      </Canvas>
+
+      <View 
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: containerWidth,
+          height: containerHeight,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: "#FFF", fontSize: 24, fontWeight: "bold", marginLeft: 4 }}>
+          {formattedMinutes} : {formattedSeconds}
+          <Text style={{ color: "#FFD700", fontSize: 16 }}> {formattedCentiseconds}</Text>
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/dashboard/EntrenamientoCard.tsx ---
+// components/dashboard/EntrenamientoCard.tsx
+
+import { Text, View, Image, TouchableOpacity } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useState, useEffect } from "react";
+
+import type { IEntrenamiento } from "@/context/EntrenamientosContext";
+
+import { calcularTiempo } from "@/utils/utilsEntrenamientos";
+import { useImagesMap } from "@/context/ImagesMapContext";
+import { useUser } from "@/context/UsersContext";
+
+type EntrenamientoCardProps = {
+  tipo: "Card Chica" | "Card Grande" | "Card Grid";
+  entrenamiento: IEntrenamiento;
+};
+
+export default function EntrenamientoCard({
+  entrenamiento: unEntrenamiento,
+  tipo,
+}: EntrenamientoCardProps) {
+  const { user, addFav, removeFav } = useUser();
+  const { imagesMap } = useImagesMap();
+
+  // Estado local para el ícono de favorito
+  const [favIcon, setFavIcon] = useState(
+    require("@/assets/icons/iconFavFalse.png"),
+  );
+
+  // Actualiza el ícono según los favoritos del usuario
+  useEffect(() => {
+    if (user?.favs.includes(unEntrenamiento._id)) {
+      setFavIcon(require("@/assets/icons/iconFavTrue.png"));
+    } else {
+      setFavIcon(require("@/assets/icons/iconFavFalse.png"));
+    }
+  }, [user?.favs, unEntrenamiento._id]);
+
+  function handleFav() {
+    if (
+      user &&
+      user.favs &&
+      user.favs
+        .map((fav) => fav.toString())
+        .includes(unEntrenamiento._id.toString())
+    ) {
+      console.log("Llamando a removeFav");
+      removeFav(unEntrenamiento._id);
+    } else {
+      console.log("Llamando a addFav");
+      addFav(unEntrenamiento._id);
+    }
+  }
+
+  let cardContainer = "overflow-hidden rounded-3xl";
+  if (tipo === "Card Chica") {
+    cardContainer += " w-full h-[100px]";
+  } else if (tipo === "Card Grande") {
+    cardContainer += " w-[240px] h-[240px]";
+  } else if (tipo === "Card Grid") {
+    cardContainer += " w-full h-[150px]";
+  }
+
+  let nombreStyle = "text-white font-bold";
+  if (tipo === "Card Chica") {
+    nombreStyle = "text-[16px]";
+  } else if (tipo === "Card Grande") {
+    nombreStyle = "text-[20px]";
+  } else if (tipo === "Card Grid") {
+    nombreStyle = "text-[13px]";
+  }
+
+  return (
+    <View className={cardContainer}>
+      <Image
+        className="overflow-hidden rounded-3xl"
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+        source={imagesMap[unEntrenamiento.imagen]}
+        resizeMode="cover"
+      />
+      <LinearGradient
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+        locations={[0, 0.17, 0.27, 0.42, 0.53, 0.66, 0.8, 1]}
+        colors={[
+          "rgba(75, 75, 75, 0)",
+          "rgba(68, 68, 68, 0.1)",
+          "rgba(64, 64, 64, 0.2)",
+          "rgba(58, 58, 58, 0.3)",
+          "rgba(54, 54, 54, 0.4)",
+          "rgba(47, 47, 47, 0.5)",
+          "rgba(41, 41, 41, 0.6)",
+          "rgba(32, 32, 32, 0.9)",
+        ]}
+      />
+      <View className="flex-1 flex-col gap-1 absolute bottom-0 w-full px-4 pb-4">
+        <Text
+          className={nombreStyle}
+          style={{ fontWeight: "bold", color: "white" }}
+          numberOfLines={1}
+        >
+          {unEntrenamiento.nombre}
+        </Text>
+        <View className="flex-row gap-1 items-center w-full">
+          <View className="flex-row gap-1 justify-around w-1/3">
+            <Text className="text-white text-[12px]">
+              {calcularTiempo(unEntrenamiento.tiempoTotal)} min.
+            </Text>
+            <View className="border-r border-gray-400" />
+            <Text className="text-white text-[12px]">
+              {unEntrenamiento.nivel}
+            </Text>
+          </View>
+          <View className="flex-1">
+            <TouchableOpacity onPress={handleFav}>
+              <Image
+                className="w-6 h-6 ml-auto"
+                source={favIcon}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/dashboard/NivelButton.tsx ---
+// components/NivelButton.tsx
+import React from "react";
+import { Pressable, Text } from "react-native";
+
+export type NivelButtonProps = {
+  label: string;
+  isActive?: boolean;
+  onPress?: () => void;
+};
+
+export function NivelButton({
+  label,
+  onPress,
+  isActive = false,
+}: NivelButtonProps) {
+  let backgroundClasses = isActive
+    ? "bg-[#6842FF]"
+    : "bg-[#1E1E1E] border border-[#6842FF]";
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`rounded-full items-center justify-center px-4 py-2 ${backgroundClasses}`}
+    >
+      <Text className="text-white text-sm">{label}</Text>
+    </Pressable>
+  );
+}
+
+export default NivelButton;
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/usuario/ItemPerfil.tsx ---
+// app/components/usuario/ItemPerfil.tsx
+
+import { Text, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+
+export default function Item({
+  contenido,
+  icono,
+  color,
+  onPress,
+}: {
+  contenido: string;
+  icono: string;
+  color?: string;
+  onPress?: () => void;
+}) {
+  if (!color) {
+    color = "#FFFFFF";
+  }
+
+  return (
+    <TouchableOpacity className="flex-row items-center py-3" onPress={onPress}>
+      <Ionicons name={icono as any} size={25} color={color} />
+      <Text style={{ color: color }} className="ml-3">
+        {contenido}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/usuario/NotifiItem.tsx ---
+// componentes/usuario/NotifItem.tsx
+
+import { View, Text } from "react-native";
+import { Image } from "expo-image";
+import React from "react";
+
+import { useImagesMap } from "@/context/ImagesMapContext";
+
+export default function NotifItem({
+  tipo,
+  titulo,
+  contenido,
+}: {
+  tipo: "check" | "plus" | "time";
+  titulo: string;
+  contenido: string;
+}) {
+  const { imagesMap } = useImagesMap();
+  let icono = imagesMap["notifCheck"];
+  if (tipo === "plus") {
+    icono = imagesMap["notifPlus"];
+  } else if (tipo === "time") {
+    icono = imagesMap["notifTime"];
+  }
+
+  return (
+    <View className="flex-row items-center justify-around bg-[#1E1E1E] rounded-2xl p-3 mb-4">
+      <Image source={icono} style={{ width: 55, height: 55 }} />
+      <View className="flex-col items-start ml-8">
+        <Text className="text-white font-semibold text-base">{titulo}</Text>
+        <Text className="text-[#CCCCCC] text-sm">{contenido}</Text>
+      </View>
+    </View>
+  );
+}
+
+
+// --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/components/usuario/ItemLogro.tsx ---
+// HexBadge.tsx
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Canvas, Path, BlurMask, Skia } from "@shopify/react-native-skia";
+
+interface HexBadgeProps {
+  logroKey: string; // Texto que se muestra (p.ej. "500")
+  obtenido: boolean; // Indica si el logro está obtenido
+}
+
+/**
+ * Crea un path en forma de hexágono regular, centrado en (cx, cy) con un radio dado.
+ */
+function createHexagonPath(cx: number, cy: number, radius: number) {
+  const path = Skia.Path.Make();
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 3) * i - Math.PI / 2;
+    const x = cx + radius * Math.cos(angle);
+    const y = cy + radius * Math.sin(angle);
+    if (i === 0) {
+      path.moveTo(x, y);
+    } else {
+      path.lineTo(x, y);
+    }
+  }
+  path.close();
+  return path;
+}
+
+export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido }) => {
+  const size = 125; // Tamaño total del componentex
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = 50; // Radio para el hexágono
+
+  // Construimos el path del hexágono
+  const hexPath = createHexagonPath(cx, cy, radius);
+
+  return (
+    <View style={[styles.container, { width: size, height: size }]}>
+      <Canvas style={StyleSheet.absoluteFill}>
+        {obtenido ? (
+          // == Logro OBTENIDO ==
+          <>
+            {/* Sombra oscura (desplazada abajo-derecha) */}
+            <Path
+              path={hexPath}
+              color="black"
+              opacity={0.2}
+              style="fill"
+              transform={[{ translateX: 6 }, { translateY: 15 }]}
+            >
+              <BlurMask blur={5} style="normal" />
+            </Path>
+
+            {/* Hexágono principal (relleno oscuro) */}
+            <Path path={hexPath} color="#2E2E2E" style="fill" />
+
+            {/* Sombra clara (desplazada arriba-izquierda) */}
+            <Path
+              path={hexPath}
+              color="gray"
+              opacity={0.1}
+              style="fill"
+              transform={[{ translateX: -5 }, { translateY: -5 }]}
+            >
+              <BlurMask blur={5} style="normal" />
+            </Path>
+          </>
+        ) : (
+          // == Logro NO OBTENIDO ==
+          <>
+            {/* Sombra oscura (desplazada abajo-derecha) */}
+            <Path
+              path={hexPath}
+              color="black"
+              opacity={0.2}
+              style="fill"
+              transform={[{ translateX: 6 }, { translateY: 15 }]}
+            >
+              <BlurMask blur={5} style="normal" />
+            </Path>
+
+            <Path path={hexPath} color="#121212" style="fill"></Path>
+            <Path
+              path={hexPath}
+              color="#202020"
+              style="stroke"
+              strokeWidth={3}
+            />
+
+            {/* Sombra clara (desplazada arriba-izquierda) */}
+            <Path path={hexPath} color="#121212" opacity={0.1} style="fill">
+              <BlurMask blur={6} style="inner" />
+            </Path>
+          </>
+        )}
+      </Canvas>
+
+      {/* Capa absoluta para centrar el texto */}
+      <View style={styles.centered}>
+        <Text
+          style={[
+            styles.text,
+            obtenido ? { color: "#FF9900" } : { color: "#606060" },
+          ]}
+        >
+          {logroKey}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    position: "relative",
+    backgroundColor: "#121212",
+  },
+  centered: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
 
 

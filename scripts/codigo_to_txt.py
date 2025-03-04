@@ -18,9 +18,9 @@ def get_all_files_text(base_dirs, output_file):
 
 # Directorios a incluir en la recopilación
 base_dirs = [
-    "C:/Users/ramos/Desktop/apps/ledfit/ledfit_front/app",
-    "C:/Users/ramos/Desktop/ledfit/ledfit_front/context",
-    "C:/Users/ramos/Desktop/ledfit/ledfit_front/components"
+    "/home/rama/Escritorio/Ledfit/ledfit_front/app",
+    "/home/rama/Escritorio/Ledfit/ledfit_front/context",
+    "/home/rama/Escritorio/Ledfit/ledfit_front/components"
 ]
 
 # Archivo de salida

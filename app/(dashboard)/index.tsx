@@ -22,7 +22,6 @@ import TopNavbar from "@/components/TopNavbar";
 export default function HomeScreen() {
   const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
   const { user } = useUser();
-
   const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
 
   const niveles = ["Principiante", "Intermedio", "Avanzado"];
@@ -38,16 +37,16 @@ export default function HomeScreen() {
         <TopNavbar logo={true} iconNotif={true} iconFav={true} />
       </View>
 
-      <Text className="w-full text-white text-2xl font-semibold p-2 px-4">
+      <Text className="w-full text-white text-2xl font-semibold pb-2 px-4">
         Hola, {user?.name} 👋
       </Text>
 
       {/* Sección "Mis entrenamientos" */}
-      <View className="w-full flex-row items-center justify-between pt-2 px-4">
-        <Text className="text-white text-lg">Mis entrenamientos</Text>
+      <View className="w-full flex-row items-center justify-between px-4">
+        <Text className="text-white text-lg">Entrenamientos</Text>
         <TouchableOpacity
           onPress={() => {
-            router.push(`/(entrenar)/detallesDeFavs`);
+            router.push(`/(entrenar)/entrenamientos`);
           }}
         >
           <Text className="text-[#6842FF] text-sm">Ver más</Text>
@@ -90,10 +89,7 @@ export default function HomeScreen() {
         {niveles.map((nivel) => {
           const isActive = nivel === filtroPorNivel;
           return (
-            <View
-              className="w-[30%]" 
-              key={nivel}
-            >
+            <View className="w-[31%]" key={nivel}>
               <NivelButton
                 label={nivel}
                 onPress={() => setFiltroPorNivel(nivel)}
@@ -108,7 +104,10 @@ export default function HomeScreen() {
       <View className="flex-1 w-full h-full items-center justify-center py-1">
         <ScrollView className="w-11/12" showsVerticalScrollIndicator={false}>
           {entrenamientos
-            .filter((entrenamientoFiltrado) => entrenamientoFiltrado.nivel === filtroPorNivel)
+            .filter(
+              (entrenamientoFiltrado) =>
+                entrenamientoFiltrado.nivel === filtroPorNivel,
+            )
             .map((unEntrenamiento, idx) => (
               <TouchableOpacity
                 key={unEntrenamiento._id || idx}
