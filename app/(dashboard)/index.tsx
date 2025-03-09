@@ -10,10 +10,8 @@ import {
   Text,
 } from "react-native";
 
-import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { useEntrenamientos, IEntrenamiento } from "@/context/EntrenamientosContext";
 import { useUser } from "@/context/UsersContext";
-
-import type { IEntrenamiento } from "@/context/EntrenamientosContext";
 
 import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
 import NivelButton from "@/components/dashboard/NivelButton";
@@ -33,9 +31,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-col items-center justify-around pt-4 h-full bg-[#121212]">
-      <View className="w-full px-4">
-        <TopNavbar logo={true} iconNotif={true} iconFav={true} />
-      </View>
+      <TopNavbar logo={true} iconNotif={true} iconFav={true} />
 
       <Text className="w-full text-white text-2xl font-semibold pb-2 px-4">
         Hola, {user?.name} 👋

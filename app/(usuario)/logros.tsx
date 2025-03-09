@@ -63,10 +63,10 @@ export default function Logros() {
   };
 
   return (
-    <View className="flex-1 bg-[#121212] pt-10 p-4 pb-4">
+    <View className="flex-1 pt-4 bg-[#121212]">
       <TopNavbar titulo="Logros" iconBack={true} />
 
-      <ScrollView className="flex-1 mt-8" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         {/* Sección para calorías (type="check") */}
         {renderLogroSection("Calorías", groupedLogros.check)}
 

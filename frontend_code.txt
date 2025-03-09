@@ -1,7 +1,7 @@
 // --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/_layout.tsx ---
 // app/_layout.tsx
 
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -16,22 +16,21 @@ import {
 } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 
-// Providers
+// Providers de la app
 import { EntrenamientosProvider } from "@/context/EntrenamientosContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { EjerciciosProvider } from "@/context/EjerciciosContext";
 import { ImagesMapProvider } from "@/context/ImagesMapContext";
 import { UserProvider } from "@/context/UsersContext";
 
-// Importar Clerk
+// Clerk
 import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
 import { tokenCache } from "@/cache";
-import { EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY } from "@env";
+import { EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY } from "@/env";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  console.log(EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY);
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -81,7 +80,8 @@ export default function RootLayout() {
                 <ImagesMapProvider>
                   <EjerciciosProvider>
                     <EntrenamientosProvider>
-                      <Stack>
+                      <Slot />
+                      {/* <Stack>
                         <Stack.Screen
                           name="index"
                           options={{ headerShown: false }}
@@ -98,7 +98,7 @@ export default function RootLayout() {
                           name="(usuario)"
                           options={{ headerShown: false }}
                         />
-                      </Stack>
+                      </Stack> */}
                       <StatusBar style="auto" />
                     </EntrenamientosProvider>
                   </EjerciciosProvider>
@@ -159,13 +159,14 @@ export default function RootIndex() {
   const { isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {
-    // Esperamos a que Clerk cargue el estado de autenticación
     if (isLoaded) {
-      if (isSignedIn) {
-        router.replace("/(dashboard)");
-      } else {
-        router.replace("/(usuario)/login");
-      }
+      setTimeout(() => {
+        if (isSignedIn) {
+          router.replace("/(dashboard)");
+        } else {
+          router.replace("/(usuario)/login");
+        }
+      }, 0);
     }
   }, [isLoaded, isSignedIn, router]);
 
@@ -496,15 +497,21 @@ export default RegisterScreen;
 
 
 // --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/app/(usuario)/login.tsx ---
+// app/(usuario)/login.tsx
+
 import React, { useState, useCallback } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useUser } from "@/context/UsersContext";
 
+import { useOAuth } from "@clerk/clerk-expo";
+import { useCombinedUser } from "@/hooks/useCombinedUser";
+
 export default function LoginScreen() {
   const router = useRouter();
   const { login } = useUser();
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -521,6 +528,21 @@ export default function LoginScreen() {
       setError(e.message || "Error en la conexión");
     }
   }, [email, password, login, router]);
+
+  // Función para iniciar el flujo OAuth de Google con Clerk
+  const handleGoogleLogin = useCallback(async () => {
+    try {
+      const result = await startOAuthFlow();
+      // Si se creó una sesión, la activamos y redirigimos
+      if (result.createdSessionId && result.setActive) {
+        await result.setActive({ session: result.createdSessionId });
+        router.push("/(dashboard)");
+      }
+    } catch (error) {
+      console.error("Error en Google OAuth:", error);
+      setError("Error en autenticación con Google");
+    }
+  }, [startOAuthFlow, router]);
 
   return (
     <View className="flex-col w-full h-full justify-around bg-[#121212] px-8">
@@ -580,7 +602,9 @@ export default function LoginScreen() {
           accessibilityLabel="Recordarme"
         >
           <View
-            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${recordar ? "bg-[#6842FF]" : ""}`}
+            className={`w-5 h-5 rounded-md border-2 border-gray-500 mr-3 ${
+              recordar ? "bg-[#6842FF]" : ""
+            }`}
           />
           <Text className="text-white">Recordarme</Text>
         </TouchableOpacity>
@@ -590,23 +614,13 @@ export default function LoginScreen() {
           <Text className="text-red-500 text-center">{error}</Text>
         ) : null}
 
-        {/* Botón de login */}
+        {/* Botón de login con email/password */}
         <TouchableOpacity
           className="bg-[#6842FF] rounded-lg items-center py-4"
           onPress={handleLogin}
           accessibilityLabel="Iniciar sesión"
         >
           <Text className="text-white text-lg font-bold">Iniciar sesión</Text>
-        </TouchableOpacity>
-
-        {/* Opción "Olvidaste tu contraseña" */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          accessibilityLabel="Olvidaste tu contraseña"
-        >
-          <Text className="text-[#6842FF] text-center">
-            ¿Olvidaste tu contraseña?
-          </Text>
         </TouchableOpacity>
       </View>
 
@@ -626,6 +640,7 @@ export default function LoginScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           className="items-center w-16 h-12 bg-gray-800 p-3 rounded-lg"
+          onPress={handleGoogleLogin}
           accessibilityLabel="Iniciar sesión con Google"
         >
           <FontAwesome name="google" size={24} color="#DB4437" />
@@ -1340,48 +1355,46 @@ import React from "react";
 
 export default function TabLayout() {
   return (
-    <>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: "#121212",
-            borderTopColor: "#1E1E1E",
-          },
-          tabBarActiveTintColor: "#6842FF",
-          tabBarInactiveTintColor: "#888",
-          tabBarBackground: undefined,
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: "#121212",
+          borderTopColor: "#1E1E1E",
+        },
+        tabBarActiveTintColor: "#6842FF",
+        tabBarInactiveTintColor: "#888",
+        tabBarBackground: undefined,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Inicio",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" size={26} color={color} />
+          ),
         }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Inicio",
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="home" size={26} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="entrenar"
-          options={{
-            title: "Entrenar",
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="play-circle" size={26} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="perfil"
-          options={{
-            title: "Perfil",
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="person-circle" size={26} color={color} />
-            ),
-          }}
-        />
-      </Tabs>
-    </>
+      />
+      <Tabs.Screen
+        name="entrenar"
+        options={{
+          title: "Entrenar",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="play-circle" size={26} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="perfil"
+        options={{
+          title: "Perfil",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person-circle" size={26} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }
 
@@ -1513,6 +1526,7 @@ export default function PerfilScreen() {
   const router = useRouter();
 
   const { user, logout } = useUser();
+  console.log(user);
 
   const [darkMode, setDarkMode] = useState(false);
 
@@ -1618,7 +1632,6 @@ import TopNavbar from "@/components/TopNavbar";
 export default function HomeScreen() {
   const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
   const { user } = useUser();
-
   const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
 
   const niveles = ["Principiante", "Intermedio", "Avanzado"];
@@ -1730,6 +1743,7 @@ export default function HomeScreen() {
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@/env"; // Importa la variable de entorno
 
 export interface Logro {
   key: string;
@@ -1770,7 +1784,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // >>> Al montar, re-hidratar el user desde AsyncStorage <<<
+  // Rehidratar el usuario desde AsyncStorage al montar
   useEffect(() => {
     const loadUserFromStorage = async () => {
       try {
@@ -1794,14 +1808,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(
-        "https://ledfit-back.vercel.app/api/auth/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        },
-      );
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || "Error en el login");
@@ -1827,7 +1838,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await AsyncStorage.getItem("@token");
       if (!token) throw new Error("No token found");
       const response = await fetch(
-        `https://ledfit-back.vercel.app/api/auth/favs/agregar/${entrenamientoId}`,
+        `${API_URL}/api/auth/favs/agregar/${entrenamientoId}`,
         {
           method: "POST",
           headers: {
@@ -1849,11 +1860,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const removeFav = async (entrenamientoId: string) => {
     try {
       const token = await AsyncStorage.getItem("@token");
-      if (!token) {
-        throw new Error("No token found");
-      }
+      if (!token) throw new Error("No token found");
       const response = await fetch(
-        `https://ledfit-back.vercel.app/api/auth/favs/eliminar/${entrenamientoId}`,
+        `${API_URL}/api/auth/favs/eliminar/${entrenamientoId}`,
         {
           method: "DELETE",
           headers: {
@@ -1867,7 +1876,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(data.message || "Error al eliminar de favoritos");
       }
       const data = await response.json();
-      // Actualizamos la propiedad favs del usuario
       if (user) {
         setUser({ ...user, favs: data.favs.map((id: any) => id.toString()) });
       }
@@ -1884,17 +1892,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await AsyncStorage.getItem("@token");
       if (!token) throw new Error("No token found");
 
-      const response = await fetch(
-        "https://ledfit-back.vercel.app/api/auth/update-metricas",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ tiempo, calorias }),
+      const response = await fetch(`${API_URL}/api/auth/update-metricas`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({ tiempo, calorias }),
+      });
 
       if (!response.ok) {
         const data = await response.json();
@@ -1921,16 +1926,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await AsyncStorage.getItem("@token");
       if (!token) throw new Error("No token found");
 
-      const response = await fetch(
-        "https://ledfit-back.vercel.app/api/auth/update-logros",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${API_URL}/api/auth/update-logros`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const text = await response.text();
       console.log("Respuesta de update-logros:", text);
@@ -1958,7 +1960,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Cambio el logro enviado por parametro a true
   return (
     <UserContext.Provider
       value={{
@@ -2179,6 +2180,7 @@ export default ImagesMapContext;
 
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "@/env"; // Importa la variable de entorno
 
 export interface IEjercicio {
   _id: string;
@@ -2201,7 +2203,6 @@ const EjerciciosContext = createContext<EjerciciosContextProps | undefined>(
   undefined,
 );
 
-// Proveedor
 export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -2210,25 +2211,22 @@ export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
     null,
   );
 
-  // Obtener la lista de ejercicios
+  // Obtener la lista de ejercicios usando API_URL
   const fetchEjercicios = async () => {
     try {
-      const response = await axios.get(
-        "https://ledfit-back.vercel.app/api/ejercicios",
-      );
+      const response = await axios.get(`${API_URL}/api/ejercicios`);
       setEjercicios(response.data);
     } catch (err: any) {
       console.error("Error fetching exercises:", err);
     }
   };
 
-  // Obtener un ejercicio por su ID
+  // Obtener un ejercicio por su ID usando API_URL
   const fetchEjercicioById = async (ejercicioId: string) => {
     try {
       const response = await axios.get(
-        `https://ledfit-back.vercel.app/api/ejercicios/${ejercicioId}`,
+        `${API_URL}/api/ejercicios/${ejercicioId}`,
       );
-
       return response.data;
     } catch (err: any) {
       console.error("Error fetching exercise:", err);
@@ -2271,6 +2269,7 @@ export default EjerciciosContext;
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@/env"; // Importa la variable de entorno
 
 export interface INotification {
   _id: string;
@@ -2295,18 +2294,22 @@ export const NotificationsContext = createContext<INotificationsContext>({
   createNotification: async () => {},
 });
 
-export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
+export const NotificationsProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const [notifications, setNotifications] = useState<INotification[]>([]);
 
   const fetchNotifications = async () => {
     try {
       const token = await AsyncStorage.getItem("@token");
-      console.log("Token:", token);
       if (!token) {
         console.error("No token found");
         return;
       }
-      const response = await fetch("https://ledfit-back.vercel.app/api/notifications", {
+      // Usamos la variable API_URL para formar la URL de la API
+      const response = await fetch(`${API_URL}/api/notifications`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -2340,7 +2343,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     setNotifications((prev) => [newNotif, ...prev]);
   };
 
-  // Función para crear una notificación en el backend
+  // Función para crear una notificación en el backend utilizando API_URL
   const createNotification = async () => {
     try {
       const token = await AsyncStorage.getItem("@token");
@@ -2348,7 +2351,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         console.error("No token found");
         return;
       }
-      const response = await fetch("https://ledfit-back.vercel.app/api/notifications", {
+      const response = await fetch(`${API_URL}/api/notifications`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -2356,8 +2359,8 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         },
         body: JSON.stringify({
           title: "Notificación de prueba API",
-          message: "Esta notificación fue creada desde el botón de pruebas."
-          // Nota: El backend, gracias al middleware, debería asignar el usuario a partir del token.
+          message: "Esta notificación fue creada desde el botón de pruebas.",
+          // El backend asigna el usuario a partir del token
         }),
       });
       if (response.ok) {
@@ -2377,19 +2380,25 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
 
   return (
     <NotificationsContext.Provider
-      value={{ notifications, refreshNotifications, addSampleNotification, createNotification }}
+      value={{
+        notifications,
+        refreshNotifications,
+        addSampleNotification,
+        createNotification,
+      }}
     >
       {children}
     </NotificationsContext.Provider>
   );
 };
 
+export default NotificationsContext;
+
 
 // --- Contenido de /home/rama/Escritorio/Ledfit/ledfit_front/context/EntrenamientosContext.tsx ---
 // app/context/WorkoutsContext.tsx
-
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import { API_URL } from "@env";
+import { API_URL } from "@/env"; // Asegúrate de que API_URL esté correctamente definido en tu .env y declarado en env.d.ts
 
 import type { IEjercicio } from "./EjerciciosContext";
 
@@ -2424,17 +2433,14 @@ export function EntrenamientosProvider({
 }: {
   children: React.ReactNode;
 }) {
-  console.log("API_URL:", API_URL);
   const [entrenamientos, setEntrenamientos] = useState<IEntrenamiento[]>([]);
   const [selectedEntrenamiento, setSelectedEntrenamiento] =
     useState<IEntrenamiento | null>(null);
 
-  // Obtener lista de ejercicios
+  // Obtener lista de entrenamientos utilizando API_URL
   const fetchEntrenamientos = useCallback(async () => {
     try {
-      const response = await fetch(
-        "https://ledfit-back.vercel.app/api/entrenamientos",
-      );
+      const response = await fetch(`${API_URL}/api/entrenamientos`);
       if (!response.ok) {
         throw new Error("ErrorWorkouts fetching workouts");
       }
@@ -2445,12 +2451,12 @@ export function EntrenamientosProvider({
     }
   }, []);
 
-  // Obtener un entrenamiento por su ID
+  // Obtener un entrenamiento por su ID utilizando API_URL
   const fetchEntrenamientoById = useCallback(
     async (entrenamientoId: string) => {
       try {
         const response = await fetch(
-          `https://ledfit-back.vercel.app/api/entrenamientos/${entrenamientoId}`,
+          `${API_URL}/api/entrenamientos/${entrenamientoId}`,
         );
         if (!response.ok) {
           throw new Error("Error fetching entrenamientos");
@@ -2474,9 +2480,9 @@ export function EntrenamientosProvider({
       value={
         {
           entrenamientos: entrenamientos,
-          setEntrenamientos: setEntrenamientos,
-          selectedEntrenamiento: selectedEntrenamiento,
           setSelectedEntrenamiento: setSelectedEntrenamiento,
+          selectedEntrenamiento: selectedEntrenamiento,
+          // Puedes incluir fetchEntrenamientoById en el contexto si lo necesitas
           fetchEntrenamientoById: fetchEntrenamientoById,
         } as any
       }

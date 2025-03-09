@@ -15,10 +15,10 @@ export default function DetallesDeEjercicios() {
   const { imagesMap } = useImagesMap();
 
   return (
-    <View className="flex-1 bg-[#121212] p-4 h-full">
+    <View className="flex-1 bg-[#121212] pt-4 h-full">
       <TopNavbar iconBack={true} titulo="Rondas" />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {selectedEntrenamiento?.ejercicios.map((ejercicio, idx) => (
           <EjercicioCard
             key={idx}

@@ -23,21 +23,21 @@ type TopNavbarType = {
   logo?: boolean;
 };
 
-const TopNavbar = ({
+export default function TopNavbar({
   titulo: titulo = "Ledfit",
   iconBuscar: iconBuscar,
   iconNotif: iconNotif,
   iconBack: iconBack,
   iconFav: iconFav,
   logo: logo,
-}: TopNavbarType) => {
+}: TopNavbarType) {
   const router = useRouter();
 
   return (
-    <View className="flex-row items-center justify-between my-6">
+    <View className="flex-row py-6 px-4 w-full items-center justify-between">
       <View className="flex-row items-center">
         {iconBack && (
-          <TouchableOpacity className="" onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
           </TouchableOpacity>
         )}
@@ -79,9 +79,7 @@ const TopNavbar = ({
       </View>
     </View>
   );
-};
-
-export default TopNavbar;
+}
 
 // Color de icono //
 const styles = StyleSheet.create({

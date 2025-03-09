@@ -24,6 +24,6 @@ base_dirs = [
 ]
 
 # Archivo de salida
-output_file = "frontend_code.txt"
+output_file = "/home/rama/Escritorio/Ledfit/ledfit_front/frontend_code.txt"
 
 get_all_files_text(base_dirs, output_file)

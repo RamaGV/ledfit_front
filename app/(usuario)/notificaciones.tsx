@@ -10,10 +10,10 @@ export default function NotificationScreen({ navigation }: any) {
   const { notifications } = useContext(NotificationsContext);
 
   return (
-    <View className="flex-1 bg-[#121212] pt-10 p-4 pb-4">
+    <View className="flex-1 bg-[#121212] py-4">
       <TopNavbar titulo="Notificaciones" iconBack={true} />
 
-      <ScrollView className="flex-1 mt-8" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         {notifications.length === 0 ? (
           <ActivityIndicator size="large" color="#6842FF" />
         ) : (

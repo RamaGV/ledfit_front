@@ -28,9 +28,7 @@ export default function PerfilScreen() {
 
   return (
     <View className="flex-1 bg-[#121212] pt-4">
-      <View className="w-full px-4">
-        <TopNavbar titulo="Perfil" />
-      </View>
+      <TopNavbar titulo="Perfil" />
 
       {/* Contenido principal */}
       <ScrollView className="flex-1 px-4">

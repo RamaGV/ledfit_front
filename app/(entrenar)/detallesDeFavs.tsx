@@ -27,12 +27,10 @@ export default function EntrenamientosFav() {
   };
 
   return (
-    <View className="flex-col items-center justify-around h-full bg-[#121212] pt-4">
-      <View className="w-full px-2">
-        <TopNavbar iconBack={true} titulo="Entrenamientos favoritos" />
-      </View>
+    <View className="flex-col items-center justify-around pt-4 h-full bg-[#121212]">
+      <TopNavbar iconBack={true} titulo="Entrenamientos favoritos" />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="flex-row flex-wrap h-full justify-start mx-1">
+        <View className="flex-row flex-wrap h-full justify-start">
           {entrenamientosFav.map((item, idx) => (
             <TouchableOpacity
               key={idx}
