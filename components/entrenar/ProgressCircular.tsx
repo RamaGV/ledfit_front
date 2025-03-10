@@ -216,24 +216,6 @@ export default function ProgressCircular({
       accessibilityHint="Muestra el tiempo restante para el ejercicio actual"
       accessibilityRole="timer"
     >
-      {/* Banner de prueba */}
-      <View 
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: "red",
-          padding: 5,
-          zIndex: 999,
-          alignItems: "center"
-        }}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>
-          COMPONENTE PROGRESSCIRCULAR
-        </Text>
-      </View>
-
       <Canvas style={{ width: containerWidth, height: containerHeight }}>
         {/* Círculo de fondo */}
         <Circle

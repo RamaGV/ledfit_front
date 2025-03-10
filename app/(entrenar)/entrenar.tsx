@@ -475,16 +475,74 @@ export default function Entrenamiento() {
     if (etapaActual === "DESCANSO") {
       console.log("=== RENDERIZANDO DESCANSO DESDE ENTRENAR.TSX (ETAPA DESCANSO) ===", new Date().toISOString());
       
-      // IMPORTANTE: Este bloque no parece ejecutarse nunca según los logs
-      // porque los descansos se manejan como ejercicios normales pero con ID especial
-      // Por eso hemos movido la lógica al bloque de ACTIVO arriba
+      // Buscamos el próximo ejercicio real (no descanso)
+      const encontrarProximoEjercicioReal = () => {
+        if (!selectedEntrenamiento || !selectedEntrenamiento.ejercicios) {
+          console.log("No hay entrenamiento seleccionado o no tiene ejercicios");
+          return null;
+        }
+        
+        // Comenzamos desde el siguiente al índice actual
+        let indice = indiceEjercicio + 1;
+        
+        // Si estamos al final, devolvemos null
+        if (indice >= selectedEntrenamiento.ejercicios.length) {
+          console.log("Estamos en el último ejercicio, no hay próximo");
+          return null;
+        }
+        
+        // Buscar hacia adelante hasta encontrar un ejercicio que no sea descanso
+        while (indice < selectedEntrenamiento.ejercicios.length) {
+          const ejercicio = selectedEntrenamiento.ejercicios[indice];
+          console.log(`Analizando ejercicio índice ${indice}:`, ejercicio);
+          
+          // Verificar si no es un descanso
+          const esDescanso = esEjercicioDescanso(ejercicio);
+          if (!esDescanso) {
+            console.log(`Encontrado próximo ejercicio en índice ${indice}`);
+            return {
+              ejercicio: ejercicio,
+              indiceReal: indice + 1 // +1 porque los índices en UI comienzan desde 1
+            };
+          }
+          indice++;
+        }
+        
+        console.log("No se encontró ningún ejercicio no-descanso hacia adelante");
+        
+        // Si no encontramos, volver al primero que no sea descanso
+        for (let i = 0; i < selectedEntrenamiento.ejercicios.length; i++) {
+          const ejercicio = selectedEntrenamiento.ejercicios[i];
+          const esDescanso = esEjercicioDescanso(ejercicio);
+          if (!esDescanso) {
+            console.log(`Encontrado primer ejercicio no-descanso en índice ${i}`);
+            return {
+              ejercicio: ejercicio,
+              indiceReal: i + 1
+            };
+          }
+        }
+        
+        console.log("No se encontró ningún ejercicio no-descanso en todo el entrenamiento");
+        return null;
+      };
+      
+      // Obtener el próximo ejercicio real
+      const proximoEjercicioInfo = encontrarProximoEjercicioReal();
+      
+      console.log("=== USANDO DESCANSOSCREEN DESDE ETAPA DESCANSO ===", {
+        proximoEjercicio: proximoEjercicioInfo?.ejercicio,
+        tiempoDescanso: tiempoMs / 1000
+      });
       
       return (
         <DescansoScreen
           tiempoRestante={tiempoMs / 1000}
-          indiceDeEjercicio={siguienteIndiceReal + 1}
+          indiceDeEjercicio={proximoEjercicioInfo?.indiceReal || siguienteIndiceReal + 1}
           totalEjercicios={totalEjerciciosReales}
           etapaCompleta={onTiempoAgotado}
+          proximoEjercicio={proximoEjercicioInfo?.ejercicio || null}
+          imagesMap={imagesMap}
         />
       );
     }
