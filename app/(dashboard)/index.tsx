@@ -1,31 +1,33 @@
 // app/(dashboard)/index.tsx
 
 import React, { useState, useEffect } from "react";
-import { router } from "expo-router";
 import {
-  TouchableOpacity,
-  ScrollView,
   View,
   Text,
+  ScrollView,
+  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  StatusBar,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import { Image } from 'expo-image';
+import { useRouter } from "expo-router";
 
 import { useEntrenamientos, IEntrenamiento } from "@/context/EntrenamientosContext";
 import { useUser } from "@/context/UsersContext";
 import { useTheme } from "@/context/ThemeContext";
+import NeumorphicButton from '@/components/ui/NeumorphicButton';
 
 import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
 import NivelButton from "@/components/dashboard/NivelButton";
 import TopNavbar from "@/components/TopNavbar";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
   const { user } = useUser();
-  const { isDarkMode } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,39 +43,44 @@ export default function HomeScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = () => {
     setRefreshing(true);
-    // Aquí podrías recargar los datos si tuvieras una función para ello
+    // Simular una actualización
     setTimeout(() => {
       setRefreshing(false);
-    }, 1500);
-  }, []);
+    }, 1000);
+  };
 
   const entrenamientoSeleccionado = (entrenamiento: IEntrenamiento) => {
     setSelectedEntrenamiento(entrenamiento);
-    router.push("/(entrenar)/entrenamientos");
+    router.push("/(dashboard)/entrenar");
   };
 
-  // Filtrado por nivel
+  // Filtrar los entrenamientos por nivel
   const entrenamientosFiltrados = entrenamientos.filter(
     (entrenamiento) => entrenamiento.nivel === filtroPorNivel
   );
 
-  // Destacados (usando algún criterio para destacar, como entrenamientos con más calorías)
+  // Seleccionar los entrenamientos destacados (por ejemplo, los más populares o con mejores valoraciones)
   const entrenamientosDestacados = entrenamientos
     .sort((a, b) => b.calorias - a.calorias)
     .slice(0, 3); // Los 3 con más calorías
 
   if (loading) {
     return (
-      <View className={`flex-1 items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#EFEEE9]'}`}>
-        <ActivityIndicator size="large" color="#6842FF" />
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: colors.background
+      }}>
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
 
   return (
-    <View className={`flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#EFEEE9]'}`}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       
       {/* TopNavbar ahora incluye cálculos de padding automáticos */}
@@ -82,17 +89,43 @@ export default function HomeScreen() {
       {/* CONTENIDO FIJO - Fuera del ScrollView */}
       <View>
         {/* Encabezado con saludo */}
-        <View className="px-5 pb-2">
-          <Text className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#333333]'}`}>
+        <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
+          <Text style={{ 
+            fontSize: 24, 
+            fontWeight: 'bold', 
+            color: colors.text 
+          }}>
             ¡Hola, {user?.name || "Usuario"}!
           </Text>
-          <Text className={`text-base mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          <Text style={{ 
+            fontSize: 16, 
+            marginTop: 4, 
+            color: colors.secondaryText 
+          }}>
             ¿Listo para tu entrenamiento de hoy?
           </Text>
         </View>
 
+        {/* Botón neumórfico para iniciar entrenamiento rápido */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+          <NeumorphicButton
+            onPress={() => router.push("/(dashboard)/entrenar")}
+            text="Iniciar Entrenamiento Rápido"
+            isPrimary={true}
+            colors={colors}
+            isDarkMode={isDarkMode}
+          />
+        </View>
+
         {/* Destacados */}
-        <Text className={`text-lg font-bold px-5 mt-2 mb-3 ${isDarkMode ? 'text-white' : 'text-[#333333]'}`}>
+        <Text style={{ 
+          fontSize: 18, 
+          fontWeight: 'bold', 
+          paddingHorizontal: 20, 
+          marginTop: 8, 
+          marginBottom: 12, 
+          color: colors.text 
+        }}>
           Destacados
         </Text>
         
@@ -100,7 +133,7 @@ export default function HomeScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="pl-5"
+          style={{ paddingLeft: 20 }}
           contentContainerStyle={{ gap: 16, paddingRight: 20 }}
         >
           {entrenamientosDestacados.map((entrenamiento) => (
@@ -117,7 +150,13 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* Botones de nivel */}
-        <View className="flex-row justify-around items-center py-3 mt-1">
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'space-around', 
+          alignItems: 'center', 
+          paddingVertical: 12, 
+          marginTop: 4 
+        }}>
           {niveles.map((nivel) => (
             <NivelButton
               key={nivel}
@@ -131,28 +170,39 @@ export default function HomeScreen() {
 
       {/* ÁREA SCROLLABLE - SÓLO para los entrenamientos filtrados */}
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh}
-            tintColor="#6842FF"
-            colors={["#6842FF"]} 
+            tintColor={colors.accent}
+            colors={[colors.accent]} 
           />
         }
       >
         {/* Lista de entrenamientos por nivel - ÚNICO contenido scrollable vertical */}
-        <View className="px-5 pb-10 pt-2">
+        <View style={{ 
+          paddingHorizontal: 20, 
+          paddingBottom: 40, 
+          paddingTop: 8 
+        }}>
           {entrenamientosFiltrados.length === 0 ? (
-            <View className="items-center justify-center py-8">
-              <Text className={`text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <View style={{ 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              paddingVertical: 32 
+            }}>
+              <Text style={{ 
+                fontSize: 16, 
+                color: colors.secondaryText 
+              }}>
                 No hay entrenamientos disponibles para este nivel
               </Text>
             </View>
           ) : (
             entrenamientosFiltrados.map((entrenamiento) => (
-              <View key={entrenamiento._id} className="mb-4">
+              <View key={entrenamiento._id} style={{ marginBottom: 16 }}>
                 <TouchableOpacity
                   onPress={() => entrenamientoSeleccionado(entrenamiento)}
                 >

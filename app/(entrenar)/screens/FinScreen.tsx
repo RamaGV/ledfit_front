@@ -1,6 +1,6 @@
 // app/(entrenar)/screens/FinScreen.tsx
 
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import React from "react";
 
@@ -8,6 +8,7 @@ import { useEntrenamientos } from "@/context/EntrenamientosContext";
 import { useEjercicios } from "@/context/EjerciciosContext";
 import { calcularTiempo } from "@/utils/utilsEntrenamientos";
 import { useTheme } from "@/context/ThemeContext";
+import NeumorphicButton from "@/components/ui/NeumorphicButton";
 
 export default function FinScreen() {
   const router = useRouter();
@@ -123,41 +124,63 @@ export default function FinScreen() {
       </View>
 
       <View style={{ width: '100%', marginTop: 48 }}>
-        <TouchableOpacity
+        <NeumorphicButton 
           onPress={() => router.push("/(dashboard)/entrenar")}
-          style={{
-            backgroundColor: colors.accent,
-            paddingVertical: 16,
-            marginBottom: 24,
-            borderRadius: 50
-          }}
-        >
-          <Text style={{ 
-            color: 'white', 
-            textAlign: 'center',
-            fontWeight: '600'
-          }}>
-            Iniciar otro entrenamiento
-          </Text>
-        </TouchableOpacity>
+          text="Iniciar otro entrenamiento"
+          isPrimary={true}
+          colors={colors}
+          isDarkMode={isDarkMode}
+          style={{ marginBottom: 20 }}
+        />
 
-        <TouchableOpacity
+        <NeumorphicButton 
           onPress={() => router.push("/(dashboard)")}
-          style={{
-            backgroundColor: isDarkMode ? '#1E1E1E' : colors.card,
-            paddingVertical: 16,
-            borderRadius: 50
-          }}
-        >
-          <Text style={{ 
-            color: colors.text, 
-            textAlign: 'center',
-            fontWeight: '600'
-          }}>
-            Volver al Inicio
-          </Text>
-        </TouchableOpacity>
+          text="Volver al Inicio"
+          isPrimary={false}
+          colors={colors}
+          isDarkMode={isDarkMode}
+        />
       </View>
     </View>
   );
 }
+
+// Estilos para el diseño neumórfico
+const styles = StyleSheet.create({
+  neumorphicButton: {
+    height: 55,
+    borderRadius: 30,
+    overflow: 'hidden',
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topLeftHighlight: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 15,
+    borderBottomLeftRadius: 15,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  bottomRightShadow: {
+    borderBottomRightRadius: 30,
+    borderTopRightRadius: 15,
+    borderBottomLeftRadius: 15,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  buttonContent: {
+    zIndex: 1,
+    padding: 16,
+    width: '100%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 16,
+    textAlign: 'center',
+  }
+});
