@@ -53,18 +53,60 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             if (!localToken) {
               console.log("No hay token local, intentando obtener token de Clerk");
               try {
-                // Esperamos un momento para asegurarnos de que la sesión esté completamente cargada
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
                 // No hay token local, intentamos obtener el de Clerk
-                const clerkToken = await getToken();
-                
+                console.log("Intentando obtener token de Clerk con múltiples métodos...");
+
+                // Intentamos diferentes métodos para obtener el token
+                let clerkToken;
+
+                // Método 1: getToken básico
+                try {
+                  clerkToken = await getToken();
+                  console.log("Método 1 - getToken básico:", clerkToken ? "Éxito" : "Fallido");
+                } catch (error) {
+                  console.error("Error en método 1:", error);
+                }
+
+                // Método 2: getToken con template específico
+                if (!clerkToken) {
+                  try {
+                    clerkToken = await getToken({ template: "org-public-key" });
+                    console.log("Método 2 - template org-public-key:", clerkToken ? "Éxito" : "Fallido");
+                  } catch (error) {
+                    console.error("Error en método 2:", error);
+                  }
+                }
+
+                // Método 3: intentar con otro template
+                if (!clerkToken) {
+                  try {
+                    clerkToken = await getToken({ template: "long-lived" });
+                    console.log("Método 3 - template long-lived:", clerkToken ? "Éxito" : "Fallido");
+                  } catch (error) {
+                    console.error("Error en método 3:", error);
+                  }
+                }
+
+                // Método 4: último intento con skipCache
+                if (!clerkToken) {
+                  try {
+                    clerkToken = await getToken({ skipCache: true });
+                    console.log("Método 4 - skipCache:", clerkToken ? "Éxito" : "Fallido");
+                  } catch (error) {
+                    console.error("Error en método 4:", error);
+                  }
+                }
+
                 if (clerkToken) {
-                  console.log("Token de Clerk obtenido, guardando en local");
+                  console.log("Token de Clerk obtenido exitosamente");
+                  console.log("Longitud del token:", clerkToken.length);
+                  
+                  // Guardamos el token en AsyncStorage
                   await AsyncStorage.setItem("@token", clerkToken);
                   
                   // Intentar recuperar el usuario desde nuestro backend usando el token de Clerk
                   try {
+                    console.log("Contactando backend con Clerk ID:", userId);
                     const response = await fetch(`${API_URL}/api/auth/clerk-user`, {
                       method: "POST",
                       headers: {
@@ -73,7 +115,11 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       },
                       body: JSON.stringify({ 
                         clerkId: userId,
-                        token: clerkToken
+                        // Incluir más información para ayudar al backend
+                        provider: "google", // Asumimos provider por defecto
+                        platform: Platform.OS,
+                        email: `${userId}@clerk.dev`,
+                        name: "Usuario Clerk"
                       })
                     });
                     
@@ -81,13 +127,31 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       console.log("Usuario recuperado del backend usando Clerk ID");
                       const userData = await response.json();
                       
-                      // Guardar datos del usuario en AsyncStorage como respaldo
+                      // Guardamos tanto el token de Clerk como el token de nuestro backend
                       if (userData && userData.user) {
                         console.log("Guardando datos de usuario en AsyncStorage");
                         await AsyncStorage.setItem("@user", JSON.stringify(userData.user));
+                        
+                        // Si el backend también devuelve un token propio, lo guardamos
+                        if (userData.token) {
+                          console.log("Guardando token del backend");
+                          await AsyncStorage.setItem("@token", userData.token);
+                        }
                       }
                     } else {
-                      console.log("No se pudo recuperar el usuario del backend");
+                      // Si hay error de autorización, capturamos la respuesta para depuración
+                      console.log("No se pudo recuperar el usuario del backend. Status:", response.status);
+                      try {
+                        const errorData = await response.json();
+                        console.error("Error del backend:", JSON.stringify(errorData));
+                        
+                        // Si el error es de autorización, podríamos necesitar implementar una solución
+                        if (response.status === 401 || response.status === 403) {
+                          console.log("Error de autorización detectado, es posible que la API requiera configuración");
+                        }
+                      } catch (e) {
+                        console.log("No se pudo obtener detalle del error");
+                      }
                     }
                   } catch (error) {
                     console.error("Error intentando sincronizar con backend:", error);

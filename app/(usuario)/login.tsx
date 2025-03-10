@@ -31,7 +31,7 @@ import AuthFooter from "@/components/auth/AuthFooter";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, oauthSignIn } = useUser();
+  const { login, oauthSignIn, setUser } = useUser();
   const { getToken, userId } = useAuth();
   // Configuración con redirección personalizada para evitar errores de 'Unmatched Route'
   const redirectUrl = Constants.expoConfig?.extra?.clerkOAuthRedirectUrl || 'com.ledfit.app://oauth-callback';
@@ -98,41 +98,13 @@ export default function LoginScreen() {
         redirectUrlComplete: redirectUrl,
         // Incluimos scopes necesarios para obtener perfil y email
         scopes: ['profile', 'email'],
-        // Forzar uso del navegador externo para mejor compatibilidad
+        // Forzar uso del navegador interno para mejor compatibilidad
         useExternalBrowser: false,
         // Establecer tiempo de espera más largo
         timeoutInMilliseconds: 120000 // 2 minutos
       };
       
       console.log('Opciones OAuth completas:', JSON.stringify(oauthOptions));
-      
-      // Verificar si hay sesión activa antes de intentar OAuth
-      const existingToken = await AsyncStorage.getItem("@token");
-      if (existingToken) {
-        console.log('Ya existe un token local. Verificando validez...');
-        try {
-          const verifyResponse = await fetch(`${API_URL}/api/auth/verify`, {
-            method: "GET",
-            headers: { 
-              "Authorization": `Bearer ${existingToken}`,
-              "Content-Type": "application/json" 
-            }
-          });
-          
-          if (verifyResponse.ok) {
-            console.log('Token válido, redirigiendo a dashboard...');
-            setIsLoading(false);
-            router.replace("/(dashboard)");
-            return;
-          } else {
-            console.log('Token existente inválido, eliminando y continuando con OAuth...');
-            await AsyncStorage.removeItem("@token");
-            await AsyncStorage.removeItem("@user");
-          }
-        } catch (e) {
-          console.error('Error verificando token existente:', e);
-        }
-      }
       
       // Iniciar el flujo OAuth con opciones personalizadas
       console.log('Iniciando flujo OAuth con Google...');
@@ -180,18 +152,61 @@ export default function LoginScreen() {
           
           // Esperamos para obtener el token
           console.log('Obteniendo token de Clerk...');
-          const token = await getToken();
+          
+          // Intentamos obtener el token de varias maneras
+          let token;
+          try {
+            // Método 1: getToken básico
+            token = await getToken();
+            console.log('Método 1 (getToken básico):', !!token ? 'Éxito' : 'Fallido');
+          } catch (basicTokenError) {
+            console.error('Error en método 1:', basicTokenError);
+          }
+          
           if (!token) {
-            console.error('No se pudo obtener el token de Clerk');
+            try {
+              // Método 2: getToken con template
+              token = await getToken({ template: "org-public-key" });
+              console.log('Método 2 (template org-public-key):', !!token ? 'Éxito' : 'Fallido');
+            } catch (templateTokenError) {
+              console.error('Error en método 2:', templateTokenError);
+            }
+          }
+          
+          if (!token) {
+            try {
+              // Método 3: getToken con template personalizado
+              token = await getToken({ template: "long-lived" });
+              console.log('Método 3 (template long-lived):', !!token ? 'Éxito' : 'Fallido');
+            } catch (longLivedTokenError) {
+              console.error('Error en método 3:', longLivedTokenError);
+            }
+          }
+          
+          // Último intento con parámetros específicos
+          if (!token) {
+            try {
+              token = await getToken({ 
+                skipCache: true
+              });
+              console.log('Método 4 (skipCache):', !!token ? 'Éxito' : 'Fallido');
+            } catch (finalTokenError) {
+              console.error('Error en método 4:', finalTokenError);
+            }
+          }
+          
+          if (!token) {
+            console.error('No se pudo obtener ningún token de Clerk después de múltiples intentos');
             setError('Error en la autenticación: no se pudo obtener el token');
             setIsLoading(false);
             return;
           }
           
-          console.log('Token obtenido con éxito de Clerk');
+          console.log('Token finalmente obtenido con éxito de Clerk');
+          console.log('Longitud del token:', token.length);
           
           // Obtenemos información del usuario
-          console.log('Obteniendo información del usuario desde Clerk...');
+          console.log('Verificando ID de usuario desde Clerk...');
           if (!userId) {
             console.error('No se pudo obtener el ID del usuario de Clerk');
             setError('Error en la autenticación: no se pudo obtener el ID del usuario');
@@ -199,17 +214,98 @@ export default function LoginScreen() {
             return;
           }
           
+          // Intentar obtener datos completos del usuario directamente del backend
+          try {
+            console.log('Intentando obtener datos completos del usuario con Clerk ID...');
+            
+            // Primero verificamos qué tipo de token tenemos
+            const tokenDetails = {
+              standard: token ? 'Disponible' : 'No disponible',
+              length: token ? token.length : 0
+            };
+            console.log('Detalles del token:', tokenDetails);
+            
+            // Cambiamos el formato de la solicitud para que coincida con lo que espera el backend
+            const userResponse = await fetch(`${API_URL}/api/auth/clerk-user`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                // Aseguramos que el token se envía en el formato correcto
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ 
+                clerkId: userId,
+                // Incluimos información adicional para la verificación
+                email: `${userId}@clerk.dev`, // Email provisional
+                provider: 'google',
+                name: "Usuario Google", // Nombre provisional
+                platform: Platform.OS,
+                // No incluimos el token en el cuerpo, solo en el encabezado
+                sessionId: createdSessionId || 'no-session-id'
+              })
+            });
+            
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              console.log('Datos de usuario obtenidos directamente:', userData);
+              
+              if (userData && userData.user && userData.token) {
+                // Guardamos los datos y token
+                await AsyncStorage.setItem("@token", userData.token);
+                await AsyncStorage.setItem("@user", JSON.stringify(userData.user));
+                setUser(userData.user);
+                
+                // Navegamos al dashboard
+                console.log('Autenticación completada con éxito mediante endpoint clerk-user');
+                router.replace('/(dashboard)');
+                setIsLoading(false);
+                return;
+              }
+            } else {
+              // Capturamos el error completo para diagnóstico
+              console.error('Error al obtener datos con clerk-user. Status:', userResponse.status);
+              const errorText = await userResponse.text();
+              console.error('Error completo:', errorText);
+              
+              try {
+                const errorData = JSON.parse(errorText);
+                console.error('Detalles del error:', JSON.stringify(errorData));
+                
+                // Si hay un mensaje de error específico, lo mostramos
+                if (errorData && errorData.errors && errorData.errors[0]) {
+                  const specificError = errorData.errors[0];
+                  console.error('Error específico:', specificError.message);
+                  
+                  // Si el error es de autorización, intentamos el flujo alternativo
+                  if (specificError.code === "authorization_invalid") {
+                    console.log("Error de autorización detectado, intentando flujo alternativo");
+                  }
+                }
+              } catch (e) {
+                console.error('No se pudo parsear el error como JSON:', e);
+              }
+            }
+          } catch (userError) {
+            console.error('Error al obtener datos de usuario con clerk-user:', userError);
+            // Continuamos con el proceso OAuth estándar
+          }
+          
+          // Si no pudimos usar clerk-user, recurrimos al flujo OAuth tradicional
+          console.log('Utilizando flujo OAuth estándar como respaldo...');
+          
           // Registramos en nuestro backend
           console.log('Registrando en nuestro backend con ID Clerk:', userId);
           try {
+            // Este es un registro de respaldo con información mínima
+            // El backend debería intentar obtener más información
             await oauthSignIn({
-              name: "Usuario Clerk", // Se actualizará después
-              email: "usuario@clerk.dev", // Se actualizará después
+              name: "Usuario Google", // Información básica
+              email: `${userId}@clerk.dev`, // Email provisional
               oauthProvider: 'google',
               oauthId: userId
             });
             
-            console.log('Registro exitoso en el backend');
+            console.log('Registro exitoso en el backend mediante OAuth');
             
             // Esperamos un momento para asegurar que todo esté sincronizado
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -233,7 +329,7 @@ export default function LoginScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [router, startGoogleOAuth, redirectUrl, getToken, userId, oauthSignIn]);
+  }, [router, startGoogleOAuth, redirectUrl, getToken, userId, oauthSignIn, setUser]);
 
   // Función para iniciar el flujo OAuth de Facebook con Clerk e integrarlo con nuestro backend
   const handleFacebookLogin = useCallback(async () => {
