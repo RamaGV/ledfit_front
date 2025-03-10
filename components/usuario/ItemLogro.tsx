@@ -85,18 +85,18 @@ export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, ti
               path={hexPath}
               color={colors.glow}
               style="fill"
-              transform={[{ scale: 1.15 }, { translateX: -cx * 0.15 }, { translateY: -cy * 0.15 }]}
+              transform={[{ scale: 1.1 }, { translateX: -cx * 0.05 }, { translateY: -cy * 0.05 }]}
             >
-              <BlurMask blur={10} style="normal" />
+              <BlurMask blur={7} style="normal" />
             </Path>
             
             {/* Sombra oscura (desplazada abajo-derecha) */}
             <Path
               path={hexPath}
               color="black"
-              opacity={0.3}
+              opacity={.8}
               style="fill"
-              transform={[{ translateX: 6 }, { translateY: 8 }]}
+              transform={[{ translateX: 0 }, { translateY: 8 }]}
             >
               <BlurMask blur={5} style="normal" />
             </Path>
@@ -107,7 +107,7 @@ export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, ti
                 start={vec(cx - radius, cy - radius)}
                 end={vec(cx + radius, cy + radius)}
                 colors={[colors.secondary, colors.primary, colors.secondary]}
-                positions={[0, 0.5, 1]}
+                positions={[0, 0.2, 1]}
               />
             </Path>
 

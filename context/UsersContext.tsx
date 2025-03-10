@@ -47,7 +47,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const { signOut } = useAuth(); // Añadimos el hook de Clerk para cerrar sesión
+  const { signOut, getToken } = useAuth(); // Añadimos el hook de Clerk para obtener getToken
 
   // Rehidratar el usuario desde AsyncStorage al montar
   useEffect(() => {
@@ -55,14 +55,45 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const token = await AsyncStorage.getItem("@token");
         if (token) {
-          const storedUser = await AsyncStorage.getItem("@user");
-          if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
+          console.log("Token encontrado en almacenamiento, intentando obtener usuario");
+          
+          // Si hay un token almacenado, primero intentamos verificar si es válido
+          const response = await fetch(`${API_URL}/api/auth/verify`, {
+            method: "GET",
+            headers: { 
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json" 
+            }
+          });
+          
+          if (response.ok) {
+            // Si el token es válido, obtenemos los datos del usuario desde el servidor
+            console.log("Token válido, obteniendo datos de usuario desde el servidor");
+            const data = await response.json();
+            setUser(data.user);
+          } else {
+            // Si el token no es válido, lo eliminamos
+            console.log("Token inválido, eliminando de almacenamiento");
+            await AsyncStorage.removeItem("@token");
+            await AsyncStorage.removeItem("@user");
+            
+            // Intentamos usar la sesión de Clerk como respaldo
+            try {
+              const clerkToken = await getToken();
+              if (clerkToken) {
+                console.log("Encontrada sesión de Clerk, intentando recuperar usuario");
+                // Podríamos tener un endpoint para obtener el usuario por su ID de Clerk
+                // o intentar volver a hacer login con OAuth
+              }
+            } catch (clerkError) {
+              console.log("No se pudo recuperar sesión de Clerk:", clerkError);
+            }
           }
+        } else {
+          console.log("No hay token en almacenamiento");
         }
       } catch (error) {
-        console.error("Error leyendo AsyncStorage:", error);
+        console.error("Error cargando usuario:", error);
       } finally {
         setLoadingUser(false);
       }
@@ -119,118 +150,41 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   // Método para manejar el registro o login con proveedores OAuth (Google, Facebook, Apple)
   const oauthSignIn = async (userData: {name: string; email: string; oauthProvider: string; oauthId: string}) => {
     try {
-      console.log('=============================================');
-      console.log('>>> DEPURACIÓN OAUTH MEJORADA - INICIA PROCESO <<<');
-      console.log('Iniciando proceso de oauthSignIn en backend');
+      setLoadingUser(true);
+      console.log('Iniciando proceso OAuth con:', userData.oauthProvider);
       
-      // Verificamos el estado actual de AsyncStorage antes de empezar
-      const prevToken = await AsyncStorage.getItem('@token');
-      console.log('Estado de token ANTES del proceso OAuth:', prevToken ? 'EXISTE TOKEN PREVIO' : 'NO HAY TOKEN PREVIO');
-      
-      console.log('Datos enviados al backend:', {
-        nombre: userData.name,
-        email: userData.email,
-        proveedor: userData.oauthProvider,
-        oauthId: userData.oauthId
+      const response = await fetch(`${API_URL}/api/auth/oauth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
       });
       
-      // Verificamos que la URL del API sea correcta
-      console.log('URL de API para OAuth:', `${API_URL}/api/auth/oauth`);
-      
-      // Realizamos la petición al backend
-      try {
-        const response = await fetch(`${API_URL}/api/auth/oauth`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userData),
-        });
-        
-        console.log('Respuesta del backend recibida. Status:', response.status);
-        
-        // Manejo de errores en la respuesta
-        if (!response.ok) {
-          console.error('Error en respuesta del backend:', response.status, response.statusText);
-          let errorMessage = "Error en el registro con OAuth";
-          
-          try {
-            const errorData = await response.json();
-            console.error('Detalle del error:', errorData);
-            errorMessage = errorData.message || errorMessage;
-          } catch (jsonError) {
-            console.error('No se pudo parsear la respuesta de error como JSON', jsonError);
-          }
-          
-          throw new Error(errorMessage);
-        }
-        
-        // Parseamos la respuesta exitosa
-        let data;
-        try {
-          data = await response.json();
-          console.log('Datos recibidos del backend:', {
-            token: data.token ? 'TOKEN RECIBIDO CORRECTAMENTE' : 'NO SE RECIBIÓ TOKEN',
-            usuario: data.user ? data.user.name : 'NO SE RECIBIÓ USUARIO'
-          });
-          
-          if (!data.token) {
-            console.error('ERROR GRAVE: El backend no devolvió un token.');
-            throw new Error('No se recibió token del servidor');
-          }
-          
-          if (!data.user) {
-            console.error('ERROR GRAVE: El backend no devolvió datos de usuario.');
-            throw new Error('No se recibieron datos de usuario del servidor');
-          }
-        } catch (jsonError) {
-          console.error('Error al parsear respuesta JSON del backend:', jsonError);
-          throw new Error('Formato de respuesta inválido del servidor');
-        }
-        
-        // Guardamos los datos del usuario
-        console.log('Guardando token en AsyncStorage...');
-        try {
-          await AsyncStorage.setItem("@token", data.token);
-          // Verificamos que se haya guardado correctamente
-          const tokenSaved = await AsyncStorage.getItem("@token");
-          if (tokenSaved) {
-            console.log('Token guardado exitosamente en AsyncStorage');
-          } else {
-            console.error('ERROR CRÍTICO: El token no se guardó correctamente en AsyncStorage');
-            throw new Error('Error al guardar token en almacenamiento local');
-          }
-        } catch (storageError) {
-          console.error('Error al guardar token en AsyncStorage:', storageError);
-          throw new Error('Error al guardar token: ' + (storageError instanceof Error ? storageError.message : 'Error desconocido'));
-        }
-        
-        console.log('Guardando datos de usuario en AsyncStorage...');
-        try {
-          await AsyncStorage.setItem("@user", JSON.stringify(data.user));
-          const userSaved = await AsyncStorage.getItem("@user");
-          if (userSaved) {
-            console.log('Datos de usuario guardados exitosamente en AsyncStorage');
-          } else {
-            console.warn('Advertencia: Los datos de usuario no se guardaron correctamente');
-          }
-        } catch (userStorageError) {
-          console.error('Error al guardar datos de usuario:', userStorageError);
-          // No lanzamos error aquí para permitir continuar si al menos el token se guardó
-        }
-        
-        console.log('Actualizando estado de usuario en contexto...');
-        setUser(data.user);
-        
-        console.log('Proceso de oauthSignIn completado exitosamente');
-        console.log('>>> DEPURACIÓN OAUTH MEJORADA - PROCESO FINALIZADO <<<');
-        console.log('=============================================');
-      } catch (fetchError) {
-        console.error('Error en la petición fetch al backend:', fetchError);
-        throw fetchError;
+      if (!response.ok) {
+        console.error('Error en respuesta del servidor:', response.status);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Error en el registro con OAuth");
       }
-    } catch (e: any) {
-      console.error('Error general en oauthSignIn:', e.message || e);
-      console.log('---------------------------------------------');
-      throw e;
+      
+      const data = await response.json();
+      
+      if (!data.token || !data.user) {
+        console.error('Respuesta incompleta del servidor');
+        throw new Error('Datos de usuario o token inválidos');
+      }
+      
+      // Guardar token y datos de usuario
+      await AsyncStorage.setItem("@token", data.token);
+      await AsyncStorage.setItem("@user", JSON.stringify(data.user));
+      
+      // Actualizar estado
+      setUser(data.user);
+      
+      return data;
+    } catch (error) {
+      console.error('Error en oauthSignIn:', error);
+      throw error;
+    } finally {
+      setLoadingUser(false);
     }
   };
 
