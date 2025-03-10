@@ -12,7 +12,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.ledfit-front",
-      "associatedDomains": ["applinks:emerging-deer-62.clerk.accounts.dev"]
+      "associatedDomains": [
+        "applinks:emerging-deer-62.clerk.accounts.dev", 
+        "applinks:clerk.ledfit.com"
+      ]
     },
     "android": {
       "package": "com.anonymous.ledfit_front",

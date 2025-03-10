@@ -90,6 +90,10 @@ export default function LoginScreen() {
       console.log('Clerk redirectUrl:', redirectUrl);
       console.log('URL de API:', API_URL);
       
+      // Forzamos limpieza previa de tokens
+      await AsyncStorage.removeItem('@token');
+      await AsyncStorage.removeItem('@user');
+      
       // Configuración de opciones avanzadas para OAuth
       const oauthOptions = {
         // Redirigir específicamente a nuestra URL personalizada
@@ -98,17 +102,13 @@ export default function LoginScreen() {
         redirectUrlComplete: redirectUrl,
         // Incluimos scopes necesarios para obtener perfil y email
         scopes: ['profile', 'email'],
-        // Usar el navegador interno para mejor control
-        useExternalBrowser: false,
+        // IMPORTANTE: Usar obligatoriamente el navegador externo (navegador del sistema)
+        useExternalBrowser: true,
         // Establecer tiempo de espera
         timeoutInMilliseconds: 90000 // 90 segundos
       };
       
       console.log('Opciones OAuth completas:', JSON.stringify(oauthOptions));
-      
-      // Limpiar AsyncStorage antes de iniciar nueva sesión para evitar conflictos
-      await AsyncStorage.removeItem('@token');
-      await AsyncStorage.removeItem('@user');
       
       // Iniciar el flujo OAuth con opciones personalizadas
       console.log('Iniciando flujo OAuth con Google...');
@@ -247,110 +247,119 @@ export default function LoginScreen() {
       // Verificamos la configuración completa
       console.log('Esquema de app:', Constants.expoConfig?.scheme);
       console.log('Clerk redirectUrl:', redirectUrl);
+      console.log('URL de API:', API_URL);
+      
+      // Limpiamos tokens previos
+      await AsyncStorage.removeItem('@token');
+      await AsyncStorage.removeItem('@user');
+      
+      // Opciones OAuth optimizadas
+      const oauthOptions = {
+        redirectUrl,
+        redirectUrlComplete: redirectUrl,
+        scopes: ['email', 'public_profile'],
+        useExternalBrowser: true,
+        timeoutInMilliseconds: 90000
+      };
+      
+      console.log('Opciones OAuth Facebook:', JSON.stringify(oauthOptions));
       
       // Iniciar el flujo OAuth
-      const oauthResult = await startFacebookOAuth();
-      console.log('Resultado OAuth inicial:', JSON.stringify(oauthResult || {}));
+      let oauthResult;
+      try {
+        oauthResult = await startFacebookOAuth(oauthOptions);
+        console.log('Resultado OAuth Facebook:', JSON.stringify(oauthResult || {}));
+        
+        if (!oauthResult || oauthResult?.authSessionResult?.type === 'dismiss') {
+          console.log('Autenticación con Facebook cancelada o timeout');
+          setError('Autenticación cancelada o expiró el tiempo de espera');
+          setIsLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.error('Error iniciando OAuth con Facebook:', e);
+        setError('Error al iniciar autenticación con Facebook');
+        setIsLoading(false);
+        return;
+      }
       
       const { createdSessionId, setActive } = oauthResult || {};
       
-      // Si se creó una sesión, la activamos
-      if (createdSessionId && setActive) {
-        console.log('Sesión de Clerk creada con ID:', createdSessionId);
-        
-        try {
-          // Activamos la sesión
-          console.log('Activando sesión...');
-          await setActive({ session: createdSessionId });
-          console.log('Sesión activada correctamente');
-          
-          // Esperamos un momento para que Clerk termine de procesar la sesión
-          console.log('Esperando procesamiento...');
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Aumentamos el tiempo de espera
-          
-          // Ahora obtenemos el token y datos del usuario de Clerk
-          console.log('Obteniendo token de Clerk...');
-          const token = await getToken({ template: "org-public-key" });
-          console.log('¿Token obtenido?', !!token);
-          console.log('¿userId disponible?', !!userId);
-          
-          if (token && userId) {
-            console.log('Token y userId obtenidos');
-            
-            // Obtenemos datos del usuario desde Clerk
-            try {
-              console.log('Consultando API de Clerk para datos del usuario...');
-              const response = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                }
-              });
-              
-              console.log('Respuesta de API Clerk:', response.status);
-              
-              if (response.ok) {
-                const userData = await response.json();
-                console.log('Datos de usuario recibidos');
-                
-                if (!userData.email_addresses || userData.email_addresses.length === 0) {
-                  throw new Error('No se encontró email en la cuenta de Facebook');
-                }
-                
-                const email = userData.email_addresses[0].email_address;
-                const name = userData.first_name + (userData.last_name ? ' ' + userData.last_name : '');
-                
-                console.log('Email:', email, 'Nombre:', name);
-                
-                // Registramos el usuario en nuestro backend
-                console.log('Registrando en backend...');
-                await oauthSignIn({
-                  name,
-                  email,
-                  oauthProvider: 'facebook',
-                  oauthId: userId
-                });
-                
-                console.log('Registro exitoso, redireccionando...');
-                
-                // Navegamos al dashboard
-                router.push("/(dashboard)");
-                return;
-              } else {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Error en respuesta de Clerk API:', errorData);
-                throw new Error(`Error de API Clerk: ${response.status}`);
-              }
-            } catch (apiError) {
-              console.error('Error al llamar API de Clerk:', apiError);
-              throw apiError;
-            }
-          } else {
-            console.error('No se obtuvo token o userId después de activar sesión');
-            if (!token) console.log('Token no disponible');
-            if (!userId) console.log('UserId no disponible');
-            throw new Error('No se pudo obtener credenciales después de autenticación');
-          }
-        } catch (sessionError) {
-          console.error('Error al activar sesión:', sessionError);
-          throw sessionError;
-        }
-      } else {
-        console.log('Datos de sesión OAuth:', JSON.stringify(oauthResult || {}));
-        console.error('No se recibió información de sesión completa de Facebook');
-        if (!createdSessionId) console.log('createdSessionId no está disponible');
-        if (!setActive) console.log('setActive no está disponible');
-        throw new Error('No se completó el inicio de sesión con Facebook');
+      if (!createdSessionId || !setActive) {
+        setError('No se recibió información de sesión');
+        setIsLoading(false);
+        return;
       }
-    } catch (error: any) {
-      console.error("Error detallado en Facebook OAuth:", error);
-      // Mostramos error más específico al usuario
-      setError(error.message || "No se pudo completar la autenticación con Facebook");
+      
+      try {
+        console.log('Activando sesión de Clerk...');
+        await setActive({ session: createdSessionId });
+        console.log('Sesión activada correctamente');
+        
+        // Pequeña pausa
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Intento rápido de obtener token
+        let token;
+        try {
+          token = await getToken();
+          console.log('Token obtenido:', !!token);
+        } catch (e) {
+          console.error('Error obteniendo token:', e);
+        }
+        
+        if (token) {
+          await AsyncStorage.setItem('@token', token);
+          
+          // Registramos mínimamente
+          if (userId) {
+            try {
+              await oauthSignIn({
+                name: "Usuario Facebook",
+                email: `${userId}@clerk.dev`,
+                oauthProvider: 'facebook',
+                oauthId: userId
+              });
+            } catch (e) {
+              console.error('Error en registro, continuando...', e);
+            }
+          }
+          
+          // Redirigimos inmediatamente
+          console.log('Redirigiendo al dashboard...');
+          router.replace('/(dashboard)');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Intento alternativo
+        if (!token) {
+          try {
+            token = await getToken({ template: "org-public-key" });
+            if (token) {
+              await AsyncStorage.setItem('@token', token);
+              console.log('Redirigiendo con token alternativo...');
+              router.replace('/(dashboard)');
+              setIsLoading(false);
+              return;
+            }
+          } catch (e) {
+            console.error('Error con token alternativo:', e);
+          }
+        }
+        
+        setError('No se pudo obtener token de autenticación');
+      } catch (error) {
+        console.error('Error activando sesión:', error);
+        setError('Error al activar la sesión');
+      }
+    } catch (error) {
+      console.error('Error general en Facebook login:', error);
+      setError('Error durante la autenticación');
     } finally {
       setIsLoading(false);
     }
-  }, [startFacebookOAuth, getToken, userId, oauthSignIn, router]);
+  }, [router, startFacebookOAuth, redirectUrl, getToken, userId, oauthSignIn]);
 
   // Para el login con Apple (simulado por ahora)
   const handleAppleLogin = () => {
