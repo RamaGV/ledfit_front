@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   StatusBar,
   SafeAreaView,
-  StyleSheet,
   Dimensions
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -22,12 +21,8 @@ import { useImagesMap } from "@/context/ImagesMapContext";
 import { useTheme } from "@/context/ThemeContext";
 
 import EjercicioCard from "@/components/entrenar/EjercicioCard";
-import ChipInfo from "@/components/entrenar/ChipInfo";
 import NeumorphicButton from "@/components/ui/NeumorphicButton";
 import { calcularTiempo } from "@/utils/utilsEntrenamientos";
-
-const HEADER_HEIGHT = 300;
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ID del ejercicio de descanso en la base de datos
 const DESCANSO_ID = "67bc1a7372e1e0091651e944";
@@ -64,114 +59,85 @@ export default function DetallesDeEntrenamiento() {
   if (!selectedEntrenamiento) {
     return (
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <Text style={{ color: colors.text }}>Cargando entrenamiento...</Text>
+        <Text className="text-base" style={{ color: colors.text }}>Cargando entrenamiento...</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       
       {/* Header con imagen y gradiente */}
-      <View style={styles.headerContainer}>
+      <View className="h-[300px] w-full relative">
         <Image
           source={mainImage}
-          style={styles.headerImage}
+          className="w-full h-full"
           contentFit="cover"
         />
         <LinearGradient
           colors={["rgba(0,0,0,0.7)", "transparent", "rgba(0,0,0,0.5)"]}
-          style={StyleSheet.absoluteFillObject}
+          className="absolute inset-0"
         />
         
         {/* Botón de retroceso */}
         <Pressable 
-          style={styles.backButton}
+          className="absolute top-4 left-4 bg-black/30 rounded-full p-2 z-10"
           onPress={() => router.back()}
         >
           <Ionicons name="chevron-back" size={26} color="#FFFFFF" />
         </Pressable>
         
         {/* Información superpuesta en la imagen */}
-        <View style={styles.overlayInfo}>
-          <Text style={styles.workoutTitle}>
+        <View className="absolute bottom-0 left-0 right-0 p-5">
+          <Text className="text-2xl font-bold text-white mb-2">
             {selectedEntrenamiento.nombre}
           </Text>
           
-          <Text style={styles.workoutDescription}>
-            {selectedEntrenamiento.descripcion || 
-              `Entrenamiento de nivel ${selectedEntrenamiento.nivel} para mejorar tu condición física.`}
-          </Text>
+          {/* Nivel de entrenamiento destacado */}
+          <View className="mb-3">
+            <Text className="text-white text-xs font-bold bg-[#6842FF] py-1 px-3 rounded-full self-start">
+              {selectedEntrenamiento.nivel}
+            </Text>
+          </View>
           
-          {/* Chips de información en formato neumórfico */}
-          <View style={styles.statsContainer}>
-            <View style={[styles.statCard, { backgroundColor: isDarkMode ? '#252525' : '#E5E5E0' }]}>
-              <MaterialCommunityIcons 
-                name="dumbbell" 
-                size={24} 
-                color={colors.accent} 
-              />
-              <Text style={[styles.statValue, { color: colors.text }]}>
-                {ejerciciosReales}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.secondaryText }]}>
-                Ejercicios
-              </Text>
+          {/* Chips de información en una fila */}
+          <View className="flex-row items-center space-x-2">
+            <View className="flex-row items-center bg-black/50 py-1.5 px-3 rounded-full">
+              <MaterialCommunityIcons name="dumbbell" size={16} color="#FFFFFF" />
+              <Text className="text-white text-xs font-medium ml-1.5">{ejerciciosReales} ejercicios</Text>
             </View>
             
-            <View style={[styles.statCard, { backgroundColor: isDarkMode ? '#252525' : '#E5E5E0' }]}>
-              <MaterialCommunityIcons 
-                name="clock-outline" 
-                size={24} 
-                color={colors.accent} 
-              />
-              <Text style={[styles.statValue, { color: colors.text }]}>
-                {calcularTiempo(selectedEntrenamiento.tiempoTotal)}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.secondaryText }]}>
-                Minutos
-              </Text>
+            <View className="flex-row items-center bg-black/50 py-1.5 px-3 rounded-full">
+              <MaterialCommunityIcons name="clock-outline" size={16} color="#FFFFFF" />
+              <Text className="text-white text-xs font-medium ml-1.5">{calcularTiempo(selectedEntrenamiento.tiempoTotal)} min</Text>
             </View>
             
-            <View style={[styles.statCard, { backgroundColor: isDarkMode ? '#252525' : '#E5E5E0' }]}>
-              <MaterialCommunityIcons 
-                name="fire" 
-                size={24} 
-                color={colors.accent} 
-              />
-              <Text style={[styles.statValue, { color: colors.text }]}>
-                {selectedEntrenamiento.calorias}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.secondaryText }]}>
-                Calorías
-              </Text>
+            <View className="flex-row items-center bg-black/50 py-1.5 px-3 rounded-full">
+              <MaterialCommunityIcons name="fire" size={16} color="#FFFFFF" />
+              <Text className="text-white text-xs font-medium ml-1.5">{selectedEntrenamiento.calorias} cal</Text>
             </View>
           </View>
         </View>
       </View>
 
       {/* Encabezado de la sección de ejercicios */}
-      <View style={[
-        styles.sectionHeader, 
-        { 
-          backgroundColor: colors.background,
-          borderColor: isDarkMode ? '#333333' : '#E0E0E0' 
-        }
-      ]}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+      <View className={`flex-row items-center justify-between py-4 px-5 border-b ${
+        isDarkMode ? 'border-gray-700' : 'border-gray-300'
+      }`}>
+        <Text className="text-lg font-semibold" style={{ color: colors.text }}>
           Ejercicios
         </Text>
         <TouchableOpacity
           onPress={() => router.push("/(entrenar)/detallesDeEjercicios")}
         >
-          <Text style={{ color: colors.accent }}>Ver más</Text>
+          <Text className="text-[#6842FF]">Ver más</Text>
         </TouchableOpacity>
       </View>
 
       {/* Lista de ejercicios - SCROLLABLE */}
       <ScrollView
-        style={styles.exerciseList}
+        className="flex-1 px-5 pt-4"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
@@ -194,125 +160,18 @@ export default function DetallesDeEntrenamiento() {
       </ScrollView>
 
       {/* Botón de inicio - FIJO */}
-      <View style={[
-        styles.bottomBar,
-        { 
-          backgroundColor: colors.background,
-          borderColor: isDarkMode ? '#333333' : '#E0E0E0' 
-        }
-      ]}>
+      <View className={`absolute bottom-0 left-0 right-0 py-4 px-5 border-t shadow-lg ${
+        isDarkMode ? 'bg-[#121212] border-gray-700' : 'bg-[#EFEEE9] border-gray-300'
+      }`}>
         <NeumorphicButton
           onPress={handleStart}
           text="INICIAR ENTRENAMIENTO"
           isPrimary={true}
           colors={colors}
           isDarkMode={isDarkMode}
-          style={styles.startButton}
+          style={{ width: '100%' }}
         />
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    height: HEADER_HEIGHT,
-    width: '100%',
-    position: 'relative',
-  },
-  headerImage: {
-    width: '100%',
-    height: '100%',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 20,
-    padding: 8,
-    zIndex: 10,
-  },
-  overlayInfo: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-  },
-  workoutTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  workoutDescription: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 16,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  statCard: {
-    width: (SCREEN_WIDTH - 60) / 3,
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  exerciseList: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  startButton: {
-    width: '100%',
-  }
-});
