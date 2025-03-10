@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, AccessibilityInfo, Image } from "react-native";
 import { LinearGradient, Canvas, Circle, Shadow, Path, Skia, vec } from "@shopify/react-native-skia";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/context/ThemeContext"; // Importamos el contexto de tema
 
 // ID del ejercicio de descanso en la base de datos
 const DESCANSO_ID = "67bc1a7372e1e0091651e944";
@@ -35,6 +36,9 @@ export default function ProgressCircular({
   indiceEjercicio = 0,
   imagesMap = {}
 }: Props) {
+  // Obtenemos los colores del tema actual
+  const { colors, isDarkMode } = useTheme();
+
   // Añadimos un log para verificar si este componente se usa durante el descanso
   console.log("=== PROGRESSCIRCULAR SIENDO RENDERIZADO ===", {
     tiempoMaximo,
@@ -104,13 +108,13 @@ export default function ProgressCircular({
           width: containerWidth,
           height: containerHeight,
           flex: 1,
-          backgroundColor: '#121212',
+          backgroundColor: colors.background,
           paddingTop: 20
         }}
       >
         {/* Título y temporizador */}
         <View style={{ alignItems: 'center', marginBottom: 20 }}>
-          <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>
             Descanso
           </Text>
           <Text style={{ color: '#6842FF', fontSize: 48, fontWeight: 'bold', marginTop: 10 }}>
@@ -123,13 +127,13 @@ export default function ProgressCircular({
         <View style={{ padding: 15 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
             <Ionicons name="arrow-forward-circle" size={22} color="#6842FF" />
-            <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginLeft: 10 }}>
+            <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold', marginLeft: 10 }}>
               Próximo ejercicio
             </Text>
           </View>
           
           {/* Imagen y detalles */}
-          <View style={{ backgroundColor: '#1E1E1E', borderRadius: 12, overflow: 'hidden', marginBottom: 15 }}>
+          <View style={{ backgroundColor: colors.card, borderRadius: 12, overflow: 'hidden', marginBottom: 15 }}>
             {imagesMap && ejercicioId.imagen && imagesMap[ejercicioId.imagen] && (
               <Image 
                 source={imagesMap[ejercicioId.imagen]} 
@@ -139,13 +143,13 @@ export default function ProgressCircular({
             )}
             
             <View style={{ padding: 15 }}>
-              <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', marginBottom: 5 }}>
+              <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 5 }}>
                 {ejercicioId.nombre}
               </Text>
               
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                 <Ionicons name="barbell-outline" size={16} color="#6842FF" />
-                <Text style={{ color: '#ccc', marginLeft: 5 }}>
+                <Text style={{ color: colors.secondaryText, marginLeft: 5 }}>
                   {ejercicioId.grupo || "General"}
                 </Text>
               </View>
@@ -153,14 +157,14 @@ export default function ProgressCircular({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Ionicons name="time-outline" size={18} color="#6842FF" />
-                  <Text style={{ color: 'white', marginLeft: 5 }}>
+                  <Text style={{ color: colors.text, marginLeft: 5 }}>
                     {tiempo}s
                   </Text>
                 </View>
                 
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Ionicons name="flame-outline" size={18} color="#FF5757" />
-                  <Text style={{ color: 'white', marginLeft: 5 }}>
+                  <Text style={{ color: colors.text, marginLeft: 5 }}>
                     {caloriasEstimadas} cal
                   </Text>
                 </View>
@@ -210,6 +214,7 @@ export default function ProgressCircular({
         height: containerHeight,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: 'transparent'
       }}
       accessible={true}
       accessibilityLabel={accessibilityLabel}
@@ -222,11 +227,11 @@ export default function ProgressCircular({
           cx={CX}
           cy={CY}
           r={RADIO}
-          color="#333"
+          color={isDarkMode ? "#333" : "#D8D6D2"}
           style="stroke"
           strokeWidth={13}
         >
-          <Shadow dx={0} dy={0} blur={10} color="#000" />
+          <Shadow dx={0} dy={0} blur={10} color={isDarkMode ? "#000" : "rgba(0,0,0,0.1)"} />
         </Circle>
 
         {/* Arco de progreso */}
@@ -259,7 +264,14 @@ export default function ProgressCircular({
           alignItems: "center",
         }}
       >
-        <Text style={{ color: "#FFF", fontSize: 24, fontWeight: "bold", marginLeft: 4 }}>
+        <Text 
+          style={{ 
+            color: isDarkMode ? "#FFF" : colors.text, 
+            fontSize: 24, 
+            fontWeight: "bold", 
+            marginLeft: 4 
+          }}
+        >
           {formattedMinutes} : {formattedSeconds}
           <Text style={{ color: "#FFD700", fontSize: 16 }}> {formattedCentiseconds}</Text>
         </Text>
