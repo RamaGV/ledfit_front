@@ -22,12 +22,41 @@ const DESCANSO_ID = "67bc1a7372e1e0091651e944";
 
 // Utility function para comparar IDs de MongoDB de forma segura
 const compareMongoIds = (id1: any, id2: any): boolean => {
-  // Nos aseguramos de comparar strings limpios
-  const str1 = id1 ? id1.toString().trim() : "";
-  const str2 = id2 ? id2.toString().trim() : "";
+  // Extraer el valor de _id si es un objeto, o usar el valor directamente si es string
+  const getId = (id: any): string => {
+    if (!id) return "";
+    if (typeof id === 'object' && id !== null) {
+      // Si es un objeto, intentar extraer la propiedad _id
+      return id._id ? id._id.toString().trim() : "";
+    }
+    // Si es un string u otro valor primitivo, convertirlo a string
+    return id.toString().trim();
+  };
+
+  const str1 = getId(id1);
+  const str2 = getId(id2);
   const result = str1 === str2;
-  console.log("=== COMPARANDO IDS ===", { id1: str1, id2: str2, result });
+  
+  console.log("=== COMPARANDO IDS ===", { 
+    id1: str1, 
+    id2: str2, 
+    result,
+    id1Type: typeof id1,
+    id2Type: typeof id2
+  });
+  
   return result;
+};
+
+// Constante para verificar si un ejercicio es de descanso
+const esEjercicioDescanso = (ejercicio: any): boolean => {
+  if (!ejercicio) return false;
+  
+  // Si el ejercicio tiene 'ejercicioId' es porque viene del formato de entrenamiento
+  const id = ejercicio.ejercicioId || ejercicio;
+  const esDescanso = compareMongoIds(id, DESCANSO_ID);
+  
+  return esDescanso;
 };
 
 export default function Entrenamiento() {
@@ -188,7 +217,7 @@ export default function Entrenamiento() {
       const nextEjercicio = selectedEntrenamiento.ejercicios[nextIndex];
       
       // Si el siguiente ejercicio es un descanso, lo manejamos automáticamente
-      if (nextEjercicio.ejercicioId.toString() === DESCANSO_ID) {
+      if (esEjercicioDescanso(nextEjercicio)) {
         setIndiceEjercicio(nextIndex); // Avanzar al descanso
         setEtapaActual("DESCANSO");
         setTiempoMs(nextEjercicio.tiempo * 1000);
@@ -211,7 +240,7 @@ export default function Entrenamiento() {
 
       if (etapaActual === "INICIO") {
         // Si el primer ejercicio es un descanso (raramente ocurriría), manejarlo
-        if (selectedEntrenamiento.ejercicios[0].ejercicioId.toString() === DESCANSO_ID) {
+        if (esEjercicioDescanso(selectedEntrenamiento.ejercicios[0])) {
           setEtapaActual("DESCANSO");
         } else {
           setEtapaActual("ACTIVO");
@@ -225,14 +254,12 @@ export default function Entrenamiento() {
         
         // Verificar si el ejercicio actual es un descanso por su ID
         console.log("=== VERIFICANDO SI ES DESCANSO ===", {
-          id: ejercicioActual.ejercicioId,
-          idToString: ejercicioActual.ejercicioId.toString(),
-          DESCANSO_ID: DESCANSO_ID,
-          ejercicioActual: JSON.stringify(ejercicioActual)
+          ejercicioActual: JSON.stringify(ejercicioActual),
+          DESCANSO_ID: DESCANSO_ID
         });
         
         // En MongoDB los ObjectId deben compararse como strings, usando nuestra función segura
-        const esDescansoActual = compareMongoIds(ejercicioActual.ejercicioId, DESCANSO_ID);
+        const esDescansoActual = esEjercicioDescanso(ejercicioActual);
         
         console.log("=== RESULTADO COMPARACIÓN ===", {
           esDescansoActual,
@@ -337,14 +364,12 @@ export default function Entrenamiento() {
       
       // Verificar si el ejercicio actual es un descanso por su ID
       console.log("=== VERIFICANDO SI ES DESCANSO ===", {
-        id: ejercicioActual.ejercicioId,
-        idToString: ejercicioActual.ejercicioId.toString(),
-        DESCANSO_ID: DESCANSO_ID,
-        ejercicioActual: JSON.stringify(ejercicioActual)
+        ejercicioActual: JSON.stringify(ejercicioActual),
+        DESCANSO_ID: DESCANSO_ID
       });
       
       // En MongoDB los ObjectId deben compararse como strings, usando nuestra función segura
-      const esDescansoActual = compareMongoIds(ejercicioActual.ejercicioId, DESCANSO_ID);
+      const esDescansoActual = esEjercicioDescanso(ejercicioActual);
       
       console.log("=== RESULTADO COMPARACIÓN ===", {
         esDescansoActual,
@@ -383,7 +408,7 @@ export default function Entrenamiento() {
             console.log(`Analizando ejercicio índice ${indice}:`, ejercicio);
             
             // Verificar si no es un descanso
-            const esDescanso = compareMongoIds(ejercicio.ejercicioId, DESCANSO_ID);
+            const esDescanso = esEjercicioDescanso(ejercicio);
             if (!esDescanso) {
               console.log(`Encontrado próximo ejercicio en índice ${indice}`);
               return {
@@ -399,7 +424,7 @@ export default function Entrenamiento() {
           // Si no encontramos, volver al primero que no sea descanso
           for (let i = 0; i < selectedEntrenamiento.ejercicios.length; i++) {
             const ejercicio = selectedEntrenamiento.ejercicios[i];
-            const esDescanso = compareMongoIds(ejercicio.ejercicioId, DESCANSO_ID);
+            const esDescanso = esEjercicioDescanso(ejercicio);
             if (!esDescanso) {
               console.log(`Encontrado primer ejercicio no-descanso en índice ${i}`);
               return {
