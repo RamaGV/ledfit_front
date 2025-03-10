@@ -21,6 +21,15 @@ export default function ProgressCircular({
   pausa,
   onTiempoAgotado,
 }: Props) {
+  // Añadimos un log para verificar si este componente se usa durante el descanso
+  console.log("=== PROGRESSCIRCULAR SIENDO RENDERIZADO ===", {
+    tiempoMaximo,
+    tiempoTranscurrido,
+    containerWidth,
+    containerHeight,
+    pausa
+  });
+
   // Dimensiones y centro del canvas
   const RADIO = Math.min(containerWidth, containerHeight) / 2 - 45;
   const CX = containerWidth / 2;
@@ -77,6 +86,24 @@ export default function ProgressCircular({
       accessibilityHint="Muestra el tiempo restante para el ejercicio actual"
       accessibilityRole="timer"
     >
+      {/* Banner de prueba */}
+      <View 
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: "red",
+          padding: 5,
+          zIndex: 999,
+          alignItems: "center"
+        }}
+      >
+        <Text style={{ color: "white", fontWeight: "bold" }}>
+          COMPONENTE PROGRESSCIRCULAR
+        </Text>
+      </View>
+
       <Canvas style={{ width: containerWidth, height: containerHeight }}>
         {/* Círculo de fondo */}
         <Circle
