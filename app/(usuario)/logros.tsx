@@ -1,18 +1,33 @@
 // app/(usuario)/logros.tsx
 import { View, Text, ScrollView, TouchableOpacity, Dimensions, StatusBar } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Image } from 'expo-image';
 import { LinearGradient } from "expo-linear-gradient";
 import TopNavbar from "@/components/TopNavbar";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { useUser } from "@/context/UsersContext";
 import { HexBadge } from "@/components/usuario/ItemLogro";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Logros() {
   const { user } = useUser();
+  const { isDarkMode } = useTheme();
   const logros = user?.logros ?? [];
   const [selectedCategory, setSelectedCategory] = useState<'check' | 'time' | 'plus'>('check');
   const screenWidth = Dimensions.get('window').width;
+  const scrollRef = useRef<ScrollView>(null);
+
+  // Colores base según el tema
+  const backgroundColor = isDarkMode ? '#121212' : '#F5F5F5';
+  const cardBackground = isDarkMode ? '#1E1E1E' : '#FFFFFF';
+  const textColor = isDarkMode ? '#FFFFFF' : '#121212';
+  const textSecondary = isDarkMode ? '#BBBBBB' : '#555555';
+  const textMuted = isDarkMode ? '#777777' : '#999999';
+  const borderColor = isDarkMode ? '#333333' : '#E0E0E0';
+  const accentColor = '#6842FF';
+  const accentLight = isDarkMode ? '#6842FF30' : '#6842FF20';
 
   // Agrupamos los logros por tipo
   const groupedLogros = {
@@ -46,10 +61,10 @@ export default function Logros() {
   // Función para obtener el ícono de la categoría
   const getCategoryIcon = (category: 'check' | 'time' | 'plus') => {
     switch (category) {
-      case 'check': return require('@/assets/icons/iconFavTrue.png'); // Reemplazar con ícono adecuado
-      case 'time': return require('@/assets/icons/iconFavTrue.png'); // Reemplazar con ícono adecuado
-      case 'plus': return require('@/assets/icons/iconFavTrue.png'); // Reemplazar con ícono adecuado
-      default: return require('@/assets/icons/iconFavTrue.png');
+      case 'check': return 'flame-outline';
+      case 'time': return 'timer-outline';
+      case 'plus': return 'barbell-outline';
+      default: return 'trophy-outline';
     }
   };
 
@@ -60,62 +75,143 @@ export default function Logros() {
     
     return (
       <TouchableOpacity 
-        onPress={() => setSelectedCategory(category)}
-        className={`mr-4 rounded-xl overflow-hidden ${isSelected ? 'border-2 border-[#6842FF]' : 'border border-gray-700'}`}
-        style={{ width: screenWidth * 0.7, height: 120 }}
+        onPress={() => {
+          setSelectedCategory(category);
+          // Reset scroll position cuando se cambia de categoría
+          scrollRef.current?.scrollTo({ y: 0, animated: true });
+        }}
+        className={`mr-4 rounded-xl overflow-hidden ${isSelected ? 'border-2 border-[#6842FF]' : `border border-[${borderColor}]`}`}
+        style={{ 
+          width: screenWidth * 0.7, 
+          height: 120, 
+          backgroundColor: cardBackground,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3
+        }}
       >
-        <LinearGradient
-          colors={isSelected ? ['#6842FF20', '#6842FF40'] : ['#20202020', '#20202040']}
-          style={{ flex: 1, padding: 16 }}
-        >
+        <View style={{ flex: 1, padding: 16 }}>
           <View className="flex-row items-center mb-2">
-            <Image
-              source={getCategoryIcon(category)}
-              style={{ width: 24, height: 24, tintColor: isSelected ? '#6842FF' : '#888' }}
+            <Ionicons 
+              name={getCategoryIcon(category)} 
+              size={24} 
+              color={isSelected ? accentColor : textMuted} 
             />
-            <Text className="text-white font-bold text-lg ml-2">{getCategoryTitle(category)}</Text>
+            <Text style={{ color: textColor, fontWeight: 'bold', fontSize: 18, marginLeft: 8 }}>
+              {getCategoryTitle(category)}
+            </Text>
           </View>
           
           <View className="flex-row items-center justify-between">
-            <Text className="text-gray-400 text-sm">{`${progress.obtained}/${progress.total} logros`}</Text>
-            <Text className={`font-bold ${isSelected ? 'text-[#6842FF]' : 'text-gray-400'}`}>
+            <Text style={{ color: textSecondary, fontSize: 14 }}>
+              {`${progress.obtained}/${progress.total} logros`}
+            </Text>
+            <Text style={{ 
+              fontWeight: 'bold', 
+              color: isSelected ? accentColor : textSecondary
+            }}>
               {`${Math.round(progress.percentage)}%`}
             </Text>
           </View>
           
           {/* Barra de progreso */}
-          <View className="h-2 bg-gray-800 rounded-full mt-2 overflow-hidden">
+          <View style={{ 
+            height: 8, 
+            backgroundColor: isDarkMode ? '#333333' : '#EEEEEE', 
+            borderRadius: 4, 
+            marginTop: 8, 
+            overflow: 'hidden' 
+          }}>
             <View 
-              className={`h-full ${isSelected ? 'bg-[#6842FF]' : 'bg-gray-600'}`} 
-              style={{ width: `${progress.percentage}%` }}
+              style={{ 
+                height: '100%', 
+                backgroundColor: isSelected ? accentColor : (isDarkMode ? '#555555' : '#CCCCCC'), 
+                width: `${progress.percentage}%`,
+                borderRadius: 4
+              }} 
             />
           </View>
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
     );
   };
 
   // Función para renderizar un logro individual con detalles
   const renderLogroDetail = (logro: any, index: number) => {
+    // Determinar si el logro debe mostrarse con animación
+    const delay = index * 100; // 100ms de retraso entre cada logro
+
     return (
-      <View key={index} className="flex-row mb-6 items-center">
+      <Animated.View 
+        key={index} 
+        entering={FadeInDown.delay(delay).duration(300)}
+        style={{ 
+          flexDirection: 'row', 
+          marginBottom: 24, 
+          alignItems: 'center',
+          backgroundColor: cardBackground,
+          borderRadius: 16,
+          padding: 16,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDarkMode ? 0.2 : 0.1,
+          shadowRadius: 4,
+          elevation: 2
+        }}
+      >
         <View className="mr-4">
-          <HexBadge logroKey={logro.key} obtenido={logro.obtenido} />
+          <HexBadge 
+            logroKey={logro.key} 
+            obtenido={logro.obtenido} 
+            type={logro.type}
+            title={logro.title}
+          />
         </View>
         <View className="flex-1">
-          <Text className={`font-bold text-base ${logro.obtenido ? 'text-white' : 'text-gray-500'}`}>
+          <Text style={{ 
+            fontWeight: 'bold', 
+            fontSize: 16, 
+            color: logro.obtenido ? textColor : textMuted,
+            marginBottom: 4
+          }}>
             {logro.title}
           </Text>
-          <Text className={`text-sm mt-1 ${logro.obtenido ? 'text-gray-300' : 'text-gray-600'}`}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: logro.obtenido ? textSecondary : textMuted,
+            marginBottom: 8
+          }}>
             {logro.content}
           </Text>
-          {logro.obtenido && (
-            <View className="mt-2 bg-[#6842FF30] px-3 py-1 rounded-full self-start">
-              <Text className="text-[#6842FF] text-xs font-medium">Completado</Text>
+          {logro.obtenido ? (
+            <View style={{ 
+              backgroundColor: accentLight, 
+              paddingHorizontal: 12, 
+              paddingVertical: 4, 
+              borderRadius: 20,
+              alignSelf: 'flex-start'
+            }}>
+              <Text style={{ color: accentColor, fontSize: 12, fontWeight: '600' }}>
+                Completado
+              </Text>
+            </View>
+          ) : (
+            <View style={{ 
+              backgroundColor: isDarkMode ? '#33333330' : '#EEEEEE', 
+              paddingHorizontal: 12, 
+              paddingVertical: 4, 
+              borderRadius: 20,
+              alignSelf: 'flex-start'
+            }}>
+              <Text style={{ color: textMuted, fontSize: 12 }}>
+                Pendiente
+              </Text>
             </View>
           )}
         </View>
-      </View>
+      </Animated.View>
     );
   };
 
@@ -125,55 +221,125 @@ export default function Logros() {
   const porcentajeTotal = totalLogros > 0 ? (totalObtenidos / totalLogros) * 100 : 0;
 
   return (
-    <View className="flex-1 bg-[#121212]">
-      <StatusBar barStyle="light-content" backgroundColor="#121212" />
+    <View style={{ flex: 1, backgroundColor }}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={backgroundColor} />
       <View className="pt-2">
         <TopNavbar titulo="Logros" iconBack={true} />
       </View>
 
-        {/* Resumen de progreso general */}
-        <View className="px-5 py-4">
-          <View className="bg-[#1E1E1E] rounded-xl p-4 mb-4">
-            <Text className="text-white text-lg font-bold mb-2">Tu progreso</Text>
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-gray-400">Logros completados</Text>
-              <Text className="text-white font-bold">{`${totalObtenidos}/${totalLogros}`}</Text>
+      {/* Resumen de progreso general */}
+      <View className="px-5 py-4">
+        <View style={{ 
+          backgroundColor: cardBackground, 
+          borderRadius: 16, 
+          padding: 16, 
+          marginBottom: 16,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 3,
+          elevation: 2
+        }}>
+          <Text style={{ color: textColor, fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+            Tu progreso
+          </Text>
+          
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: textSecondary, marginBottom: 4 }}>
+                Logros completados
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                <Text style={{ color: textColor, fontWeight: 'bold', fontSize: 24, marginRight: 4 }}>
+                  {totalObtenidos}
+                </Text>
+                <Text style={{ color: textSecondary }}>
+                  de {totalLogros}
+                </Text>
+              </View>
             </View>
-            <View className="h-2 bg-gray-800 rounded-full overflow-hidden">
-              <View 
-                className="h-full bg-[#6842FF]" 
-                style={{ width: `${porcentajeTotal}%` }}
-              />
+            
+            <View style={{ 
+              width: 70, 
+              height: 70, 
+              borderRadius: 35, 
+              borderWidth: 5,
+              borderColor: accentColor,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: isDarkMode ? '#1A1A1A' : '#F9F9F9'
+            }}>
+              <Text style={{ color: accentColor, fontWeight: 'bold', fontSize: 18 }}>
+                {`${Math.round(porcentajeTotal)}%`}
+              </Text>
             </View>
           </View>
+          
+          <View style={{ 
+            height: 8, 
+            backgroundColor: isDarkMode ? '#333333' : '#EEEEEE', 
+            borderRadius: 4, 
+            overflow: 'hidden',
+            marginTop: 8
+          }}>
+            <View 
+              style={{ 
+                height: '100%', 
+                backgroundColor: accentColor, 
+                width: `${porcentajeTotal}%`,
+                borderRadius: 4
+              }} 
+            />
+          </View>
         </View>
+      </View>
 
-        {/* Categorías de logros (ScrollView horizontal) */}
-        <View className="mb-4">
-          <Text className="text-white text-lg font-bold px-5 mb-3">Categorías</Text>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
-            className="mb-2"
-          >
-            {renderCategoryCard('check')}
-            {renderCategoryCard('time')}
-            {renderCategoryCard('plus')}
-          </ScrollView>
-        </View>
+      {/* Categorías de logros (ScrollView horizontal) */}
+      <View className="mb-6">
+        <Text style={{ color: textColor, fontSize: 18, fontWeight: 'bold', paddingHorizontal: 20, marginBottom: 12 }}>
+          Categorías
+        </Text>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+          className="mb-2"
+        >
+          {renderCategoryCard('check')}
+          {renderCategoryCard('time')}
+          {renderCategoryCard('plus')}
+        </ScrollView>
+      </View>
 
-        {/* Lista detallada de logros de la categoría seleccionada */}
-        <Text className="px-5 text-white text-lg font-bold mb-4">
+      {/* Lista detallada de logros de la categoría seleccionada */}
+      <View className="px-5 flex-row justify-between items-center mb-4">
+        <Text style={{ color: textColor, fontSize: 18, fontWeight: 'bold' }}>
           {getCategoryTitle(selectedCategory)}
         </Text>
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-5 ">
-            {groupedLogros[selectedCategory].map((logro, index) => 
-              renderLogroDetail(logro, index)
-            )}
-          </View>
-        </ScrollView>
+        <View style={{ 
+          backgroundColor: accentLight, 
+          paddingHorizontal: 10, 
+          paddingVertical: 3, 
+          borderRadius: 12
+        }}>
+          <Text style={{ color: accentColor, fontWeight: '600', fontSize: 13 }}>
+            {`${getProgress(selectedCategory).obtained}/${getProgress(selectedCategory).total}`}
+          </Text>
+        </View>
+      </View>
+      
+      <ScrollView 
+        ref={scrollRef}
+        className="flex-1" 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        <View className="px-5">
+          {groupedLogros[selectedCategory].map((logro, index) => 
+            renderLogroDetail(logro, index)
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
