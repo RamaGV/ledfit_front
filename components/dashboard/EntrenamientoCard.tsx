@@ -117,7 +117,10 @@ export default function EntrenamientoCard({
             </Text>
           </View>
           <TouchableOpacity 
-            onPress={handleFav}
+            onPress={(e) => {
+              e.stopPropagation(); // Evitar que el evento se propague al TouchableOpacity padre
+              handleFav();
+            }}
             className="ml-auto"
           >
             <Image

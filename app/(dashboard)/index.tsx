@@ -126,15 +126,13 @@ export default function HomeScreen() {
           contentContainerStyle={{ gap: 16, paddingRight: 20 }}
         >
           {entrenamientosDestacados.map((entrenamiento) => (
-            <TouchableOpacity
-              key={entrenamiento._id}
-              onPress={() => entrenamientoSeleccionado(entrenamiento)}
-            >
+            <View key={entrenamiento._id} style={{ marginRight: 16 }}>
               <EntrenamientoCard
                 entrenamiento={entrenamiento}
                 tipo="Card Grande"
+                onPress={() => entrenamientoSeleccionado(entrenamiento)}
               />
-            </TouchableOpacity>
+            </View>
           ))}
         </ScrollView>
 
@@ -192,14 +190,11 @@ export default function HomeScreen() {
           ) : (
             entrenamientosFiltrados.map((entrenamiento) => (
               <View key={entrenamiento._id} style={{ marginBottom: 16 }}>
-                <TouchableOpacity
+                <EntrenamientoCard
+                  entrenamiento={entrenamiento}
+                  tipo="Card Chica"
                   onPress={() => entrenamientoSeleccionado(entrenamiento)}
-                >
-                  <EntrenamientoCard
-                    entrenamiento={entrenamiento}
-                    tipo="Card Chica"
-                  />
-                </TouchableOpacity>
+                />
               </View>
             ))
           )}
