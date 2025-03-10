@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useUser } from "@/context/UsersContext";
-import { View, BackHandler, ToastAndroid, Alert, AppState } from "react-native";
+import { View, BackHandler, ToastAndroid, Alert, AppState, Text } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { router } from "expo-router";
 
@@ -309,7 +309,43 @@ export default function Entrenamiento() {
     }
     
     if (etapaActual === "DESCANSO") {
-      console.log("=== RENDERIZANDO DESCANSO DESDE ENTRENAR.TSX ===", new Date().toISOString());
+      console.log("=== RENDERIZANDO DESCANSO DESDE ENTRENAR.TSX MODIFICADO ===", new Date().toISOString());
+      
+      // CAMBIO TEMPORAL: Renderizar directamente aquí en lugar de usar DescansoScreen
+      const tiempo = Math.ceil(tiempoMs / 1000);
+      return (
+        <View style={{ flex: 1, backgroundColor: isDarkMode ? '#121212' : 'white', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '100%', backgroundColor: 'red', padding: 10, alignItems: 'center', marginBottom: 20 }}>
+            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 18 }}>DESCANSO FORZADO DESDE ENTRENAR.TSX</Text>
+          </View>
+          
+          <Text style={{ fontSize: 60, fontWeight: 'bold', color: isDarkMode ? 'white' : 'black' }}>
+            {tiempo}
+          </Text>
+          
+          <Text style={{ fontSize: 24, marginTop: 10, color: isDarkMode ? '#ccc' : '#666' }}>
+            Descanso
+          </Text>
+          
+          <View style={{ 
+            marginTop: 40, 
+            backgroundColor: '#6842FF', 
+            paddingVertical: 12,
+            paddingHorizontal: 20,
+            borderRadius: 24
+          }}>
+            <Text 
+              style={{ color: 'white', fontWeight: 'bold' }}
+              onPress={onTiempoAgotado}
+            >
+              SALTAR DESCANSO
+            </Text>
+          </View>
+        </View>
+      );
+      
+      // Comentamos el uso del componente DescansoScreen
+      /*
       return (
         <DescansoScreen
           tiempoRestante={tiempoMs / 1000}
@@ -318,6 +354,7 @@ export default function Entrenamiento() {
           etapaCompleta={onTiempoAgotado}
         />
       );
+      */
     }
     
     if (etapaActual === "FIN") {
