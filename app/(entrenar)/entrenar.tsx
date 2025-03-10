@@ -309,6 +309,7 @@ export default function Entrenamiento() {
     }
     
     if (etapaActual === "DESCANSO") {
+      console.log("=== RENDERIZANDO DESCANSO DESDE ENTRENAR.TSX ===", new Date().toISOString());
       return (
         <DescansoScreen
           tiempoRestante={tiempoMs / 1000}
