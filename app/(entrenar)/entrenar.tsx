@@ -6,11 +6,13 @@ import { router } from "expo-router";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
 import { useEjercicios } from "@/context/EjerciciosContext";
+import { useImagesMap } from "@/context/ImagesMapContext";
 
 import EjercicioScreen from "./screens/EjercicioScreen";
 import DescansoScreen from "./screens/DescansoScreen";
 import InicioScreen from "./screens/InicioScreen";
 import FinScreen from "./screens/FinScreen";
+import ProgressCircular from "@/components/entrenar/ProgressCircular";
 
 type Etapa = "INICIO" | "ACTIVO" | "DESCANSO" | "FIN";
 
@@ -22,6 +24,7 @@ export default function Entrenamiento() {
   const { selectedEntrenamiento } = useEntrenamientos();
   const { setEjercicioActual } = useEjercicios();
   const { isDarkMode } = useTheme();
+  const { imagesMap } = useImagesMap();
 
   // Estados
   const [indiceEjercicio, setIndiceEjercicio] = useState<number>(0);
@@ -311,12 +314,75 @@ export default function Entrenamiento() {
     if (etapaActual === "DESCANSO") {
       console.log("=== RENDERIZANDO DESCANSO DESDE ENTRENAR.TSX MODIFICADO ===", new Date().toISOString());
       
-      // CAMBIO TEMPORAL: Renderizar directamente aquí en lugar de usar DescansoScreen
+      // Buscamos el próximo ejercicio real (no descanso)
+      const encontrarProximoEjercicioReal = () => {
+        if (!selectedEntrenamiento || !selectedEntrenamiento.ejercicios) {
+          return null;
+        }
+        
+        // Comenzamos desde el siguiente al índice actual
+        let indice = indiceEjercicio + 1;
+        
+        // Si estamos al final, devolvemos null
+        if (indice >= selectedEntrenamiento.ejercicios.length) {
+          return null;
+        }
+        
+        // Buscar hacia adelante hasta encontrar un ejercicio que no sea descanso
+        while (indice < selectedEntrenamiento.ejercicios.length) {
+          const ejercicio = selectedEntrenamiento.ejercicios[indice];
+          // Verificar si no es un descanso
+          if (ejercicio.ejercicioId.toString() !== DESCANSO_ID) {
+            return {
+              ejercicio: ejercicio,
+              indiceReal: indice + 1 // +1 porque los índices en UI comienzan desde 1
+            };
+          }
+          indice++;
+        }
+        
+        return null;
+      };
+      
+      // Obtener el próximo ejercicio real
+      const proximoEjercicioInfo = encontrarProximoEjercicioReal();
+      
+      // Obtener el ejercicio actual (que debería ser un descanso)
+      const ejercicioActual = selectedEntrenamiento.ejercicios[indiceEjercicio];
+      
+      // Si tenemos un próximo ejercicio, usamos nuestro ProgressCircular modificado
+      if (proximoEjercicioInfo && proximoEjercicioInfo.ejercicio) {
+        const { containerWidth, containerHeight } = {
+          containerWidth: 360,  // Ancho aproximado de la pantalla
+          containerHeight: 500, // Altura aproximada para el componente
+        };
+        
+        return (
+          <View style={{ flex: 1, backgroundColor: isDarkMode ? '#121212' : 'white' }}>
+            <ProgressCircular
+              tiempoMaximo={ejercicioActual.tiempo}
+              tiempoTranscurrido={ejercicioActual.tiempo - tiempoMs / 1000}
+              containerWidth={containerWidth}
+              containerHeight={containerHeight}
+              colores={["#0CF25D", "#038C3E", "#025951", "#02735E"]}
+              pausa={pausa}
+              onTiempoAgotado={onTiempoAgotado}
+              esDescanso={true}
+              proximoEjercicio={proximoEjercicioInfo.ejercicio}
+              totalEjercicios={totalEjerciciosReales}
+              indiceEjercicio={proximoEjercicioInfo.indiceReal}
+              imagesMap={imagesMap}
+            />
+          </View>
+        );
+      }
+      
+      // Si por alguna razón no hay próximo ejercicio, mostramos la versión simplificada
       const tiempo = Math.ceil(tiempoMs / 1000);
       return (
         <View style={{ flex: 1, backgroundColor: isDarkMode ? '#121212' : 'white', justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ width: '100%', backgroundColor: 'red', padding: 10, alignItems: 'center', marginBottom: 20 }}>
-            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 18 }}>DESCANSO FORZADO DESDE ENTRENAR.TSX</Text>
+            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 18 }}>DESCANSO (FIN DEL ENTRENAMIENTO)</Text>
           </View>
           
           <Text style={{ fontSize: 60, fontWeight: 'bold', color: isDarkMode ? 'white' : 'black' }}>
@@ -343,18 +409,6 @@ export default function Entrenamiento() {
           </View>
         </View>
       );
-      
-      // Comentamos el uso del componente DescansoScreen
-      /*
-      return (
-        <DescansoScreen
-          tiempoRestante={tiempoMs / 1000}
-          indiceDeEjercicio={siguienteIndiceReal + 1}
-          totalEjercicios={totalEjerciciosReales}
-          etapaCompleta={onTiempoAgotado}
-        />
-      );
-      */
     }
     
     if (etapaActual === "FIN") {
