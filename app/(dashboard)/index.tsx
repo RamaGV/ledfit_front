@@ -53,7 +53,7 @@ export default function HomeScreen() {
 
   const entrenamientoSeleccionado = (entrenamiento: IEntrenamiento) => {
     setSelectedEntrenamiento(entrenamiento);
-    router.push("/(dashboard)/entrenar");
+    router.push("/(entrenar)/detallesDeEntrenamiento");
   };
 
   // Filtrar los entrenamientos por nivel
@@ -104,17 +104,6 @@ export default function HomeScreen() {
           }}>
             ¿Listo para tu entrenamiento de hoy?
           </Text>
-        </View>
-
-        {/* Botón neumórfico para iniciar entrenamiento rápido */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-          <NeumorphicButton
-            onPress={() => router.push("/(dashboard)/entrenar")}
-            text="Iniciar Entrenamiento Rápido"
-            isPrimary={true}
-            colors={colors}
-            isDarkMode={isDarkMode}
-          />
         </View>
 
         {/* Destacados */}
