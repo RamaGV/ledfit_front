@@ -53,6 +53,9 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             if (!localToken) {
               console.log("No hay token local, intentando obtener token de Clerk");
               try {
+                // Esperamos un momento para asegurarnos de que la sesión esté completamente cargada
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
                 // No hay token local, intentamos obtener el de Clerk
                 const clerkToken = await getToken();
                 
@@ -65,7 +68,8 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     const response = await fetch(`${API_URL}/api/auth/clerk-user`, {
                       method: "POST",
                       headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${clerkToken}`
                       },
                       body: JSON.stringify({ 
                         clerkId: userId,
@@ -75,21 +79,43 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     
                     if (response.ok) {
                       console.log("Usuario recuperado del backend usando Clerk ID");
+                      const userData = await response.json();
+                      
+                      // Guardar datos del usuario en AsyncStorage como respaldo
+                      if (userData && userData.user) {
+                        console.log("Guardando datos de usuario en AsyncStorage");
+                        await AsyncStorage.setItem("@user", JSON.stringify(userData.user));
+                      }
                     } else {
                       console.log("No se pudo recuperar el usuario del backend");
                     }
                   } catch (error) {
                     console.error("Error intentando sincronizar con backend:", error);
                   }
+                } else {
+                  console.log("No se pudo obtener token de Clerk");
                 }
               } catch (tokenError) {
                 console.error("Error obteniendo token de Clerk:", tokenError);
               }
+            } else {
+              console.log("Token local encontrado:", localToken.substring(0, 10) + "...");
             }
           } else {
             console.log("No hay sesión activa en Clerk");
+            
+            // Si Clerk indica que no hay sesión, pero hay token local, podemos limpiarlo
+            // para mantener sincronización
+            const localToken = await AsyncStorage.getItem("@token");
+            if (localToken && !isSignedIn) {
+              console.log("Limpiando token local porque no hay sesión en Clerk");
+              await AsyncStorage.removeItem("@token");
+              await AsyncStorage.removeItem("@user");
+            }
           }
           
+          // Pequeño retraso para permitir que todos los sistemas se inicialicen
+          await new Promise(resolve => setTimeout(resolve, 300));
           setIsInitialized(true);
         }
       } catch (error) {

@@ -88,6 +88,7 @@ export default function LoginScreen() {
       // Verificamos la configuración completa
       console.log('Esquema de app:', Constants.expoConfig?.scheme);
       console.log('Clerk redirectUrl:', redirectUrl);
+      console.log('URL de API:', API_URL);
       
       // Configuración de opciones avanzadas para OAuth
       const oauthOptions = {
@@ -96,10 +97,14 @@ export default function LoginScreen() {
         // Esperar hasta 60 segundos por una respuesta
         redirectUrlComplete: redirectUrl,
         // Incluimos scopes necesarios para obtener perfil y email
-        scopes: ['profile', 'email']
+        scopes: ['profile', 'email'],
+        // Forzar uso del navegador externo para mejor compatibilidad
+        useExternalBrowser: false,
+        // Establecer tiempo de espera más largo
+        timeoutInMilliseconds: 120000 // 2 minutos
       };
       
-      console.log('Opciones OAuth:', oauthOptions);
+      console.log('Opciones OAuth completas:', JSON.stringify(oauthOptions));
       
       // Verificar si hay sesión activa antes de intentar OAuth
       const existingToken = await AsyncStorage.getItem("@token");
@@ -140,10 +145,18 @@ export default function LoginScreen() {
         
         // Verificar si el usuario canceló el proceso
         if (!oauthResult || oauthResult?.authSessionResult?.type === 'dismiss') {
-          console.log('El usuario canceló el proceso de autenticación');
-          setError('Autenticación cancelada por el usuario');
+          console.log('El usuario canceló el proceso de autenticación o hubo timeout');
+          
+          // Verificar si hay detalles de error
+          if (oauthResult?.signIn?.firstFactorVerification?.error) {
+            console.error('Error en verificación:', oauthResult.signIn.firstFactorVerification.error);
+            setError(`Error en autenticación: ${oauthResult.signIn.firstFactorVerification.error}`);
+          } else {
+            setError('Autenticación cancelada por el usuario o expiró el tiempo de espera');
+          }
+          
           setIsLoading(false);
-          return; // Salir de la función para evitar procesar más
+          return;
         }
       } catch (startOAuthError) {
         console.error('Error al iniciar OAuth con Google:', startOAuthError);
@@ -197,6 +210,10 @@ export default function LoginScreen() {
             });
             
             console.log('Registro exitoso en el backend');
+            
+            // Esperamos un momento para asegurar que todo esté sincronizado
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
             router.replace('/(dashboard)');
           } catch (error) {
             console.error('Error al registrar en el backend:', error);
