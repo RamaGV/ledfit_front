@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { Platform, SafeAreaView, View, Text } from "react-native";
+import { Platform, SafeAreaView, View, Text, ActivityIndicator } from "react-native";
 import { useFonts } from "expo-font";
 import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -15,6 +15,7 @@ import {
   ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
+import { API_URL } from "@/env";
 
 // Providers de la app
 import { EntrenamientosProvider } from "@/context/EntrenamientosContext";
@@ -51,12 +52,38 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             
             if (!localToken) {
               console.log("No hay token local, intentando obtener token de Clerk");
-              // No hay token local, intentamos obtener el de Clerk
-              const clerkToken = await getToken();
-              
-              if (clerkToken) {
-                console.log("Token de Clerk obtenido, guardando en local");
-                await AsyncStorage.setItem("@token", clerkToken);
+              try {
+                // No hay token local, intentamos obtener el de Clerk
+                const clerkToken = await getToken();
+                
+                if (clerkToken) {
+                  console.log("Token de Clerk obtenido, guardando en local");
+                  await AsyncStorage.setItem("@token", clerkToken);
+                  
+                  // Intentar recuperar el usuario desde nuestro backend usando el token de Clerk
+                  try {
+                    const response = await fetch(`${API_URL}/api/auth/clerk-user`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({ 
+                        clerkId: userId,
+                        token: clerkToken
+                      })
+                    });
+                    
+                    if (response.ok) {
+                      console.log("Usuario recuperado del backend usando Clerk ID");
+                    } else {
+                      console.log("No se pudo recuperar el usuario del backend");
+                    }
+                  } catch (error) {
+                    console.error("Error intentando sincronizar con backend:", error);
+                  }
+                }
+              } catch (tokenError) {
+                console.error("Error obteniendo token de Clerk:", tokenError);
               }
             }
           } else {
@@ -72,12 +99,27 @@ const ClerkAuthSync: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     };
 
     syncClerkSession();
-  }, [isLoaded, isSignedIn, userId]);
+  }, [isLoaded, isSignedIn, userId, getToken]);
 
+  // Mostramos un indicador de carga más informativo
   if (!isInitialized && isLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Sincronizando datos de usuario...</Text>
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        backgroundColor: '#121212'
+      }}>
+        <ActivityIndicator size="large" color="#6842FF" />
+        <Text style={{ 
+          color: 'white', 
+          marginTop: 20,
+          fontSize: 16,
+          textAlign: 'center',
+          paddingHorizontal: 30
+        }}>
+          Sincronizando datos de usuario...
+        </Text>
       </View>
     );
   }

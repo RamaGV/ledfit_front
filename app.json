@@ -11,10 +11,28 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.ledfit-front"
+      "bundleIdentifier": "com.anonymous.ledfit-front",
+      "associatedDomains": ["applinks:emerging-deer-62.clerk.accounts.dev"]
     },
     "android": {
-      "package": "com.anonymous.ledfit_front"
+      "package": "com.anonymous.ledfit_front",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "emerging-deer-62.clerk.accounts.dev",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "com.ledfit.app"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
