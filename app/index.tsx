@@ -43,6 +43,6 @@ export default function IndexScreen() {
     return <Redirect href="/(dashboard)" />;
   } else {
     console.log('Usuario no autenticado, redirigiendo a login');
-    return <Redirect href="/login" />;
+    return <Redirect href="/(usuario)/login" />;
   }
 }

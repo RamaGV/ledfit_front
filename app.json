@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "com.ledfit.app",
+    "scheme": "ledfit",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -27,7 +27,7 @@
               "pathPrefix": "/"
             },
             {
-              "scheme": "com.ledfit.app"
+              "scheme": "ledfit"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
@@ -62,7 +62,7 @@
       "eas": {
         "projectId": "3e1cdb34-bace-4ca7-ab45-a467abecb563"
       },
-      "clerkOAuthRedirectUrl": "com.ledfit.app://oauth-callback"
+      "clerkOAuthRedirectUrl": "ledfit://oauth-callback"
     }
   }
 }
