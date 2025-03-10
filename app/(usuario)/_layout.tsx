@@ -9,6 +9,8 @@ export default function UsuarioLayout() {
       <Stack.Screen name="notificaciones" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false }} />
+      <Stack.Screen name="informacion" options={{ headerShown: false }} />
+      <Stack.Screen name="editarPerfil" options={{ headerShown: false }} />
       <Stack.Screen name="logros" options={{ headerShown: false }} />
     </Stack>
   );

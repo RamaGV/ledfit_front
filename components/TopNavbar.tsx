@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Color } from "@/GlobalStyles";
 import Logo from "@/components/Logo";
-import React from "react";
+import React, { useContext } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,11 @@ import {
   StyleSheet,
   ImageSourcePropType,
   TouchableOpacity,
+  Platform,
+  StatusBar,
 } from "react-native";
+import { NotificationsContext } from "@/context/NotificationsContext";
+import { useTheme } from "@/context/ThemeContext";
 
 type TopNavbarType = {
   titulo?: string;
@@ -32,27 +36,58 @@ export default function TopNavbar({
   logo: logo,
 }: TopNavbarType) {
   const router = useRouter();
+  const { unreadCount } = useContext(NotificationsContext);
+  const { colors, isDarkMode } = useTheme();
+  
+  // Calcular padding superior para diferentes dispositivos
+  const statusBarHeight = StatusBar.currentHeight || 0;
+  const paddingTop = Platform.OS === 'ios' ? 44 : statusBarHeight + 16;
 
   return (
-    <View className="flex-row py-6 px-4 w-full items-center justify-between">
+    <View 
+      className={`flex-row items-center justify-between w-full px-4 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#EFEEE9]'}`}
+      style={{ 
+        paddingTop: paddingTop, 
+        paddingBottom: 16 
+      }}
+    >
       <View className="flex-row items-center">
         {iconBack && (
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
+            <Ionicons 
+              name="chevron-back" 
+              size={30} 
+              color={isDarkMode ? "#FFFFFF" : "#333333"} 
+            />
           </TouchableOpacity>
         )}
         {logo && <Logo />}
-        <Text className="text-2xl font-bold text-gray-200 pl-4">{titulo}</Text>
+        <Text 
+          className={`text-2xl font-bold pl-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}
+        >
+          {titulo}
+        </Text>
       </View>
       <View className="flex-row items-center gap-4">
         {iconNotif && (
           <TouchableOpacity
             onPress={() => router.push("/(usuario)/notificaciones")}
+            className="relative"
           >
             <Image
-              style={styles.color}
+              className={unreadCount > 0 ? "" : ""}
+              style={{ 
+                tintColor: unreadCount > 0 ? "#6842FF" : isDarkMode ? colors.navIcon : "#555555" 
+              }}
               source={require("@/assets/icons/iconNotif.png")}
             />
+            {unreadCount > 0 && (
+              <View className="absolute -top-1 -right-1 bg-[#6842FF] rounded-full min-w-5 h-5 items-center justify-center px-1">
+                <Text className="text-white text-xs font-bold">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         )}
         {iconFav && (
@@ -62,7 +97,9 @@ export default function TopNavbar({
             }}
           >
             <Image
-              style={styles.color}
+              style={{ 
+                tintColor: isDarkMode ? colors.navIcon : "#555555" 
+              }}
               source={require("@/assets/icons/iconFavFalse.png")}
             />
           </TouchableOpacity>
@@ -71,7 +108,9 @@ export default function TopNavbar({
           <TouchableOpacity>
             <Image
               className="w-8 h-8"
-              style={styles.color}
+              style={{ 
+                tintColor: isDarkMode ? colors.navIcon : "#555555" 
+              }}
               source={iconBuscar}
             />
           </TouchableOpacity>

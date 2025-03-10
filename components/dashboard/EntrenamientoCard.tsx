@@ -1,10 +1,12 @@
 // components/dashboard/EntrenamientoCard.tsx
 
-import { Text, View, Image, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState, useEffect } from "react";
+import { Image } from "expo-image";
 
 import type { IEntrenamiento } from "@/context/EntrenamientosContext";
+import { useTheme } from "@/context/ThemeContext";
 
 import { calcularTiempo } from "@/utils/utilsEntrenamientos";
 import { useImagesMap } from "@/context/ImagesMapContext";
@@ -13,14 +15,17 @@ import { useUser } from "@/context/UsersContext";
 type EntrenamientoCardProps = {
   tipo: "Card Chica" | "Card Grande" | "Card Grid";
   entrenamiento: IEntrenamiento;
+  onPress?: () => void;
 };
 
 export default function EntrenamientoCard({
   entrenamiento: unEntrenamiento,
   tipo,
+  onPress,
 }: EntrenamientoCardProps) {
   const { user, addFav, removeFav } = useUser();
   const { imagesMap } = useImagesMap();
+  const { colors, isDarkMode } = useTheme();
 
   // Estado local para el ícono de favorito
   const [favIcon, setFavIcon] = useState(
@@ -52,34 +57,36 @@ export default function EntrenamientoCard({
     }
   }
 
-  let cardContainer = "overflow-hidden rounded-3xl";
+  // Configurar clases de tailwind según el tipo de tarjeta
+  let cardClasses = "rounded-3xl overflow-hidden shadow-lg relative";
+  let nombreClasses = "font-bold text-white";
+  
+  // Configurar tamaños según el tipo
   if (tipo === "Card Chica") {
-    cardContainer += " w-full h-[100px]";
+    cardClasses += " w-full h-[100px]";
+    nombreClasses += " text-[16px]";
   } else if (tipo === "Card Grande") {
-    cardContainer += " w-[240px] h-[240px]";
+    cardClasses += " w-[240px] h-[240px]";
+    nombreClasses += " text-[20px]";
   } else if (tipo === "Card Grid") {
-    cardContainer += " w-full h-[150px]";
-  }
-
-  let nombreStyle = "text-white font-bold";
-  if (tipo === "Card Chica") {
-    nombreStyle = "text-[16px]";
-  } else if (tipo === "Card Grande") {
-    nombreStyle = "text-[20px]";
-  } else if (tipo === "Card Grid") {
-    nombreStyle = "text-[13px]";
+    cardClasses += " w-full h-[150px]";
+    nombreClasses += " text-[14px]";
   }
 
   return (
-    <View className={cardContainer}>
+    <TouchableOpacity 
+      activeOpacity={0.9}
+      className={`my-2 ${cardClasses}`}
+      onPress={onPress}
+    >
       <Image
-        className="overflow-hidden rounded-3xl"
-        style={{ position: "absolute", width: "100%", height: "100%" }}
+        className="absolute w-full h-full rounded-3xl"
         source={imagesMap[unEntrenamiento.imagen]}
-        resizeMode="cover"
+        contentFit="cover"
+        transition={300}
       />
       <LinearGradient
-        style={{ position: "absolute", width: "100%", height: "100%" }}
+        className="absolute w-full h-full"
         locations={[0, 0.17, 0.27, 0.42, 0.53, 0.66, 0.8, 1]}
         colors={[
           "rgba(75, 75, 75, 0)",
@@ -92,35 +99,35 @@ export default function EntrenamientoCard({
           "rgba(32, 32, 32, 0.9)",
         ]}
       />
-      <View className="flex-1 flex-col gap-1 absolute bottom-0 w-full px-4 pb-4">
+      <View className="absolute bottom-0 w-full p-4 flex-col">
         <Text
-          className={nombreStyle}
-          style={{ fontWeight: "bold", color: "white" }}
+          className={nombreClasses}
           numberOfLines={1}
         >
           {unEntrenamiento.nombre}
         </Text>
-        <View className="flex-row gap-1 items-center w-full">
-          <View className="flex-row gap-1 justify-around w-1/3">
-            <Text className="text-white text-[12px]">
+        <View className="flex-row items-center justify-between w-full mt-1">
+          <View className="flex-row items-center gap-1 w-2/3">
+            <Text className="text-white text-xs">
               {calcularTiempo(unEntrenamiento.tiempoTotal)} min.
             </Text>
-            <View className="border-r border-gray-400" />
-            <Text className="text-white text-[12px]">
+            <View className="border-r border-gray-400 h-2.5" />
+            <Text className="text-white text-xs">
               {unEntrenamiento.nivel}
             </Text>
           </View>
-          <View className="flex-1">
-            <TouchableOpacity onPress={handleFav}>
-              <Image
-                className="w-6 h-6 ml-auto"
-                source={favIcon}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            onPress={handleFav}
+            className="ml-auto"
+          >
+            <Image
+              className="w-6 h-6"
+              source={favIcon}
+              contentFit="contain"
+            />
+          </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

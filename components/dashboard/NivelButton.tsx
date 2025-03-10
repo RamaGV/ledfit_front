@@ -1,6 +1,7 @@
 // components/NivelButton.tsx
 import React from "react";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, StyleSheet } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 
 export type NivelButtonProps = {
   label: string;
@@ -13,16 +14,35 @@ export function NivelButton({
   onPress,
   isActive = false,
 }: NivelButtonProps) {
-  let backgroundClasses = isActive
-    ? "bg-[#6842FF]"
-    : "bg-[#1E1E1E] border border-[#6842FF]";
+  const { colors } = useTheme();
+
+  const styles = StyleSheet.create({
+    button: {
+      borderRadius: 50,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      backgroundColor: isActive ? colors.accent : colors.card,
+      borderWidth: isActive ? 0 : 1,
+      borderColor: isActive ? 'transparent' : colors.accent,
+    },
+    text: {
+      color: isActive ? 'white' : colors.text,
+      fontSize: 14,
+      fontWeight: '500',
+    }
+  });
 
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-full items-center justify-center px-4 py-2 ${backgroundClasses}`}
+      style={({ pressed }) => [
+        styles.button,
+        { opacity: pressed ? 0.8 : 1 }
+      ]}
     >
-      <Text className="text-white text-sm">{label}</Text>
+      <Text style={styles.text}>{label}</Text>
     </Pressable>
   );
 }

@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "ledfit_front",
+    "scheme": "com.ledfit.app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -43,7 +43,8 @@
       },
       "eas": {
         "projectId": "3e1cdb34-bace-4ca7-ab45-a467abecb563"
-      }
+      },
+      "clerkOAuthRedirectUrl": "com.ledfit.app://oauth-callback"
     }
   }
 }

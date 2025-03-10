@@ -1,15 +1,15 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, AccessibilityInfo } from "react-native";
 import { LinearGradient, Canvas, Circle, Shadow, Path, Skia, vec } from "@shopify/react-native-skia";
 
 type Props = {
   tiempoMaximo: number;       // Tiempo total en segundos
-  tiempoTranscurrido: number; // Tiempo restante en segundos (según tu comentario)
-  containerWidth: number;
-  containerHeight: number;
-  colores: string[];
-  pausa: boolean;
-  onTiempoAgotado: () => void;
+  tiempoTranscurrido: number; // Tiempo transcurrido en segundos (tiempo restante = tiempoMaximo - tiempoTranscurrido)
+  containerWidth: number;     // Ancho del contenedor
+  containerHeight: number;    // Alto del contenedor
+  colores: string[];          // Colores para el gradiente
+  pausa: boolean;             // Indica si el temporizador está en pausa
+  onTiempoAgotado: () => void;// Función a llamar cuando se agota el tiempo
 };
 
 export default function ProgressCircular({
@@ -18,6 +18,7 @@ export default function ProgressCircular({
   containerWidth,
   containerHeight,
   colores,
+  pausa,
   onTiempoAgotado,
 }: Props) {
   // Dimensiones y centro del canvas
@@ -27,17 +28,18 @@ export default function ProgressCircular({
 
   // Convertir tiempos de segundos a milisegundos
   const totalTimeMs = tiempoMaximo * 1000;
-  // Como 'tiempoTranscurrido' es el tiempo restante, lo usamos directamente:
-  const remainingTimeMs = tiempoTranscurrido * 1000;
-  // El tiempo que ya ha pasado es la diferencia
-  const elapsedTimeMs = totalTimeMs - remainingTimeMs;
+  
+  // Calcular el tiempo restante
+  const elapsedTimeMs = tiempoTranscurrido * 1000;
+  const remainingTimeMs = totalTimeMs - elapsedTimeMs;
 
   // Calcular el ángulo del arco (360° representa el total del tiempo)
   const FULL_DEGREES = 360;
-  const sweepAngle = (elapsedTimeMs / totalTimeMs) * FULL_DEGREES;
+  const progress = elapsedTimeMs / totalTimeMs;
+  const sweepAngle = progress * FULL_DEGREES;
 
-  // Si ya se agotó el tiempo, se invoca la función para pasar a la siguiente etapa
-  if (remainingTimeMs <= 0) {
+  // Si ya se agotó el tiempo y no está en pausa, se invoca la función para pasar a la siguiente etapa
+  if (remainingTimeMs <= 0 && !pausa) {
     onTiempoAgotado();
   }
 
@@ -49,6 +51,10 @@ export default function ProgressCircular({
   const formattedMinutes = minutes.toString().padStart(2, "0");
   const formattedSeconds = seconds.toString().padStart(2, "0");
   const formattedCentiseconds = centiseconds.toString().padStart(2, "0");
+
+  // Formato para lectores de pantalla
+  const accessibilityLabel = `Temporizador: ${minutes} minutos y ${seconds} segundos restantes`;
+  const timeString = `${formattedMinutes}:${formattedSeconds}:${formattedCentiseconds}`;
 
   // Crear el arco usando Skia
   const boundingRect = Skia.XYWHRect(CX - RADIO, CY - RADIO, RADIO * 2, RADIO * 2);
@@ -66,8 +72,13 @@ export default function ProgressCircular({
         justifyContent: "center",
         alignItems: "center",
       }}
+      accessible={true}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint="Muestra el tiempo restante para el ejercicio actual"
+      accessibilityRole="timer"
     >
       <Canvas style={{ width: containerWidth, height: containerHeight }}>
+        {/* Círculo de fondo */}
         <Circle
           cx={CX}
           cy={CY}
@@ -79,6 +90,7 @@ export default function ProgressCircular({
           <Shadow dx={0} dy={0} blur={10} color="#000" />
         </Circle>
 
+        {/* Arco de progreso */}
         <Path
           path={arcPath}
           style="stroke"
@@ -94,6 +106,7 @@ export default function ProgressCircular({
         </Path>
       </Canvas>
 
+      {/* Texto del tiempo */}
       <View 
         style={{
           position: "absolute",
@@ -111,6 +124,11 @@ export default function ProgressCircular({
           {formattedMinutes} : {formattedSeconds}
           <Text style={{ color: "#FFD700", fontSize: 16 }}> {formattedCentiseconds}</Text>
         </Text>
+        
+        {/* Indicador de pausa */}
+        {pausa && (
+          <Text style={{ color: "#FF5252", fontSize: 14, marginTop: 8 }}>PAUSADO</Text>
+        )}
       </View>
     </View>
   );

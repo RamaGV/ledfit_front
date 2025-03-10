@@ -8,10 +8,11 @@ import { Platform, SafeAreaView } from "react-native";
 import { useFonts } from "expo-font";
 import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/context/ThemeContext";
 import {
   DarkTheme,
   DefaultTheme,
-  ThemeProvider,
+  ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 
@@ -21,6 +22,7 @@ import { NotificationsProvider } from "@/context/NotificationsContext";
 import { EjerciciosProvider } from "@/context/EjerciciosContext";
 import { ImagesMapProvider } from "@/context/ImagesMapContext";
 import { UserProvider } from "@/context/UsersContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 // Clerk
 import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
@@ -67,7 +69,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
         <ClerkProvider
           publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
@@ -79,26 +81,28 @@ export default function RootLayout() {
                 <ImagesMapProvider>
                   <EjerciciosProvider>
                     <EntrenamientosProvider>
-                      <Slot />
-                      {/* <Stack>
-                        <Stack.Screen
-                          name="index"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="(dashboard)"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="(entrenar)"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="(usuario)"
-                          options={{ headerShown: false }}
-                        />
-                      </Stack> */}
-                      <StatusBar style="auto" />
+                      <ThemeProvider>
+                        <Slot />
+                        {/* <Stack>
+                          <Stack.Screen
+                            name="index"
+                            options={{ headerShown: false }}
+                          />
+                          <Stack.Screen
+                            name="(dashboard)"
+                            options={{ headerShown: false }}
+                          />
+                          <Stack.Screen
+                            name="(entrenar)"
+                            options={{ headerShown: false }}
+                          />
+                          <Stack.Screen
+                            name="(usuario)"
+                            options={{ headerShown: false }}
+                          />
+                        </Stack> */}
+                        <StatusBar style="auto" />
+                      </ThemeProvider>
                     </EntrenamientosProvider>
                   </EjerciciosProvider>
                 </ImagesMapProvider>
@@ -107,6 +111,6 @@ export default function RootLayout() {
           </ClerkLoaded>
         </ClerkProvider>
       </SafeAreaView>
-    </ThemeProvider>
+    </NavigationThemeProvider>
   );
 }
