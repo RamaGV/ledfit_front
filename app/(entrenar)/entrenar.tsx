@@ -342,69 +342,20 @@ export default function Entrenamiento() {
         // Obtener el próximo ejercicio real
         const proximoEjercicioInfo = encontrarProximoEjercicioReal();
         
-        // Si tenemos un próximo ejercicio, usamos nuestro ProgressCircular modificado
-        if (proximoEjercicioInfo && proximoEjercicioInfo.ejercicio) {
-          console.log("=== USANDO PROGRESSCIRCULAR PARA DESCANSO CON PRÓXIMO EJERCICIO ===", {
-            proximoEjercicio: proximoEjercicioInfo.ejercicio,
-            esDescanso: true
-          });
-          
-          const { containerWidth, containerHeight } = {
-            containerWidth: 360,  // Ancho aproximado de la pantalla
-            containerHeight: 500, // Altura aproximada para el componente
-          };
-          
-          return (
-            <View style={{ flex: 1, backgroundColor: isDarkMode ? '#121212' : 'white' }}>
-              <ProgressCircular
-                tiempoMaximo={ejercicioActual.tiempo}
-                tiempoTranscurrido={ejercicioActual.tiempo - tiempoMs / 1000}
-                containerWidth={containerWidth}
-                containerHeight={containerHeight}
-                colores={["#0CF25D", "#038C3E", "#025951", "#02735E"]}
-                pausa={pausa}
-                onTiempoAgotado={onTiempoAgotado}
-                esDescanso={true}
-                proximoEjercicio={proximoEjercicioInfo.ejercicio}
-                totalEjercicios={totalEjerciciosReales}
-                indiceEjercicio={proximoEjercicioInfo.indiceReal}
-                imagesMap={imagesMap}
-              />
-            </View>
-          );
-        }
+        console.log("=== USANDO DESCANSOSCREEN CON PRÓXIMO EJERCICIO ===", {
+          proximoEjercicio: proximoEjercicioInfo?.ejercicio,
+          tiempoDescanso: tiempoMs / 1000
+        });
         
-        // Si por alguna razón no hay próximo ejercicio, mostramos la versión simplificada
-        const tiempo = Math.ceil(tiempoMs / 1000);
         return (
-          <View style={{ flex: 1, backgroundColor: isDarkMode ? '#121212' : 'white', justifyContent: 'center', alignItems: 'center' }}>
-            <View style={{ width: '100%', backgroundColor: 'red', padding: 10, alignItems: 'center', marginBottom: 20 }}>
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 18 }}>DESCANSO (FIN DEL ENTRENAMIENTO)</Text>
-            </View>
-            
-            <Text style={{ fontSize: 60, fontWeight: 'bold', color: isDarkMode ? 'white' : 'black' }}>
-              {tiempo}
-            </Text>
-            
-            <Text style={{ fontSize: 24, marginTop: 10, color: isDarkMode ? '#ccc' : '#666' }}>
-              Descanso
-            </Text>
-            
-            <View style={{ 
-              marginTop: 40, 
-              backgroundColor: '#6842FF', 
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              borderRadius: 24
-            }}>
-              <Text 
-                style={{ color: 'white', fontWeight: 'bold' }}
-                onPress={onTiempoAgotado}
-              >
-                SALTAR DESCANSO
-              </Text>
-            </View>
-          </View>
+          <DescansoScreen
+            tiempoRestante={tiempoMs / 1000}
+            indiceDeEjercicio={proximoEjercicioInfo?.indiceReal || 0}
+            totalEjercicios={totalEjerciciosReales}
+            etapaCompleta={onTiempoAgotado}
+            proximoEjercicio={proximoEjercicioInfo?.ejercicio || null}
+            imagesMap={imagesMap}
+          />
         );
       }
       
@@ -423,7 +374,7 @@ export default function Entrenamiento() {
     }
     
     if (etapaActual === "DESCANSO") {
-      console.log("=== RENDERIZANDO DESCANSO DESDE ENTRENAR.TSX MODIFICADO ===", new Date().toISOString());
+      console.log("=== RENDERIZANDO DESCANSO DESDE ENTRENAR.TSX (ETAPA DESCANSO) ===", new Date().toISOString());
       
       // IMPORTANTE: Este bloque no parece ejecutarse nunca según los logs
       // porque los descansos se manejan como ejercicios normales pero con ID especial
