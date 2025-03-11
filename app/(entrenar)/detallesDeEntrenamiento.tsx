@@ -17,6 +17,7 @@ import React, { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useEntrenamientos } from "@/context/EntrenamientosContext";
+import { IEjercicio } from "@/context/EjerciciosContext";
 import { useImagesMap } from "@/context/ImagesMapContext";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -54,7 +55,7 @@ export default function DetallesDeEntrenamiento() {
   const mainImage =
     (selectedEntrenamiento?.imagen &&
       imagesMap[selectedEntrenamiento.imagen]) ||
-    require("@/assets/defaultWorkout.png");
+    require("@/assets/ejercicios/trianglePoseImage.webp");
 
   if (!selectedEntrenamiento) {
     return (
@@ -125,13 +126,20 @@ export default function DetallesDeEntrenamiento() {
       <View className={`flex-row items-center justify-between py-4 px-5 border-b ${
         isDarkMode ? 'border-gray-700' : 'border-gray-300'
       }`}>
-        <Text className="text-lg font-semibold" style={{ color: colors.text }}>
-          Ejercicios
-        </Text>
+        <View>
+          <Text className="text-lg font-semibold" style={{ color: colors.text }}>
+            Ejercicios
+          </Text>
+          <Text style={{ color: colors.secondaryText, fontSize: 12 }}>
+            {ejerciciosReales} ejercicios y {selectedEntrenamiento.ejercicios.length - ejerciciosReales} descansos
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={() => router.push("/(entrenar)/detallesDeEjercicios")}
+          className="bg-[#6842FF]/10 py-2 px-4 rounded-full flex-row items-center"
         >
-          <Text className="text-[#6842FF]">Ver más</Text>
+          <Text className="text-[#6842FF] font-medium">Ver todos</Text>
+          <Ionicons name="chevron-forward" size={16} color="#6842FF" style={{ marginLeft: 4 }} />
         </TouchableOpacity>
       </View>
 
@@ -141,22 +149,29 @@ export default function DetallesDeEntrenamiento() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {selectedEntrenamiento.ejercicios.map((ejercicio, idx) => (
-          <EjercicioCard
-            key={idx}
-            imagen={imagesMap[ejercicio.ejercicioId.imagen]}
-            label={ejercicio.ejercicioId.nombre}
-            tiempoTotal={ejercicio.tiempo}
-            isDescanso={ejercicio.ejercicioId._id === DESCANSO_ID}
-            onPress={() => {
-              // Navegar a detalles del ejercicio
-              router.push({
-                pathname: "/(entrenar)/detallesDeEjercicios",
-                params: { ejercicioId: ejercicio.ejercicioId._id }
-              });
-            }}
-          />
-        ))}
+        {selectedEntrenamiento.ejercicios.map((ejercicio, idx) => {
+          const isDescanso = ejercicio.ejercicioId._id === DESCANSO_ID;
+
+          return (
+            <EjercicioCard
+              key={idx}
+              imagen={imagesMap[ejercicio.ejercicioId.imagen] || require("@/assets/ejercicios/trianglePoseImage.webp")}
+              label={ejercicio.ejercicioId.nombre}
+              tiempoTotal={ejercicio.tiempo}
+              grupo={ejercicio.ejercicioId.grupo}
+              descripcion={ejercicio.ejercicioId.descripcion}
+              calorias={isDescanso ? undefined : ejercicio.ejercicioId.caloriasPorSegundo * ejercicio.tiempo}
+              isDescanso={isDescanso}
+              onPress={() => {
+                // Navegar a detalles del ejercicio
+                router.push({
+                  pathname: "/(entrenar)/detallesDeEjercicios",
+                  params: { ejercicioId: ejercicio.ejercicioId._id }
+                });
+              }}
+            />
+          );
+        })}
       </ScrollView>
 
       {/* Botón de inicio - FIJO */}
