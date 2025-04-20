@@ -10,8 +10,6 @@ interface ButtonProps {
 }
 
 export default function Button({ title, onPress, color }: ButtonProps) {
-  let colorButton = "bg-[#7B61FF]";
-
   return (
     <TouchableOpacity onPress={onPress} style={{ backgroundColor: color }}>
       <Text>{title}</Text>

@@ -8,8 +8,7 @@ import { es } from "date-fns/locale";
 import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useImagesMap } from "@/context/ImagesMapContext";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
 
 interface NotifItemProps {
   id: string;
@@ -32,14 +31,16 @@ export default function NotifItem({
   onPress,
   onDelete,
 }: NotifItemProps) {
-  const { imagesMap } = useImagesMap();
   const { isDarkMode } = useTheme();
-  
-  let icono = imagesMap["notifCheck"];
+
+  // Cargar iconos directamente
+  let icono;
   if (tipo === "plus") {
-    icono = imagesMap["notifPlus"];
+    icono = require("@/assets/icons/notifPlus.png");
   } else if (tipo === "time") {
-    icono = imagesMap["notifTime"];
+    icono = require("@/assets/icons/notifTime.png");
+  } else {
+    icono = require("@/assets/icons/notifCheck.png");
   }
 
   // Formatear la fecha
@@ -63,9 +64,13 @@ export default function NotifItem({
     }
   };
 
-  const bgColor = isDarkMode 
-    ? !leida ? 'bg-[#1E1E1E]' : 'bg-[#181818]'
-    : !leida ? 'bg-white' : 'bg-gray-50';
+  const bgColor = isDarkMode
+    ? !leida
+      ? "bg-[#1E1E1E]"
+      : "bg-[#181818]"
+    : !leida
+      ? "bg-white"
+      : "bg-gray-50";
 
   // Renderizar el lado derecho del swipeable (botón de eliminar)
   const renderRightActions = () => {
@@ -75,27 +80,23 @@ export default function NotifItem({
     return (
       <View className="flex justify-center ml-2">
         <TouchableOpacity
-          className={`justify-center items-center px-5 rounded-xl h-[90%] ${isDarkMode ? 'bg-[#FF4757]' : 'bg-red-500'}`}
+          className={`justify-center items-center px-5 rounded-xl h-[90%] ${isDarkMode ? "bg-[#FF4757]" : "bg-red-500"}`}
           onPress={() => {
             Alert.alert(
               "Eliminar notificación",
               "¿Estás seguro de que quieres eliminar esta notificación?",
               [
                 { text: "Cancelar", style: "cancel" },
-                { 
-                  text: "Eliminar", 
+                {
+                  text: "Eliminar",
                   onPress: () => onDelete(id),
-                  style: "destructive" 
-                }
-              ]
+                  style: "destructive",
+                },
+              ],
             );
           }}
         >
-          <Ionicons 
-            name="trash-outline" 
-            size={24} 
-            color="white" 
-          />
+          <Ionicons name="trash-outline" size={24} color="white" />
           <Text className="text-white text-xs mt-1">Eliminar</Text>
         </TouchableOpacity>
       </View>
@@ -107,22 +108,28 @@ export default function NotifItem({
 
   // Contenido de la notificación
   const NotificationContent = (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={() => onPress(id)}
-      className={`flex-row items-start rounded-xl p-4 mb-4 ${bgColor} ${!leida ? 'border-l-4 border-[#6842FF]' : ''}`}
-      style={{ 
+      className={`flex-row items-start rounded-xl p-4 mb-4 ${bgColor} ${!leida ? "border-l-4 border-[#6842FF]" : ""}`}
+      style={{
         opacity: leida ? 0.9 : 1,
       }}
     >
       <View className="relative">
-        <View className={`rounded-full p-2 ${!leida ? 'bg-[#6842FF20]' : isDarkMode ? 'bg-[#20202020]' : 'bg-gray-100'}`}>
-          <Image 
-            source={icono} 
-            style={{ 
-              width: 32, 
-              height: 32, 
-              tintColor: !leida ? '#6842FF' : isDarkMode ? '#888888' : '#999999' 
-            }} 
+        <View
+          className={`rounded-full p-2 ${!leida ? "bg-[#6842FF20]" : isDarkMode ? "bg-[#20202020]" : "bg-gray-100"}`}
+        >
+          <Image
+            source={icono}
+            style={{
+              width: 32,
+              height: 32,
+              tintColor: !leida
+                ? "#6842FF"
+                : isDarkMode
+                  ? "#888888"
+                  : "#999999",
+            }}
           />
         </View>
         {!leida && (
@@ -132,27 +139,41 @@ export default function NotifItem({
 
       <View className="flex-1 ml-3">
         {/* Título en su propia línea para evitar colisión con la fecha */}
-        <Text 
-          className={`font-semibold text-base ${!leida 
-            ? isDarkMode ? 'text-white' : 'text-[#333333]' 
-            : isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+        <Text
+          className={`font-semibold text-base ${
+            !leida
+              ? isDarkMode
+                ? "text-white"
+                : "text-[#333333]"
+              : isDarkMode
+                ? "text-gray-300"
+                : "text-gray-600"
+          }`}
         >
           {titulo}
         </Text>
-        
+
         {/* Contenido con color más oscuro para mejor contraste */}
-        <Text 
-          className={`text-sm mt-1 ${!leida 
-            ? isDarkMode ? 'text-gray-300' : 'text-gray-700' 
-            : isDarkMode ? 'text-gray-400' : 'text-gray-800'}`}
+        <Text
+          className={`text-sm mt-1 ${
+            !leida
+              ? isDarkMode
+                ? "text-gray-300"
+                : "text-gray-700"
+              : isDarkMode
+                ? "text-gray-400"
+                : "text-gray-800"
+          }`}
           numberOfLines={2}
         >
           {contenido}
         </Text>
-        
+
         {/* Fecha en la parte inferior derecha */}
         <View className="flex-row justify-end mt-2">
-          <Text className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+          <Text
+            className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}
+          >
             {formatDate(fecha)}
           </Text>
         </View>
@@ -163,7 +184,7 @@ export default function NotifItem({
   // Envolver en Swipeable si es necesario
   if (isSwipeable) {
     return (
-      <Swipeable 
+      <Swipeable
         renderRightActions={renderRightActions}
         friction={2}
         rightThreshold={40}

@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import React from "react";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
 interface SocialButtonProps {
@@ -11,13 +11,13 @@ interface SocialButtonProps {
 const SocialButton: React.FC<SocialButtonProps> = ({
   icon,
   onPress,
-  accessibilityLabel
+  accessibilityLabel,
 }) => {
   // Configuración de colores por plataforma
   const iconColor = {
     facebook: "#1877F2",
     google: "#DB4437",
-    apple: "#FFF"
+    apple: "#FFF",
   };
 
   return (
@@ -37,9 +37,9 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 15,
-    backgroundColor: '#212121',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#212121",
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -49,8 +49,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  }
+    borderColor: "rgba(255,255,255,0.1)",
+  },
 });
 
 export default SocialButton;

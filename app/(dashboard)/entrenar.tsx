@@ -1,29 +1,28 @@
 // app/(dashboard)/entrenar.tsx
 
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  View, 
-  Dimensions, 
+import {
+  View,
+  Dimensions,
   ScrollView,
   Animated,
   StatusBar,
   Easing,
-  StyleSheet
+  StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
-import type { IEntrenamiento } from "@/context/EntrenamientosContext";
-import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useImagesMap } from "@/context/ImagesMapContext";
-import { useTheme } from "@/context/ThemeContext";
+import type { IEntrenamiento } from "../../context/EntrenamientosContext";
+import { useEntrenamientos } from "../../context/EntrenamientosContext";
+import { useTheme } from "../../context/ThemeContext";
 
 // Componentes personalizados
-import TrainingCard from "@/components/training/TrainingCard";
-import PageIndicators from "@/components/training/PageIndicators";
-import ActionButton from "@/components/training/ActionButton";
-import LoadingState from "@/components/training/LoadingState";
-import TrainingHeader from "@/components/training/TrainingHeader";
+import TrainingCard from "../../components/training/TrainingCard";
+import PageIndicators from "../../components/training/PageIndicators";
+import ActionButton from "../../components/training/ActionButton";
+import LoadingState from "../../components/training/LoadingState";
+import TrainingHeader from "../../components/training/TrainingHeader";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.85;
@@ -32,7 +31,6 @@ const SPACING = width * 0.03;
 export default function TrainingSelector() {
   const router = useRouter();
   const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
-  const { imagesMap } = useImagesMap();
   const { colors, isDarkMode } = useTheme();
 
   const [index, setIndex] = useState(0);
@@ -42,7 +40,7 @@ export default function TrainingSelector() {
   // Animaciones
   const scale = useRef(new Animated.Value(0.9)).current;
   const opacity = useRef(new Animated.Value(0)).current;
-  
+
   // Animación para el botón
   const buttonScale = useRef(new Animated.Value(1)).current;
   const buttonRotation = useRef(new Animated.Value(0)).current;
@@ -63,7 +61,7 @@ export default function TrainingSelector() {
     },
     scrollViewContent: {
       paddingHorizontal: SPACING,
-    }
+    },
   });
 
   // Si hay entrenamientos, selecciona uno aleatorio al iniciar
@@ -71,7 +69,7 @@ export default function TrainingSelector() {
     if (entrenamientos.length > 0) {
       const randomIndex = Math.floor(Math.random() * entrenamientos.length);
       setIndex(randomIndex);
-      
+
       // Animar entrada
       Animated.parallel([
         Animated.timing(scale, {
@@ -100,12 +98,12 @@ export default function TrainingSelector() {
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-    { useNativeDriver: false }
+    { useNativeDriver: false },
   );
 
   const handleMomentumScrollEnd = (event: any) => {
     const newIndex = Math.round(
-      event.nativeEvent.contentOffset.x / (CARD_WIDTH + SPACING * 2)
+      event.nativeEvent.contentOffset.x / (CARD_WIDTH + SPACING * 2),
     );
     if (newIndex !== index) {
       setIndex(newIndex);
@@ -158,7 +156,7 @@ export default function TrainingSelector() {
   const handleSelect = (entrenamiento: IEntrenamiento) => {
     // Animar selección
     animateButton();
-    
+
     // Navegar después de una pequeña pausa para que se vea la animación
     setTimeout(() => {
       setSelectedEntrenamiento(entrenamiento);
@@ -169,23 +167,29 @@ export default function TrainingSelector() {
   // Transformación para la rotación del botón
   const spin = buttonRotation.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '3deg']
+    outputRange: ["0deg", "3deg"],
   });
-  
+
   // Interpolación para el color del fondo del botón
   const bgColor = buttonBackground.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.accent, '#8A6FFF']
+    outputRange: [colors.accent, "#8A6FFF"],
   });
 
   if (entrenamientos.length === 0) {
-    return <LoadingState opacity={opacity} scale={scale} backgroundColor={colors.background} />;
+    return (
+      <LoadingState
+        opacity={opacity}
+        scale={scale}
+        backgroundColor={colors.background}
+      />
+    );
   }
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      
+
       {/* Header con título y decoración */}
       <TrainingHeader
         title="Entrena"
@@ -217,13 +221,13 @@ export default function TrainingSelector() {
             idx * (CARD_WIDTH + SPACING * 2),
             (idx + 1) * (CARD_WIDTH + SPACING * 2),
           ];
-          
+
           const translateY = scrollX.interpolate({
             inputRange,
             outputRange: [20, 0, 20],
             extrapolate: "clamp",
           });
-          
+
           const cardScale = scrollX.interpolate({
             inputRange,
             outputRange: [0.9, 1, 0.9],
@@ -238,14 +242,13 @@ export default function TrainingSelector() {
 
           const animationStyles = {
             transform: [{ translateY }, { scale: cardScale }],
-            opacity: cardOpacity
+            opacity: cardOpacity,
           };
 
           return (
             <TrainingCard
               key={entrenamiento._id}
               entrenamiento={entrenamiento}
-              imagen={imagesMap[entrenamiento.imagen]}
               cardWidth={CARD_WIDTH}
               animationStyles={animationStyles}
               colors={colors}

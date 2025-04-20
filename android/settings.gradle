@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'ledfit_front'
+rootProject.name = 'Ledfit'
 
 dependencyResolutionManagement {
   versionCatalogs {

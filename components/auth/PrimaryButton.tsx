@@ -1,6 +1,11 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from "react";
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface PrimaryButtonProps {
   title: string;
@@ -15,7 +20,7 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   onPress,
   isLoading = false,
   accessibilityLabel,
-  gradientColors = ["#6842FF", "#8A6FFF"]
+  gradientColors = ["#6842FF", "#8A6FFF"],
 }) => {
   return (
     <TouchableOpacity
@@ -43,10 +48,10 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
     height: 56,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     shadowColor: "#6842FF",
     shadowOffset: {
       width: 0,
@@ -58,15 +63,15 @@ const styles = StyleSheet.create({
   },
   gradient: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   text: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 0.3,
-  }
+  },
 });
 
 export default PrimaryButton;

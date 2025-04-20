@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
-import { ThemeColors } from '@/context/ThemeContext';
+import React from "react";
+import { View, Text, Animated, StyleSheet } from "react-native";
+import { ThemeColors } from "../../context/ThemeContext";
 
 interface TrainingHeaderProps {
   title: string;
@@ -10,12 +10,12 @@ interface TrainingHeaderProps {
   colors: ThemeColors;
 }
 
-const TrainingHeader = ({ 
-  title, 
-  subtitle, 
-  highlightText, 
+const TrainingHeader = ({
+  title,
+  subtitle,
+  highlightText,
   opacity,
-  colors 
+  colors,
 }: TrainingHeaderProps) => {
   const styles = StyleSheet.create({
     container: {
@@ -25,14 +25,14 @@ const TrainingHeader = ({
     title: {
       color: colors.text,
       fontSize: 30,
-      fontWeight: 'bold',
+      fontWeight: "bold",
     },
     highlightText: {
       color: colors.accent,
     },
     infoContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       marginTop: 8,
     },
     divider: {
@@ -45,20 +45,22 @@ const TrainingHeader = ({
     subtitle: {
       color: colors.secondaryText,
       fontSize: 14,
-    }
+    },
   });
 
   return (
     <View style={styles.container}>
-      <Animated.View 
-        style={{ 
-          opacity, 
-          transform: [{ 
-            translateY: opacity.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-20, 0]
-            })
-          }] 
+      <Animated.View
+        style={{
+          opacity,
+          transform: [
+            {
+              translateY: opacity.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-20, 0],
+              }),
+            },
+          ],
         }}
       >
         <Text style={styles.title}>
@@ -66,9 +68,7 @@ const TrainingHeader = ({
         </Text>
         <View style={styles.infoContainer}>
           <View style={styles.divider} />
-          <Text style={styles.subtitle}>
-            {subtitle}
-          </Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
       </Animated.View>
     </View>

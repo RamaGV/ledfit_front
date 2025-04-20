@@ -1,6 +1,8 @@
 // app/context/WorkoutsContext.tsx
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import { API_URL } from "@/env"; // Asegúrate de que API_URL esté correctamente definido en tu .env y declarado en env.d.ts
+// Importar axiosInstance y quitar API_URL
+import axiosInstance from "../api/axiosInstance";
+// import { API_URL } from "@/env";
 
 import type { IEjercicio } from "./EjerciciosContext";
 
@@ -24,6 +26,7 @@ interface EntrenamientosContextValue {
   entrenamientos: IEntrenamiento[];
   selectedEntrenamiento: IEntrenamiento | null;
   setSelectedEntrenamiento: (e: IEntrenamiento | null) => void;
+  fetchEntrenamientoById: (id: string) => Promise<IEntrenamiento | null>;
 }
 
 const EntrenamientosContext = createContext<
@@ -39,34 +42,38 @@ export function EntrenamientosProvider({
   const [selectedEntrenamiento, setSelectedEntrenamiento] =
     useState<IEntrenamiento | null>(null);
 
-  // Obtener lista de entrenamientos utilizando API_URL
+  // Obtener lista de entrenamientos usando axiosInstance
   const fetchEntrenamientos = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/api/entrenamientos`);
-      if (!response.ok) {
-        throw new Error("ErrorWorkouts fetching workouts");
-      }
-      const data = await response.json();
-      setEntrenamientos(data);
+      // Usar axiosInstance.get con el endpoint relativo
+      const response = await axiosInstance.get("/entrenamientos");
+      // Acceder a los datos directamente desde response.data
+      setEntrenamientos(response.data);
     } catch (err: any) {
-      console.error("ErrorWorkouts fetching workouts:", err);
+      // Manejo de errores de Axios
+      console.error(
+        "Error fetching workouts (Axios):",
+        err.response?.data || err.message,
+      );
     }
   }, []);
 
-  // Obtener un entrenamiento por su ID utilizando API_URL
+  // Obtener un entrenamiento por su ID usando axiosInstance
   const fetchEntrenamientoById = useCallback(
-    async (entrenamientoId: string) => {
+    async (entrenamientoId: string): Promise<IEntrenamiento | null> => {
       try {
-        const response = await fetch(
-          `${API_URL}/api/entrenamientos/${entrenamientoId}`,
+        // Usar axiosInstance.get con el endpoint relativo y el ID
+        const response = await axiosInstance.get(
+          `/entrenamientos/${entrenamientoId}`,
         );
-        if (!response.ok) {
-          throw new Error("Error fetching entrenamientos");
-        }
-        const data = await response.json();
-        return data;
+        // Retornar los datos directamente desde response.data
+        return response.data;
       } catch (err: any) {
-        console.error("Error fetching entrenamientos:", err);
+        // Manejo de errores de Axios
+        console.error(
+          `Error fetching workout ${entrenamientoId} (Axios):`,
+          err.response?.data || err.message,
+        );
         return null;
       }
     },
@@ -75,19 +82,16 @@ export function EntrenamientosProvider({
 
   useEffect(() => {
     fetchEntrenamientos();
-  }, []);
+  }, [fetchEntrenamientos]);
 
   return (
     <EntrenamientosContext.Provider
-      value={
-        {
-          entrenamientos: entrenamientos,
-          setSelectedEntrenamiento: setSelectedEntrenamiento,
-          selectedEntrenamiento: selectedEntrenamiento,
-          // Puedes incluir fetchEntrenamientoById en el contexto si lo necesitas
-          fetchEntrenamientoById: fetchEntrenamientoById,
-        } as any
-      }
+      value={{
+        entrenamientos,
+        selectedEntrenamiento,
+        setSelectedEntrenamiento,
+        fetchEntrenamientoById,
+      }}
     >
       {children}
     </EntrenamientosContext.Provider>

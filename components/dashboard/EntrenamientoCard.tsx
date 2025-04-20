@@ -5,12 +5,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useState, useEffect } from "react";
 import { Image } from "expo-image";
 
-import type { IEntrenamiento } from "@/context/EntrenamientosContext";
-import { useTheme } from "@/context/ThemeContext";
+import type { IEntrenamiento } from "../../context/EntrenamientosContext";
+import { useTheme } from "../../context/ThemeContext";
 
-import { calcularTiempo } from "@/utils/utilsEntrenamientos";
-import { useImagesMap } from "@/context/ImagesMapContext";
-import { useUser } from "@/context/UsersContext";
+import { calcularTiempo } from "../../utils/utilsEntrenamientos";
+import { useUser } from "../../context/UsersContext";
 
 type EntrenamientoCardProps = {
   tipo: "Card Chica" | "Card Grande" | "Card Grid";
@@ -24,7 +23,6 @@ export default function EntrenamientoCard({
   onPress,
 }: EntrenamientoCardProps) {
   const { user, addFav, removeFav } = useUser();
-  const { imagesMap } = useImagesMap();
   const { colors, isDarkMode } = useTheme();
 
   // Estado local para el ícono de favorito
@@ -60,7 +58,7 @@ export default function EntrenamientoCard({
   // Configurar clases de tailwind según el tipo de tarjeta
   let cardClasses = "rounded-3xl overflow-hidden shadow-lg relative";
   let nombreClasses = "font-bold text-white";
-  
+
   // Configurar tamaños según el tipo
   if (tipo === "Card Chica") {
     cardClasses += " w-full h-[100px]";
@@ -74,14 +72,15 @@ export default function EntrenamientoCard({
   }
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       activeOpacity={0.9}
       className={`my-2 ${cardClasses}`}
       onPress={onPress}
     >
       <Image
         className="absolute w-full h-full rounded-3xl"
-        source={imagesMap[unEntrenamiento.imagen]}
+        source={{ uri: unEntrenamiento.imagen }}
+        placeholder={require("@/assets/images/icon.png")}
         contentFit="cover"
         transition={300}
       />
@@ -100,10 +99,7 @@ export default function EntrenamientoCard({
         ]}
       />
       <View className="absolute bottom-0 w-full p-4 flex-col">
-        <Text
-          className={nombreClasses}
-          numberOfLines={1}
-        >
+        <Text className={nombreClasses} numberOfLines={1}>
           {unEntrenamiento.nombre}
         </Text>
         <View className="flex-row items-center justify-between w-full mt-1">
@@ -112,22 +108,16 @@ export default function EntrenamientoCard({
               {calcularTiempo(unEntrenamiento.tiempoTotal)} min.
             </Text>
             <View className="border-r border-gray-400 h-2.5" />
-            <Text className="text-white text-xs">
-              {unEntrenamiento.nivel}
-            </Text>
+            <Text className="text-white text-xs">{unEntrenamiento.nivel}</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={(e) => {
               e.stopPropagation(); // Evitar que el evento se propague al TouchableOpacity padre
               handleFav();
             }}
             className="ml-auto"
           >
-            <Image
-              className="w-6 h-6"
-              source={favIcon}
-              contentFit="contain"
-            />
+            <Image className="w-6 h-6" source={favIcon} contentFit="contain" />
           </TouchableOpacity>
         </View>
       </View>

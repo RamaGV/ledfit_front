@@ -1,8 +1,7 @@
 // app/context/ExercisesContext.tsx
 
 import React, { createContext, useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "@/env"; // Importa la variable de entorno
+import axiosInstance from "../api/axiosInstance";
 
 export interface IEjercicio {
   _id: string;
@@ -33,32 +32,40 @@ export const EjerciciosProvider: React.FC<{ children: React.ReactNode }> = ({
     null,
   );
 
-  // Obtener la lista de ejercicios usando API_URL
+  // Obtener la lista de ejercicios usando axiosInstance
   const fetchEjercicios = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/ejercicios`);
+      // Usar axiosInstance.get con el endpoint relativo
+      const response = await axiosInstance.get("/ejercicios");
       setEjercicios(response.data);
     } catch (err: any) {
-      console.error("Error fetching exercises:", err);
+      // Manejo de errores de Axios
+      console.error(
+        "Error fetching exercises (Axios):",
+        err.response?.data || err.message,
+      );
     }
   };
 
-  // Obtener un ejercicio por su ID usando API_URL
+  // Obtener un ejercicio por su ID usando axiosInstance
   const fetchEjercicioById = async (ejercicioId: string) => {
     try {
-      const response = await axios.get(
-        `${API_URL}/api/ejercicios/${ejercicioId}`,
-      );
+      // Usar axiosInstance.get con el endpoint relativo y el ID
+      const response = await axiosInstance.get(`/ejercicios/${ejercicioId}`);
       return response.data;
     } catch (err: any) {
-      console.error("Error fetching exercise:", err);
+      // Manejo de errores de Axios
+      console.error(
+        `Error fetching exercise ${ejercicioId} (Axios):`,
+        err.response?.data || err.message,
+      );
       return null;
     }
   };
 
   useEffect(() => {
     fetchEjercicios();
-  }, []);
+  }, []); // Dejar dependencia vacía si solo se carga una vez al montar
 
   return (
     <EjerciciosContext.Provider

@@ -1,11 +1,14 @@
 // app/(dashboard)/Entrenamientos.tsx
 
 import React, { useState } from "react";
-import { View, ScrollView, Text, TouchableOpacity } from "react-native";
-import TopNavbar from "@/components/TopNavbar";
-import { IEntrenamiento, useEntrenamientos } from "@/context/EntrenamientosContext";
-import GroupSelector from "@/components/entrenar/GroupSelector";
-import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
+import { View, ScrollView, TouchableOpacity } from "react-native";
+import TopNavbar from "../../components/TopNavbar";
+import {
+  IEntrenamiento,
+  useEntrenamientos,
+} from "../../context/EntrenamientosContext";
+import GroupSelector from "../../components/entrenar/GroupSelector";
+import EntrenamientoCard from "../../components/dashboard/EntrenamientoCard";
 
 export default function Entrenamientos() {
   const { entrenamientos, setSelectedEntrenamiento } = useEntrenamientos();
@@ -44,7 +47,10 @@ export default function Entrenamientos() {
         />
 
         {/* Lista de entrenamientos filtrados */}
-        <ScrollView showsVerticalScrollIndicator={false} className="px-2 gap-2 mt-2">
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          className="px-2 gap-2 mt-2"
+        >
           {filteredEntrenamientos.map((entrenamiento, idx) => (
             <TouchableOpacity
               key={entrenamiento._id || idx}

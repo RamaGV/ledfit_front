@@ -3,7 +3,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
 
 export type ChipProps = {
   label?: string | number;
@@ -20,7 +20,7 @@ function formatTime(totalTime: number) {
 
 const ChipInfo = ({ label, icon, totalTime }: ChipProps) => {
   const { colors } = useTheme();
-  
+
   if (icon === "Time") {
     label = formatTime(totalTime ?? 0);
   } else if (icon === "Play") {

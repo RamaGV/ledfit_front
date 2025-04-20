@@ -65,7 +65,11 @@
       "eas": {
         "projectId": "3e1cdb34-bace-4ca7-ab45-a467abecb563"
       },
-      "clerkOAuthRedirectUrl": "com.ledfit.app://oauth-callback"
+      "clerkOAuthRedirectUrl": "https://auth.expo.io/@funesgv/Ledfit",
+      
+      "googleWebClientId": "649056789982-6b496noc3447m3ov12utu2lmpvi3ne8.apps.googleusercontent.com",
+      "googleIosClientId": "",
+      "googleAndroidClientId": "649056789982-6tcud4ip56k9nacp9h06blut0cn4c1vt.apps.googleusercontent.com"
     }
   }
 }

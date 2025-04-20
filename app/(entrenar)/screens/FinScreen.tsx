@@ -1,186 +1,152 @@
 // app/(entrenar)/screens/FinScreen.tsx
 
-import { View, Text, Image, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
 
-import { useEntrenamientos } from "@/context/EntrenamientosContext";
-import { useEjercicios } from "@/context/EjerciciosContext";
-import { calcularTiempo } from "@/utils/utilsEntrenamientos";
-import { useTheme } from "@/context/ThemeContext";
-import NeumorphicButton from "@/components/ui/NeumorphicButton";
+import { useTheme } from "../../../context/ThemeContext";
+import { calcularTiempo } from "../../../utils/utilsEntrenamientos";
 
-export default function FinScreen() {
-  const router = useRouter();
-  const { selectedEntrenamiento } = useEntrenamientos();
-  const { ejercicioActual } = useEjercicios();
+interface FinScreenProps {
+  nombreEntrenamiento: string;
+  tiempoTotal: number; // en segundos
+  caloriasTotales: number;
+  onVolver: () => void;
+}
+
+export default function FinScreen({
+  nombreEntrenamiento,
+  tiempoTotal,
+  caloriasTotales,
+  onVolver,
+}: FinScreenProps) {
   const { colors, isDarkMode } = useTheme();
 
-  if (!ejercicioActual || !selectedEntrenamiento) {
-    return null;
-  }
-
   return (
-    <View style={{ 
-      flex: 1,
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'space-around',
-      padding: 24,
-      backgroundColor: colors.background
-    }}>
-      <View style={{ marginTop: 40 }}>
+    <View
+      style={{
+        flex: 1,
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-around",
+        padding: 24,
+        backgroundColor: colors.background,
+      }}
+    >
+      <View style={{ marginTop: 40, alignItems: "center" }}>
         <Image
-          source={require("@/assets/ejercicios/trofeo.png")}
-          style={{ width: 300, height: 300 }}
+          source={require("../../../assets/ejercicios/trofeo.png")}
+          style={{ width: 250, height: 250 }}
           resizeMode="contain"
         />
       </View>
 
-      <View style={{ alignItems: 'center' }}>
-        <Text style={{ 
-          color: "#FFD700", 
-          fontSize: 30, 
-          fontWeight: 'bold',
-          marginBottom: 8 
-        }}>
+      <View style={{ alignItems: "center" }}>
+        <Text
+          style={{
+            color: "#FFD700",
+            fontSize: 28,
+            fontWeight: "bold",
+            marginBottom: 8,
+          }}
+        >
           ¡Felicidades!
         </Text>
-        <Text style={{ 
-          color: colors.text, 
-          fontSize: 16,
-          marginBottom: 24 
-        }}>
-          ¡Has completado el entrenamiento!
+        <Text
+          style={{
+            color: colors.text,
+            fontSize: 18,
+            textAlign: "center",
+            marginBottom: 24,
+          }}
+        >
+          Completaste "{nombreEntrenamiento}"
         </Text>
       </View>
 
-      <View style={{ 
-        width: '100%', 
-        borderBottomWidth: 1, 
-        borderBottomColor: isDarkMode ? '#454545' : colors.border,
-        marginBottom: 24 
-      }} />
+      <View
+        style={{
+          width: "100%",
+          borderBottomWidth: 1,
+          borderBottomColor: isDarkMode ? "#454545" : colors.border,
+          marginBottom: 24,
+        }}
+      />
 
-      <View style={{ 
-        flexDirection: 'row', 
-        width: '100%', 
-        justifyContent: 'space-around',
-        marginBottom: 24
-      }}>
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ 
-            color: colors.text, 
-            fontSize: 20, 
-            fontWeight: 'bold' 
-          }}>
-            {selectedEntrenamiento.ejercicios.length}
+      <View
+        style={{
+          flexDirection: "row",
+          width: "100%",
+          justifyContent: "space-around",
+          marginBottom: 24,
+        }}
+      >
+        <View style={{ alignItems: "center" }}>
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 20,
+              fontWeight: "bold",
+            }}
+          >
+            {calcularTiempo(tiempoTotal)}
           </Text>
-          <Text style={{ 
-            color: colors.secondaryText, 
-            fontSize: 14 
-          }}>
-            Rondas
-          </Text>
-        </View>
-        <View style={{ 
-          borderRightWidth: 1, 
-          borderRightColor: isDarkMode ? '#454545' : colors.border
-        }} />
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ 
-            color: colors.text, 
-            fontSize: 20, 
-            fontWeight: 'bold' 
-          }}>
-            {selectedEntrenamiento.calorias}
-          </Text>
-          <Text style={{ 
-            color: colors.secondaryText, 
-            fontSize: 14 
-          }}>
-            Cal
-          </Text>
-        </View>
-        <View style={{ 
-          borderRightWidth: 1, 
-          borderRightColor: isDarkMode ? '#454545' : colors.border
-        }} />
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ 
-            color: colors.text, 
-            fontSize: 20, 
-            fontWeight: 'bold' 
-          }}>
-            {calcularTiempo(selectedEntrenamiento.tiempoTotal)}
-          </Text>
-          <Text style={{ 
-            color: colors.secondaryText, 
-            fontSize: 14 
-          }}>
+          <Text
+            style={{
+              color: colors.secondaryText,
+              fontSize: 14,
+            }}
+          >
             Minutos
           </Text>
         </View>
+        <View
+          style={{
+            borderRightWidth: 1,
+            borderRightColor: isDarkMode ? "#454545" : colors.border,
+          }}
+        />
+        <View style={{ alignItems: "center" }}>
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 20,
+              fontWeight: "bold",
+            }}
+          >
+            {caloriasTotales}
+          </Text>
+          <Text
+            style={{
+              color: colors.secondaryText,
+              fontSize: 14,
+            }}
+          >
+            Calorías
+          </Text>
+        </View>
       </View>
 
-      <View style={{ width: '100%', marginTop: 48 }}>
-        <NeumorphicButton 
-          onPress={() => router.push("/(dashboard)/entrenar")}
-          text="Iniciar otro entrenamiento"
-          isPrimary={true}
-          colors={colors}
-          isDarkMode={isDarkMode}
-          style={{ marginBottom: 20 }}
-        />
-
-        <NeumorphicButton 
-          onPress={() => router.push("/(dashboard)")}
-          text="Volver al Inicio"
-          isPrimary={false}
-          colors={colors}
-          isDarkMode={isDarkMode}
-        />
+      <View style={{ width: "100%", marginTop: 48 }}>
+        <TouchableOpacity
+          onPress={onVolver}
+          style={{
+            backgroundColor: "#6842FF",
+            paddingVertical: 15,
+            borderRadius: 30,
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
+          activeOpacity={0.8}
+        >
+          <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>
+            Volver a Entrenamientos
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-// Estilos para el diseño neumórfico
-const styles = StyleSheet.create({
-  neumorphicButton: {
-    height: 55,
-    borderRadius: 30,
-    overflow: 'hidden',
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  topLeftHighlight: {
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 15,
-    borderBottomLeftRadius: 15,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  bottomRightShadow: {
-    borderBottomRightRadius: 30,
-    borderTopRightRadius: 15,
-    borderBottomLeftRadius: 15,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  buttonContent: {
-    zIndex: 1,
-    padding: 16,
-    width: '100%',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    textAlign: 'center',
-  }
-});

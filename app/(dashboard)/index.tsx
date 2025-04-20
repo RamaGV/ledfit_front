@@ -5,23 +5,22 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Dimensions,
   StatusBar,
 } from "react-native";
-import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
-import { useEntrenamientos, IEntrenamiento } from "@/context/EntrenamientosContext";
-import { useUser } from "@/context/UsersContext";
-import { useTheme } from "@/context/ThemeContext";
-import NeumorphicButton from '@/components/ui/NeumorphicButton';
+import {
+  useEntrenamientos,
+  IEntrenamiento,
+} from "../../context/EntrenamientosContext";
+import { useUser } from "../../context/UsersContext";
+import { useTheme } from "../../context/ThemeContext";
 
-import EntrenamientoCard from "@/components/dashboard/EntrenamientoCard";
-import NivelButton from "@/components/dashboard/NivelButton";
-import TopNavbar from "@/components/TopNavbar";
+import EntrenamientoCard from "../../components/dashboard/EntrenamientoCard";
+import NivelButton from "../../components/dashboard/NivelButton";
+import TopNavbar from "../../components/TopNavbar";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -31,7 +30,6 @@ export default function HomeScreen() {
   const [filtroPorNivel, setFiltroPorNivel] = useState("Principiante");
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const screenHeight = Dimensions.get('window').height;
 
   const niveles = ["Principiante", "Intermedio", "Avanzado"];
 
@@ -58,7 +56,7 @@ export default function HomeScreen() {
 
   // Filtrar los entrenamientos por nivel
   const entrenamientosFiltrados = entrenamientos.filter(
-    (entrenamiento) => entrenamiento.nivel === filtroPorNivel
+    (entrenamiento) => entrenamiento.nivel === filtroPorNivel,
   );
 
   // Seleccionar los entrenamientos destacados (por ejemplo, los más populares o con mejores valoraciones)
@@ -68,12 +66,14 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: colors.background
-      }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: colors.background,
+        }}
+      >
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
@@ -82,7 +82,7 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      
+
       {/* TopNavbar ahora incluye cálculos de padding automáticos */}
       <TopNavbar logo={true} iconNotif={true} iconFav={true} />
 
@@ -90,34 +90,40 @@ export default function HomeScreen() {
       <View>
         {/* Encabezado con saludo */}
         <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
-          <Text style={{ 
-            fontSize: 24, 
-            fontWeight: 'bold', 
-            color: colors.text 
-          }}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: colors.text,
+            }}
+          >
             ¡Hola, {user?.name || "Usuario"}!
           </Text>
-          <Text style={{ 
-            fontSize: 16, 
-            marginTop: 4, 
-            color: colors.secondaryText 
-          }}>
+          <Text
+            style={{
+              fontSize: 16,
+              marginTop: 4,
+              color: colors.secondaryText,
+            }}
+          >
             ¿Listo para tu entrenamiento de hoy?
           </Text>
         </View>
 
         {/* Destacados */}
-        <Text style={{ 
-          fontSize: 18, 
-          fontWeight: 'bold', 
-          paddingHorizontal: 20, 
-          marginTop: 8, 
-          marginBottom: 12, 
-          color: colors.text 
-        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            paddingHorizontal: 20,
+            marginTop: 8,
+            marginBottom: 12,
+            color: colors.text,
+          }}
+        >
           Destacados
         </Text>
-        
+
         {/* ScrollView HORIZONTAL (se mantiene) */}
         <ScrollView
           horizontal
@@ -137,13 +143,15 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* Botones de nivel */}
-        <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'space-around', 
-          alignItems: 'center', 
-          paddingVertical: 12, 
-          marginTop: 4 
-        }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            alignItems: "center",
+            paddingVertical: 12,
+            marginTop: 4,
+          }}
+        >
           {niveles.map((nivel) => (
             <NivelButton
               key={nivel}
@@ -160,30 +168,36 @@ export default function HomeScreen() {
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={colors.accent}
-            colors={[colors.accent]} 
+            colors={[colors.accent]}
           />
         }
       >
         {/* Lista de entrenamientos por nivel - ÚNICO contenido scrollable vertical */}
-        <View style={{ 
-          paddingHorizontal: 20, 
-          paddingBottom: 40, 
-          paddingTop: 8 
-        }}>
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingBottom: 40,
+            paddingTop: 8,
+          }}
+        >
           {entrenamientosFiltrados.length === 0 ? (
-            <View style={{ 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              paddingVertical: 32 
-            }}>
-              <Text style={{ 
-                fontSize: 16, 
-                color: colors.secondaryText 
-              }}>
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 32,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: colors.secondaryText,
+                }}
+              >
                 No hay entrenamientos disponibles para este nivel
               </Text>
             </View>

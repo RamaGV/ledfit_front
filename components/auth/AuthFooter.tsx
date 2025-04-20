@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 
 interface AuthFooterProps {
   prompt: string;
@@ -12,7 +12,7 @@ const AuthFooter: React.FC<AuthFooterProps> = ({
   prompt,
   actionText,
   onPress,
-  accessibilityLabel
+  accessibilityLabel,
 }) => {
   return (
     <View className="flex-row items-center justify-center mb-8 mt-2">
@@ -23,7 +23,9 @@ const AuthFooter: React.FC<AuthFooterProps> = ({
         accessibilityLabel={accessibilityLabel}
         className="ml-2 py-1"
       >
-        <Text className="text-purple-500 font-semibold text-sm">{actionText}</Text>
+        <Text className="text-purple-500 font-semibold text-sm">
+          {actionText}
+        </Text>
       </TouchableOpacity>
     </View>
   );

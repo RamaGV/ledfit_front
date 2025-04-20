@@ -1,42 +1,94 @@
 // HexBadge.tsx
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Canvas, Path, BlurMask, Skia, LinearGradient, vec, Paint, Circle } from "@shopify/react-native-skia";
+import {
+  Canvas,
+  Path,
+  BlurMask,
+  Skia,
+  LinearGradient,
+  vec,
+  Circle,
+} from "@shopify/react-native-skia";
 
 interface HexBadgeProps {
   logroKey: string; // Texto que se muestra (p.ej. "500")
   obtenido: boolean; // Indica si el logro está obtenido
-  type: 'check' | 'time' | 'plus'; // Tipo de logro
+  type: "check" | "time" | "plus"; // Tipo de logro
   title: string; // Título del logro para determinar el nivel
 }
 
 // Función para obtener los colores según el nivel del logro
-function getBadgeColors(title: string): { primary: string, secondary: string, text: string, glow: string } {
-  if (title.includes('Bronze')) {
-    return { primary: '#CD7F32', secondary: '#8B5A2B', text: '#FFEBCD', glow: '#CD7F3270' };
-  } else if (title.includes('Plata')) {
-    return { primary: '#C0C0C0', secondary: '#A9A9A9', text: '#F5F5F5', glow: '#C0C0C070' };
-  } else if (title.includes('Oro')) {
-    return { primary: '#FFD700', secondary: '#DAA520', text: '#FFFACD', glow: '#FFD70070' };
-  } else if (title.includes('Platino')) {
-    return { primary: '#E5E4E2', secondary: '#C9C8C5', text: '#FFFFFF', glow: '#E5E4E270' };
-  } else if (title.includes('Diamante')) {
-    return { primary: '#B9F2FF', secondary: '#70D9E7', text: '#E0FFFF', glow: '#B9F2FF70' };
-  } else if (title.includes('Legendario')) {
-    return { primary: '#FF44CC', secondary: '#CC33AA', text: '#FFCCEE', glow: '#FF44CC70' };
+function getBadgeColors(title: string): {
+  primary: string;
+  secondary: string;
+  text: string;
+  glow: string;
+} {
+  if (title.includes("Bronze")) {
+    return {
+      primary: "#CD7F32",
+      secondary: "#8B5A2B",
+      text: "#FFEBCD",
+      glow: "#CD7F3270",
+    };
+  } else if (title.includes("Plata")) {
+    return {
+      primary: "#C0C0C0",
+      secondary: "#A9A9A9",
+      text: "#F5F5F5",
+      glow: "#C0C0C070",
+    };
+  } else if (title.includes("Oro")) {
+    return {
+      primary: "#FFD700",
+      secondary: "#DAA520",
+      text: "#FFFACD",
+      glow: "#FFD70070",
+    };
+  } else if (title.includes("Platino")) {
+    return {
+      primary: "#E5E4E2",
+      secondary: "#C9C8C5",
+      text: "#FFFFFF",
+      glow: "#E5E4E270",
+    };
+  } else if (title.includes("Diamante")) {
+    return {
+      primary: "#B9F2FF",
+      secondary: "#70D9E7",
+      text: "#E0FFFF",
+      glow: "#B9F2FF70",
+    };
+  } else if (title.includes("Legendario")) {
+    return {
+      primary: "#FF44CC",
+      secondary: "#CC33AA",
+      text: "#FFCCEE",
+      glow: "#FF44CC70",
+    };
   } else {
     // Valor por defecto
-    return { primary: '#6842FF', secondary: '#4123A0', text: '#E6E6FA', glow: '#6842FF70' };
+    return {
+      primary: "#6842FF",
+      secondary: "#4123A0",
+      text: "#E6E6FA",
+      glow: "#6842FF70",
+    };
   }
 }
 
 // Función para obtener el ícono según el tipo de logro
 function getLogroIcon(type: string): string {
   switch (type) {
-    case 'check': return '🔥'; // Calorías (fuego)
-    case 'time': return '⏱️'; // Tiempo (reloj)
-    case 'plus': return '🏋️'; // Entrenamientos (pesas)
-    default: return '🏆';
+    case "check":
+      return "🔥"; // Calorías (fuego)
+    case "time":
+      return "⏱️"; // Tiempo (reloj)
+    case "plus":
+      return "🏋️"; // Entrenamientos (pesas)
+    default:
+      return "🏆";
   }
 }
 
@@ -59,7 +111,12 @@ function createHexagonPath(cx: number, cy: number, radius: number) {
   return path;
 }
 
-export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, title }) => {
+export const HexBadge: React.FC<HexBadgeProps> = ({
+  logroKey,
+  obtenido,
+  type,
+  title,
+}) => {
   const size = 125; // Tamaño total del componente
   const cx = size / 2;
   const cy = size / 2;
@@ -67,10 +124,10 @@ export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, ti
 
   // Obtenemos los colores según el nivel
   const colors = getBadgeColors(title);
-  
+
   // Construimos el path del hexágono
   const hexPath = createHexagonPath(cx, cy, radius);
-  
+
   // Emoji para el tipo de logro
   const logroIcon = getLogroIcon(type);
 
@@ -85,16 +142,20 @@ export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, ti
               path={hexPath}
               color={colors.glow}
               style="fill"
-              transform={[{ scale: 1.1 }, { translateX: -cx * 0.05 }, { translateY: -cy * 0.05 }]}
+              transform={[
+                { scale: 1.1 },
+                { translateX: -cx * 0.05 },
+                { translateY: -cy * 0.05 },
+              ]}
             >
               <BlurMask blur={7} style="normal" />
             </Path>
-            
+
             {/* Sombra oscura (desplazada abajo-derecha) */}
             <Path
               path={hexPath}
               color="black"
-              opacity={.8}
+              opacity={0.8}
               style="fill"
               transform={[{ translateX: 0 }, { translateY: 8 }]}
             >
@@ -112,11 +173,11 @@ export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, ti
             </Path>
 
             {/* Pequeño brillo en la parte superior */}
-            <Circle 
-              cx={cx - radius/3} 
-              cy={cy - radius/3} 
-              r={5} 
-              color="white" 
+            <Circle
+              cx={cx - radius / 3}
+              cy={cy - radius / 3}
+              r={5}
+              color="white"
               opacity={0.7}
             >
               <BlurMask blur={5} style="normal" />
@@ -138,13 +199,13 @@ export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, ti
 
             {/* Hexágono base de color oscuro */}
             <Path path={hexPath} color="#1A1A1A" style="fill"></Path>
-            
+
             {/* Borde del hexágono con gradiente sutil */}
             <Path path={hexPath} style="stroke" strokeWidth={2}>
               <LinearGradient
                 start={vec(cx - radius, cy - radius)}
                 end={vec(cx + radius, cy + radius)}
-                colors={['#333333', '#666666', '#333333']}
+                colors={["#333333", "#666666", "#333333"]}
                 positions={[0, 0.5, 1]}
               />
             </Path>
@@ -161,12 +222,12 @@ export const HexBadge: React.FC<HexBadgeProps> = ({ logroKey, obtenido, type, ti
       <View style={styles.centered}>
         {/* Icono de tipo de logro */}
         <Text style={styles.icon}>{logroIcon}</Text>
-        
+
         {/* Clave del logro (número) */}
         <Text
           style={[
             styles.text,
-            obtenido ? { color: colors.text } : { color: '#505050' },
+            obtenido ? { color: colors.text } : { color: "#505050" },
           ]}
         >
           {logroKey}
@@ -190,7 +251,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginTop: 5,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
   },

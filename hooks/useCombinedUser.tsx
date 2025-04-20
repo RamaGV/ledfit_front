@@ -1,6 +1,6 @@
 import { useUser as useClerkUser } from "@clerk/clerk-expo";
 import { useEffect, useState } from "react";
-import { API_URL } from "@/env";
+import { API_URL } from "../env";
 
 export function useCombinedUser() {
   const { user: clerkUser, isLoaded } = useClerkUser();

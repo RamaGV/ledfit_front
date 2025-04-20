@@ -2,21 +2,19 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Color } from "@/GlobalStyles";
-import Logo from "@/components/Logo";
+import Logo from "../components/Logo";
 import React, { useContext } from "react";
 import {
   View,
   Text,
   Image,
-  StyleSheet,
   ImageSourcePropType,
   TouchableOpacity,
   Platform,
   StatusBar,
 } from "react-native";
-import { NotificationsContext } from "@/context/NotificationsContext";
-import { useTheme } from "@/context/ThemeContext";
+import { NotificationsContext } from "../context/NotificationsContext";
+import { useTheme } from "../context/ThemeContext";
 
 type TopNavbarType = {
   titulo?: string;
@@ -38,32 +36,32 @@ export default function TopNavbar({
   const router = useRouter();
   const { unreadCount } = useContext(NotificationsContext);
   const { colors, isDarkMode } = useTheme();
-  
+
   // Calcular padding superior para diferentes dispositivos
   const statusBarHeight = StatusBar.currentHeight || 0;
-  const paddingTop = Platform.OS === 'ios' ? 44 : statusBarHeight + 16;
+  const paddingTop = Platform.OS === "ios" ? 44 : statusBarHeight + 16;
 
   return (
-    <View 
-      className={`flex-row items-center justify-between w-full px-4 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#EFEEE9]'}`}
-      style={{ 
-        paddingTop: paddingTop, 
-        paddingBottom: 16 
+    <View
+      className={`flex-row items-center justify-between w-full px-4 ${isDarkMode ? "bg-[#121212]" : "bg-[#EFEEE9]"}`}
+      style={{
+        paddingTop: paddingTop,
+        paddingBottom: 16,
       }}
     >
       <View className="flex-row items-center">
         {iconBack && (
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons 
-              name="chevron-back" 
-              size={30} 
-              color={isDarkMode ? "#FFFFFF" : "#333333"} 
+            <Ionicons
+              name="chevron-back"
+              size={30}
+              color={isDarkMode ? "#FFFFFF" : "#333333"}
             />
           </TouchableOpacity>
         )}
         {logo && <Logo />}
-        <Text 
-          className={`text-2xl font-bold pl-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}
+        <Text
+          className={`text-2xl font-bold pl-4 ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}
         >
           {titulo}
         </Text>
@@ -76,8 +74,13 @@ export default function TopNavbar({
           >
             <Image
               className={unreadCount > 0 ? "" : ""}
-              style={{ 
-                tintColor: unreadCount > 0 ? "#6842FF" : isDarkMode ? colors.navIcon : "#555555" 
+              style={{
+                tintColor:
+                  unreadCount > 0
+                    ? "#6842FF"
+                    : isDarkMode
+                      ? colors.navIcon
+                      : "#555555",
               }}
               source={require("@/assets/icons/iconNotif.png")}
             />
@@ -97,8 +100,8 @@ export default function TopNavbar({
             }}
           >
             <Image
-              style={{ 
-                tintColor: isDarkMode ? colors.navIcon : "#555555" 
+              style={{
+                tintColor: isDarkMode ? colors.navIcon : "#555555",
               }}
               source={require("@/assets/icons/iconFavFalse.png")}
             />
@@ -108,8 +111,8 @@ export default function TopNavbar({
           <TouchableOpacity>
             <Image
               className="w-8 h-8"
-              style={{ 
-                tintColor: isDarkMode ? colors.navIcon : "#555555" 
+              style={{
+                tintColor: isDarkMode ? colors.navIcon : "#555555",
               }}
               source={iconBuscar}
             />
@@ -119,10 +122,3 @@ export default function TopNavbar({
     </View>
   );
 }
-
-// Color de icono //
-const styles = StyleSheet.create({
-  color: {
-    tintColor: Color.greyscale300,
-  },
-});

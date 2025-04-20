@@ -1,6 +1,6 @@
 import * as React from "react";
 import { View, Image, StyleSheet } from "react-native";
-import { Border, Color } from "@/GlobalStyles";
+import { Border, Color } from "../GlobalStyles";
 
 export default function Logo() {
   return (
